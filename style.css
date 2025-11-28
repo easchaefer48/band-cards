@@ -79,8 +79,8 @@ h1 {
 /* Card images */
 .cards-container img {
   width: 60px;
-  height: 60px;
-  border-radius: 6px;
+  height: 80px;
+  border-radius: 3px;
   object-fit: contain;
   border: none; /* removed */
 }
