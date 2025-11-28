@@ -65,10 +65,6 @@ h1 {
 .points {
   margin-top: 12px;
   font-size: .9rem;
-  background: #415a77;
-  padding: 6px 10px;
-  border-radius: 2px;
-  display: inline-block;
   font-weight: 600;
 }
 
