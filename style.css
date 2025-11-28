@@ -1,44 +1,108 @@
+/*
+  Band Cards — Design Upgrade
+  Feel free to tweak colors, fonts, and sizes!
+*/
+
 body {
-  font-family: Arial, sans-serif;
-  background-color: #fafafa;
+  font-family: "Trebuchet MS", Arial, sans-serif;
+  background: #0d1b2a; /* deep navy */
   margin: 0;
+  padding: 0;
+  color: #eee;
 }
 
-header {
-  background: #1b4b8a;
-  color: white;
-  padding: 15px 20px;
+h1 {
   text-align: center;
+  padding: 24px 0;
+  margin: 0;
+  background: #1b263b;
+  font-size: 2.4rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #e0e1dd;
+  border-bottom: 3px solid #415a77;
 }
 
-.student-grid {
+/* Grid layout for students */
+#student-container {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 20px;
-  padding: 20px;
+  gap: 22px;
+  padding: 28px;
+  max-width: 1400px;
+  margin: auto;
 }
 
+/* Student card styling */
 .student-card {
-  background: white;
+  background: #1b263b;
+  padding: 18px;
   border-radius: 10px;
-  box-shadow: 0px 2px 6px rgba(0,0,0,0.15);
-  padding: 15px;
+  border: 2px solid #415a77;
+  text-align: center;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
 
+.student-card:hover {
+  transform: scale(1.03);
+  box-shadow: 0 0 12px rgba(224,225,221,0.35);
+}
+
+/* Student Name */
 .student-name {
-  font-size: 1.2rem;
+  font-size: 1.25rem;
   font-weight: bold;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
+  color: #e0e1dd;
 }
 
-.cards-container img {
-  width: 45px;
-  height: auto;
-  margin: 5px;
-}
-
+/* Points */
 .points {
-  margin-top: 10px;
-  font-weight: bold;
-  color: #1b4b8a;
+  margin-top: 12px;
+  font-size: 1.15rem;
+  background: #415a77;
+  padding: 6px 10px;
+  border-radius: 6px;
+  display: inline-block;
+  font-weight: 600;
+}
+
+/* Cards row */
+.cards-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* Card images */
+.cards-container img {
+  width: 60px;
+  height: 60px;
+  border-radius: 6px;
+  object-fit: contain;
+  border: 1px solid #778da9;
+}
+
+/* Highlight top 3 students like a leaderboard */
+.student-card:nth-child(1) {
+  border-color: gold;
+  box-shadow: 0 0 12px gold;
+}
+
+.student-card:nth-child(2) {
+  border-color: silver;
+  box-shadow: 0 0 12px silver;
+}
+
+.student-card:nth-child(3) {
+  border-color: #cd7f32; /* bronze */
+  box-shadow: 0 0 12px #cd7f32;
+}
+
+/* Mobile tweaks */
+@media (max-width: 500px) {
+  .student-name { font-size: 1.1rem; }
+  .cards-container img { width: 50px; height: 50px; }
+  h1 { font-size: 1.8rem; }
 }
