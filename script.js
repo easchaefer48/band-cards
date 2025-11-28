@@ -1,28 +1,143 @@
-console.log("Band Cards site loaded!");
+// script.js — Band Cards: fetch sheet as CSV, group by student, render leaderboard
+// Assumptions:
+// - Your sheet is public (Anyone with link -> Viewer).
+// - Sheet with achievement rows is the first sheet (gid=0). If not, update GID below.
+// - Header row must include: Student, Card, Points (Date optional).
+// - Images live at /images/<filename>.png (simple mapping described below).
 
-// Placeholder student data — will load from Google Sheet soon
-const students = [
-  { name: "Student Example", points: 15, cards: ["sample-card.png"] }
-];
+console.log("Band Cards script running...");
 
-function renderStudents() {
-  const container = document.getElementById("student-container");
-  container.innerHTML = "";
+const SHEET_ID = "1Rdi7AdcFcNd2hCbvqUkmkO-WVxi1qjVZ9jlu_G4JPm4"; // Provided by you
+let GID = "0"; // change if your data is on a different sheet tab (find gid in sheet URL)
 
-  students.forEach(student => {
-    const cardDiv = document.createElement("div");
-    cardDiv.className = "student-card";
+// Utility: fetch CSV export of the sheet
+async function fetchSheetCSV(sheetId, gid = "0") {
+  const url = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("Could not fetch sheet CSV: " + res.statusText);
+  return await res.text();
+}
 
-    cardDiv.innerHTML = `
-      <div class="student-name">${student.name}</div>
-      <div class="cards-container">
-        ${student.cards.map(c => `<img src="images/${c}">`).join("")}
-      </div>
-      <div class="points">Points: ${student.points}</div>
-    `;
-
-    container.appendChild(cardDiv);
+// Utility: simple CSV parser (handles basic CSV, not all edge cases)
+function parseCSV(csvText) {
+  const rows = csvText.split(/\r?\n/).filter(r => r.trim() !== "");
+  return rows.map(row => {
+    // split on commas that are not inside quotes
+    const cols = [];
+    let cur = "", inQuotes = false;
+    for (let i = 0; i < row.length; i++) {
+      const ch = row[i];
+      if (ch === '"' && row[i+1] === '"') { cur += '"'; i++; continue; } // escaped quote
+      if (ch === '"') { inQuotes = !inQuotes; continue; }
+      if (ch === ',' && !inQuotes) { cols.push(cur); cur = ""; continue; }
+      cur += ch;
+    }
+    cols.push(cur);
+    return cols.map(c => c.trim());
   });
 }
 
-renderStudents();
+// Map row arrays to objects using header row
+function rowsToObjects(parsedRows) {
+  const header = parsedRows[0].map(h => h.toLowerCase());
+  return parsedRows.slice(1).map(r => {
+    const obj = {};
+    for (let i = 0; i < header.length; i++) {
+      obj[header[i]] = r[i] !== undefined ? r[i] : "";
+    }
+    return obj;
+  });
+}
+
+// Convert a card name (e.g. "Concert Bb Scale") to an image filename
+// Default rule: lowercase, replace spaces & slashes with underscores, remove punctuation, add .png
+function cardNameToFilename(cardName) {
+  if (!cardName) return "missing-card.png";
+  const fname = cardName
+    .toLowerCase()
+    .replace(/[\/\\]/g, "_")
+    .replace(/[^a-z0-9_\- ]+/g, "") // strip punctuation
+    .trim()
+    .replace(/\s+/g, "_");
+  return fname + ".png"; // adjust to .jpg if your images are jpg
+}
+
+// Render functions
+function createStudentCardElem(student) {
+  const div = document.createElement("div");
+  div.className = "student-card";
+
+  const cardsHtml = student.cards.map(c => {
+    const filename = cardNameToFilename(c.card);
+    const src = `images/${filename}`;
+    // Use onerror to show missing placeholder if image not found
+    return `<img src="${src}" alt="${c.card}" title="${c.card}" onerror="this.src='images/missing-card.png'; this.style.opacity=0.6">`;
+  }).join("");
+
+  div.innerHTML = `
+    <div class="student-name">${escapeHtml(student.name)}</div>
+    <div class="cards-container">${cardsHtml}</div>
+    <div class="points">Points: ${student.total}</div>
+  `;
+  return div;
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, function(m) {
+    return ({ '&': '&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[m];
+  });
+}
+
+function renderStudents(students) {
+  const container = document.getElementById("student-container");
+  container.innerHTML = "";
+  students.forEach(student => {
+    container.appendChild(createStudentCardElem(student));
+  });
+}
+
+// Main logic
+async function loadAndRender() {
+  try {
+    const csv = await fetchSheetCSV(SHEET_ID, GID);
+    const parsed = parseCSV(csv);
+    if (parsed.length < 2) {
+      document.getElementById("student-container").innerHTML = "<p>No data rows found in sheet.</p>";
+      return;
+    }
+    const objs = rowsToObjects(parsed);
+
+    // Accept flexible header keys
+    // look for possible keys for student/card/points
+    const studentKey = Object.keys(objs[0]).find(k => k.includes("student")) || Object.keys(objs[0])[0];
+    const cardKey = Object.keys(objs[0]).find(k => k.includes("card")) || Object.keys(objs[0])[1];
+    const pointsKey = Object.keys(objs[0]).find(k => k.includes("point")) || Object.keys(objs[0])[2];
+
+    // Group by student
+    const studentsMap = {};
+    objs.forEach(row => {
+      const studentName = row[studentKey] || "Unnamed";
+      const cardName = row[cardKey] || "";
+      const points = Number(row[pointsKey]) || 0;
+
+      if (!studentsMap[studentName]) {
+        studentsMap[studentName] = { name: studentName, cards: [], total: 0 };
+      }
+      studentsMap[studentName].cards.push({ card: cardName, points });
+      studentsMap[studentName].total += points;
+    });
+
+    // Turn into array & sort by total points descending
+    const studentsArr = Object.values(studentsMap)
+      .sort((a,b) => b.total - a.total);
+
+    renderStudents(studentsArr);
+
+  } catch (err) {
+    console.error("Error loading sheet:", err);
+    document.getElementById("student-container").innerHTML = `<p style="color:crimson">Error loading sheet: ${escapeHtml(err.message)}</p>`;
+  }
+}
+
+// Kick off
+loadAndRender();
