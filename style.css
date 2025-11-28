@@ -51,7 +51,7 @@ h1 {
 
 /* Student Name */
 .student-name {
-  font-size: 1.25rem;
+  font-size: 1.3rem;
   font-weight: bold;
   margin-bottom: 12px;
   color: #e0e1dd;
@@ -60,10 +60,10 @@ h1 {
 /* Points */
 .points {
   margin-top: 12px;
-  font-size: 1.15rem;
+  font-size: .9rem;
   background: #415a77;
   padding: 6px 10px;
-  border-radius: 6px;
+  border-radius: 2px;
   display: inline-block;
   font-weight: 600;
 }
