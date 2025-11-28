@@ -53,6 +53,10 @@ h1 {
 .student-name {
   font-size: 1.3rem;
   font-weight: bold;
+  background: #415a77;
+  padding: 6px 10px;
+  border-radius: 2px;
+  display: inline-block;
   margin-bottom: 12px;
   color: #e0e1dd;
 }
