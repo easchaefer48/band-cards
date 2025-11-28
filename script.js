@@ -77,7 +77,7 @@ function createStudentCardElem(student) {
   div.innerHTML = `
     <div class="student-name">${escapeHtml(student.name)}</div>
     <div class="cards-container">${cardsHtml}</div>
-    <div class="points">Points: ${student.total}</div>
+    <div class="points">Achievement Points: ${student.total}</div>
   `;
   return div;
 }
