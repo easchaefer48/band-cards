@@ -97,40 +97,44 @@ function renderStudents(students) {
 
   attachCardClickHandlers(); // add listeners each time we render
 }
+
 function attachCardClickHandlers() {
   let currentlyExpanded = null;
 
   document.querySelectorAll('.achievement-card').forEach(img => {
     img.addEventListener('click', (event) => {
-      event.stopPropagation(); // prevent click from immediately collapsing it
+      event.stopPropagation();
 
-      // if clicking the already-expanded card → collapse
+      const body = document.body;
+
+      // Clicking the same card -> collapse
       if (currentlyExpanded === img) {
         img.classList.remove("expanded");
+        body.classList.remove("dimmed");
         currentlyExpanded = null;
         return;
       }
 
-      // collapse previous card if needed
+      // Collapse previous first
       if (currentlyExpanded) {
         currentlyExpanded.classList.remove("expanded");
       }
 
-      // expand the clicked card
       img.classList.add("expanded");
+      body.classList.add("dimmed");
       currentlyExpanded = img;
     });
   });
 
-  // collapse card when clicking anywhere outside cards
+  // Collapse on outside click
   document.addEventListener('click', () => {
     if (currentlyExpanded) {
       currentlyExpanded.classList.remove("expanded");
+      document.body.classList.remove("dimmed");
       currentlyExpanded = null;
     }
   });
 }
-
 
 // Main logic
 async function loadAndRender() {
