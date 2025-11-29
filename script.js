@@ -94,7 +94,43 @@ function renderStudents(students) {
   students.forEach(student => {
     container.appendChild(createStudentCardElem(student));
   });
+
+  attachCardClickHandlers(); // add listeners each time we render
 }
+function attachCardClickHandlers() {
+  let currentlyExpanded = null;
+
+  document.querySelectorAll('.achievement-card').forEach(img => {
+    img.addEventListener('click', (event) => {
+      event.stopPropagation(); // prevent click from immediately collapsing it
+
+      // if clicking the already-expanded card → collapse
+      if (currentlyExpanded === img) {
+        img.classList.remove("expanded");
+        currentlyExpanded = null;
+        return;
+      }
+
+      // collapse previous card if needed
+      if (currentlyExpanded) {
+        currentlyExpanded.classList.remove("expanded");
+      }
+
+      // expand the clicked card
+      img.classList.add("expanded");
+      currentlyExpanded = img;
+    });
+  });
+
+  // collapse card when clicking anywhere outside cards
+  document.addEventListener('click', () => {
+    if (currentlyExpanded) {
+      currentlyExpanded.classList.remove("expanded");
+      currentlyExpanded = null;
+    }
+  });
+}
+
 
 // Main logic
 async function loadAndRender() {
