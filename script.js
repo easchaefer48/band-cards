@@ -100,41 +100,48 @@ function renderStudents(students) {
 
 function attachCardClickHandlers() {
   let currentlyExpanded = null;
+  const overlay = document.getElementById("card-overlay");
+
+  // Ensure overlay exists in DOM
+  if (!overlay) {
+    const ov = document.createElement("div");
+    ov.id = "card-overlay";
+    document.body.appendChild(ov);
+  }
 
   document.querySelectorAll('.achievement-card').forEach(img => {
     img.addEventListener('click', (event) => {
       event.stopPropagation();
 
-      const body = document.body;
-
-      // Clicking the same card -> collapse
+      // Toggle collapse
       if (currentlyExpanded === img) {
         img.classList.remove("expanded");
-        body.classList.remove("dimmed");
+        overlay.style.display = "none";
         currentlyExpanded = null;
         return;
       }
 
-      // Collapse previous first
+      // Collapse previous
       if (currentlyExpanded) {
         currentlyExpanded.classList.remove("expanded");
       }
 
       img.classList.add("expanded");
-      body.classList.add("dimmed");
+      overlay.style.display = "block";
       currentlyExpanded = img;
     });
   });
 
-  // Collapse on outside click
-  document.addEventListener('click', () => {
-    if (currentlyExpanded) {
+  // Clicking overlay collapses
+  document.body.addEventListener('click', (event) => {
+    if (event.target.id === "card-overlay" && currentlyExpanded) {
       currentlyExpanded.classList.remove("expanded");
-      document.body.classList.remove("dimmed");
+      overlay.style.display = "none";
       currentlyExpanded = null;
     }
   });
 }
+
 
 // Main logic
 async function loadAndRender() {
