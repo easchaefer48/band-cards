@@ -131,13 +131,42 @@ async function loadAndRender() {
     const studentsArr = Object.values(studentsMap)
       .sort((a,b) => b.total - a.total);
 
-    renderStudents(studentsArr);
+    let allStudents = studentsArr; // save original full list
+applyFilters(); // render with search/sort
+
 
   } catch (err) {
     console.error("Error loading sheet:", err);
     document.getElementById("student-container").innerHTML = `<p style="color:crimson">Error loading sheet: ${escapeHtml(err.message)}</p>`;
   }
 }
+function applyFilters() {
+  const q = document.getElementById("searchBar")?.value?.toLowerCase() || "";
+  const sort = document.getElementById("sortSelect")?.value || "points";
+
+  let filtered = allStudents.filter(s =>
+    s.name.toLowerCase().includes(q)
+  );
+
+  if (sort === "points") {
+    filtered.sort((a,b) => b.total - a.total);
+  } else if (sort === "name") {
+    filtered.sort((a,b) => a.name.localeCompare(b.name));
+  } else if (sort === "cards") {
+    filtered.sort((a,b) => b.cards.length - a.cards.length);
+  }
+
+  renderStudents(filtered);
+}
+
+// Event listeners for live filtering/sorting
+document.addEventListener("input", e => {
+  if (e.target.id === "searchBar") applyFilters();
+});
+document.addEventListener("change", e => {
+  if (e.target.id === "sortSelect") applyFilters();
+});
+
 
 // Kick off
 loadAndRender();
