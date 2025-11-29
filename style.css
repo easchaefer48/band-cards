@@ -127,6 +127,17 @@ h1 {
   border-color: #cd7f32; /* bronze */
   box-shadow: 0 0 12px #cd7f32;
 }
+.achievement-card {
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    cursor: pointer;
+}
+
+.achievement-card.expanded {
+    transform: scale(2.4);
+    z-index: 999;
+    position: relative;
+    box-shadow: 0 0 20px rgba(255,255,255,0.85);
+}
 
 /* Mobile tweaks */
 @media (max-width: 500px) {
