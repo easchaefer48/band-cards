@@ -67,12 +67,12 @@ function createStudentCardElem(student) {
   const div = document.createElement("div");
   div.className = "student-card";
 
-  const cardsHtml = student.cards.map(c => {
-    const filename = cardNameToFilename(c.card);
-    const src = `images/${filename}`;
-    // Use onerror to show missing placeholder if image not found
-    return `<img src="${src}" alt="${c.card}" title="${c.card}" onerror="this.src='images/missing-card.png'; this.style.opacity=0.6">`;
-  }).join("");
+const cardsHtml = student.cards.map(c => {
+  const filename = cardNameToFilename(c.card);
+  const src = `images/${filename}`;
+  return `<img class="achievement-card" src="${src}" alt="${escapeHtml(c.card)}" title="${escapeHtml(c.card)}" onerror="this.src='images/missing-card.png'; this.style.opacity=0.6">`;
+}).join("");
+
 
   div.innerHTML = `
     <div class="student-name">${escapeHtml(student.name)}</div>
