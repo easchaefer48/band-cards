@@ -114,19 +114,18 @@ h1 {
 
 /* clickable achievement card */
 .achievement-card {
-  transition: transform 0.22s cubic-bezier(.2,.8,.2,1), box-shadow 0.22s;
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
   cursor: pointer;
-  transform-origin: center center;
-  will-change: transform;
+  z-index: 1;
 }
 
-/* expanded state */
 .achievement-card.expanded {
   transform: scale(4);
   z-index: 9999;
   position: relative;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+  box-shadow: 0 10px 35px rgba(0,0,0,0.6);
 }
+
 
 /* Highlight top 3 students like a leaderboard */
 .student-card:nth-child(1) {
