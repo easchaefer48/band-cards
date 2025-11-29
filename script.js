@@ -66,10 +66,6 @@ function cardNameToFilename(cardName) {
 function createStudentCardElem(student) {
   const div = document.createElement("div");
   div.className = "student-card";
-  img.addEventListener("click", () => {
-    img.classList.toggle("expanded");
-});
-
 
   const cardsHtml = student.cards.map(c => {
     const filename = cardNameToFilename(c.card);
