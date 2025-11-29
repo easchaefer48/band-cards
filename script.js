@@ -131,7 +131,7 @@ async function loadAndRender() {
     const studentsArr = Object.values(studentsMap)
       .sort((a,b) => b.total - a.total);
 
-    let allStudents = studentsArr; // save original full list
+    allStudents = studentsArr; // save original full list
 applyFilters(); // render with search/sort
 
 
