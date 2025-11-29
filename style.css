@@ -120,13 +120,13 @@ h1 {
 }
 
 .achievement-card.expanded {
-  transform: scale(6);
   position: fixed; /* center in viewport */
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%) scale(6);
-  z-index: 2000;
-  box-shadow: 0 12px 45px rgba(0,0,0,0.75);
+  z-index: 3000;
+  box-shadow: 0 0 50px rgba(255,255,255,0.7);
+  transition: transform 0.35s ease, box-shadow 0.35 ease;
 }
 
 /* Darken background when a card is expanded */
