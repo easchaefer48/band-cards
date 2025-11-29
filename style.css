@@ -120,7 +120,7 @@ h1 {
 }
 
 .achievement-card.expanded {
-  transform: scale(4);
+  transform: scale(8);
   z-index: 9999;
   position: relative;
   box-shadow: 0 10px 35px rgba(0,0,0,0.6);
