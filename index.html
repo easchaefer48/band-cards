@@ -1,23 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Band Achievements</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header>
     <h1>Band Achievements</h1>
     <div id="controls">
-  <input type="text" id="searchBar" placeholder="Search students…">
-  <select id="sortSelect">
-    <option value="points">Sort: Achievement Points</option>
-    <option value="name">Sort: Name (A–Z)</option>
-    <option value="cards">Sort: Number of Cards</option>
-  </select>
-</div>
-
+      <input type="text" id="searchBar" placeholder="Search students…" />
+      <select id="sortSelect">
+        <option value="points">Sort: Achievement Points</option>
+        <option value="name">Sort: Name (A–Z)</option>
+        <option value="cards">Sort: Number of Cards</option>
+      </select>
+    </div>
   </header>
 
   <main>
@@ -25,6 +24,9 @@
       <!-- Student cards will load here from Google Sheets -->
     </div>
   </main>
+
+  <!-- overlay for spotlight zoom (created in DOM by JS if not present) -->
+  <div id="card-overlay" aria-hidden="true"></div>
 
   <script src="script.js"></script>
 </body>
