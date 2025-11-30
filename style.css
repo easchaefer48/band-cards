@@ -1,182 +1,228 @@
-/*
-  Band Cards — Design Upgrade
-  Feel free to tweak colors, fonts, and sizes!
-*/
+/* style.css - Band Achievements (spotlight mode + glow levels + layout) */
+
+/* Base */
+:root{
+  --bg:#0d1b2a;
+  --header:#1b263b;
+  --muted:#888;
+  --card-bg:#000;
+  --accent:#415a77;
+  --text:#e0e1dd;
+  --small:0.9rem;
+  --star: "★";
+}
+
+* { box-sizing: border-box; }
 
 body {
   font-family: "Trebuchet MS", Arial, sans-serif;
-  background: #0d1b2a; /* deep navy */
+  background: var(--bg);
   margin: 0;
   padding: 0;
-  color: #eee;
+  color: var(--text);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
 }
 
+header {
+  background: var(--header);
+  border-bottom: 3px solid #2b3b53;
+  padding-bottom: 8px;
+}
+
+/* Title */
 h1 {
   text-align: center;
-  padding: 24px 0;
+  padding: 20px 12px 8px;
   margin: 0;
-  background: #1b263b;
-  font-size: 2.4rem;
+  font-size: 2.05rem;
   font-weight: 700;
-  letter-spacing: 1px;
-  color: #e0e1dd;
-  border-bottom: 3px solid #415a77;
+  color: var(--text);
+  letter-spacing: 0.6px;
 }
+
 /* Controls bar */
 #controls {
   display: flex;
   justify-content: center;
-  gap: 14px;
-  margin: 20px auto;
-  max-width: 800px;
+  gap: 12px;
+  margin: 14px auto 22px;
+  max-width: 900px;
+  padding: 0 12px 12px;
 }
 
 #controls input,
 #controls select {
-  padding: 10px 14px;
+  padding: 10px 12px;
   font-size: 1rem;
-  border-radius: 6px;
+  border-radius: 8px;
   border: none;
-  background: #1b263b;
-  color: #eee;
+  background: #122033;
+  color: var(--text);
+  min-width: 220px;
 }
 
-#controls input::placeholder {
-  color: #888;
-}
-
-#controls select {
-  cursor: pointer;
-}
-
+#controls input::placeholder { color: var(--muted); }
 
 /* Grid layout for students */
 #student-container {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 22px;
-  padding: 28px;
+  gap: 18px;
+  padding: 24px;
   max-width: 1400px;
-  margin: auto;
+  margin: 0 auto 56px;
 }
 
 /* Student card styling */
 .student-card {
-  background: #000000; /* changed to black */
-  border: none; /* removed border */
-  text-align: center;
-  padding: 18px;
-  border-radius: 10px;
+  position: relative; /* for absolute name/points */
+  background: var(--card-bg);
+  color: #fff;
+  border-radius: 12px;
+  padding: 16px 16px 14px 16px;
+  overflow: visible;
+  min-height: 110px;
   transition: transform 0.18s ease, box-shadow 0.18s ease;
-  box-shadow: 0 0 10px rgba(255,255,255,0.08);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.35);
 }
 
-.student-card:hover {
-  transform: scale(1.03);
-  box-shadow: 0 0 12px rgba(224,225,221,0.35);
-}
+/* subtle hover */
+.student-card:hover { transform: translateY(-3px); }
 
-/* Student Name */
+/* Name top-left */
 .student-name {
-  font-size: 1.3rem;
-  font-weight: bold;
-  background: #415a77;
-  padding: 6px 10px;
-  border-radius: 2px;
-  display: inline-block;
-  margin-bottom: 12px;
-  color: #e0e1dd;
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fff;
 }
 
-/* Points */
+/* Achievement Points top-right */
 .points {
-  margin-top: 12px;
-  font-size: .9rem;
-  font-weight: 600;
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  text-align: right;
+  font-size: 0.82rem;
+  color: #d9e0e8;
+  opacity: 0.95;
 }
 
-/* Cards row */
+/* big number below the small label */
+.points .num {
+  display: block;
+  font-size: 1.3rem;
+  font-weight: 800;
+  margin-top: 2px;
+  color: #fff;
+}
+
+/* small star next to number */
+.points .num::after {
+  content: " ★";
+  color: #ffd54a;
+  margin-left: 6px;
+  font-size: 1rem;
+  vertical-align: middle;
+}
+
+/* Cards row - leave centered under content */
 .cards-container {
+  margin-top: 48px; /* push images below header area */
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
+  justify-content: flex-start;
+  gap: 10px;
 }
 
 /* Card images */
 .cards-container img {
-  width: 60px;
-  height: 80px;
-  border-radius: 3px;
+  width: 78px;
+  height: 100px;
+  border-radius: 6px;
   object-fit: contain;
-  border: none; /* removed */
+  border: none;
+  background: rgba(255,255,255,0.02);
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
 }
 
-/* clickable achievement card */
+/* clickable achievement card base */
 .achievement-card {
-  transition: transform 0.35s ease, box-shadow 0.35s ease;
   cursor: pointer;
-  z-index: 1;
+  will-change: transform;
+  display: inline-block;
 }
 
-.achievement-card.expanded {
-  position: fixed; /* center in viewport */
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) scale(6);
-  z-index: 3000;
-  box-shadow: 0 0 50px rgba(255,255,255,0.7);
-  transition: transform 0.35s ease, box-shadow 0.35 ease;
+/* ---- Glow rules for student card by achievement points ---- */
+.student-card.glow-bronze {
+  box-shadow: 0 6px 18px rgba(205,127,50,0.12), 0 0 18px rgba(205,127,50,0.06) inset;
+  border: 1px solid rgba(205,127,50,0.12);
 }
 
-/* Darken background when a card is expanded */
-body.dimmed {
-  background-color: rgba(0,0,0,0.6);
-  transition: background-color .2s;
+.student-card.glow-silver {
+  box-shadow: 0 6px 22px rgba(192,192,192,0.18), 0 0 20px rgba(192,192,192,0.04) inset;
+  border: 1px solid rgba(192,192,192,0.1);
 }
 
-/* Highlight top 3 students like a leaderboard */
-.student-card:nth-child(1) {
-  border-color: gold;
-  box-shadow: 0 0 12px gold;
+.student-card.glow-gold {
+  box-shadow: 0 8px 28px rgba(255,215,0,0.18), 0 0 26px rgba(255,215,0,0.04) inset;
+  border: 1px solid rgba(255,215,0,0.08);
 }
 
-.student-card:nth-child(2) {
-  border-color: silver;
-  box-shadow: 0 0 12px silver;
+.student-card.glow-blue {
+  box-shadow: 0 8px 28px rgba(80,140,255,0.18), 0 0 24px rgba(80,140,255,0.04) inset;
+  border: 1px solid rgba(80,140,255,0.08);
 }
 
-.student-card:nth-child(3) {
-  border-color: #cd7f32; /* bronze */
-  box-shadow: 0 0 12px #cd7f32;
-}
-.achievement-card {
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
-    cursor: pointer;
-}
-
-.achievement-card.expanded {
-    transform: scale(2.4);
-    z-index: 999;
-    position: relative;
-    box-shadow: 0 0 20px rgba(255,255,255,0.85);
-}
-
+/* ---- Overlay & zoom (spotlight) ---- */
 #card-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0,0,0,0.75);
+  inset: 0;
+  display: none;           /* set to flex when active */
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.78);
+  z-index: 9998;
   backdrop-filter: blur(3px);
-  z-index: 2000;
-  display: none;
 }
 
-/* Mobile tweaks */
-@media (max-width: 500px) {
-  .student-name { font-size: 1.1rem; }
-  .cards-container img { width: 50px; height: 50px; }
-  h1 { font-size: 1.8rem; }
+/* the zoomed image element inside overlay */
+#card-overlay .zoom-image {
+  max-width: 92vw;
+  max-height: 92vh;
+  border-radius: 8px;
+  object-fit: contain;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.9), 0 0 36px rgba(255,255,255,0.04);
+  transform-origin: center center;
+  transition: transform 0.2s ease, opacity 0.2s ease;
 }
+
+/* subtle glow on the zoom image */
+#card-overlay .zoom-image.glow {
+  box-shadow: 0 30px 100px rgba(255,255,255,0.08), 0 12px 36px rgba(0,0,0,0.8);
+}
+
+/* hide scroll while overlay visible */
+body.overlay-open { overflow: hidden; }
+
+/* Mobile tweaks */
+@media (max-width: 700px) {
+  .cards-container img { width: 84px; height: 106px; }
+  .student-name { font-size: 1rem; left: 10px; top: 8px; }
+  .points { right: 10px; top: 8px; font-size: 0.75rem; }
+  .points .num { font-size: 1.15rem; }
+  #controls { flex-direction: column; gap: 10px; align-items: stretch; }
+  #controls input { width: 100%; }
+  #student-container { padding: 18px; gap: 14px; }
+}
+
+/* smaller screens: overlay image fills more area */
+@media (max-width: 420px) {
+  #card-overlay .zoom-image { max-width: 96vw; max-height: 96vh; border-radius: 6px; }
+}
+
+/* small accessibility tweak for focus */
+.achievement-card:focus { outline: 3px solid rgba(255,255,255,0.06); outline-offset: 3px; }
