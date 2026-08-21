@@ -20,6 +20,103 @@
   </header>
 
   <main>
+    <section id="practice-section">
+
+  <button id="openRecorderBtn" type="button">
+    🎙️ Send in Recording
+  </button>
+
+  <div id="recorder-panel" class="recorder-panel hidden">
+
+    <h2>Send in Recording</h2>
+
+    <p class="recorder-instructions">
+      Record yourself playing, then listen back before submitting.
+    </p>
+
+    <div class="student-selection">
+
+  <label for="recordingStudent">
+    Your Name
+  </label>
+
+  <select id="recordingStudent">
+    <option value="">
+      Select your name…
+    </option>
+  </select>
+
+</div>
+
+    <div id="recording-status">
+      Ready to record
+    </div>
+
+    <div class="recorder-buttons">
+
+      <button id="startRecordingBtn" type="button">
+        ● Start Recording
+      </button>
+
+      <button id="stopRecordingBtn" type="button" disabled>
+        ■ Stop
+      </button>
+
+    </div>
+
+    <div id="recording-timer">
+      0:00
+    </div>
+
+    <div id="recording-preview" class="hidden">
+
+      <p>Listen to your recording:</p>
+
+      <audio
+        id="audioPlayback"
+        controls
+      ></audio>
+
+      <div class="recorder-buttons">
+
+        <button id="discardRecordingBtn" type="button">
+          Record Again
+        </button>
+
+        <button id="submitRecordingBtn" type="button" disabled>
+          Submit Recording
+        </button>
+
+      </div>
+
+      <p class="coming-soon">
+        Submission will be enabled in the next step.
+      </p>
+
+    </div>
+
+  </div>
+
+</section>
+
+<section id="student-feedback-section">
+
+  <div class="feedback-panel">
+
+    <h2>My Recent Recordings</h2>
+
+    <p class="feedback-description">
+      Check the status of recordings you have submitted from this device.
+    </p>
+
+    <div id="student-feedback-list">
+      <p>No recent recordings yet.</p>
+    </div>
+
+  </div>
+
+</section>
+    
     <div id="student-container" class="student-grid">
       <!-- Student cards will load here from Google Sheets -->
     </div>
@@ -28,6 +125,7 @@
   <!-- overlay for spotlight zoom (created in DOM by JS if not present) -->
   <div id="card-overlay" aria-hidden="true"></div>
 
-  <script src="script.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="script.js"></script>
 </body>
 </html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Band Achievements — Teacher Inbox</title>
+
+  <link
+    rel="stylesheet"
+    href="teacher.css"
+  >
+</head>
+
+
+<body>
+
+  <header class="teacher-header">
+
+    <div>
+      <h1>Teacher Inbox</h1>
+      <p>Band Achievements</p>
+    </div>
+
+  </header>
+
+
+  <main class="teacher-main">
+
+    <!-- =========================================
+         TEACHER LOGIN
+         ========================================= -->
+
+    <section
+      id="teacher-login"
+      class="teacher-panel"
+    >
+
+      <h2>Teacher Login</h2>
+
+      <p class="login-description">
+        Sign in to review student recordings.
+      </p>
+
+
+      <form id="teacher-login-form">
+
+        <label for="teacher-email">
+          Email
+        </label>
+
+        <input
+          type="email"
+          id="teacher-email"
+          autocomplete="email"
+          required
+        >
+
+
+        <label for="teacher-password">
+          Password
+        </label>
+
+        <input
+          type="password"
+          id="teacher-password"
+          autocomplete="current-password"
+          required
+        >
+
+
+        <button
+          type="submit"
+          id="teacher-login-button"
+        >
+          Sign In
+        </button>
+
+      </form>
+
+
+      <div
+        id="login-message"
+        class="message"
+      ></div>
+
+    </section>
+
+
+
+    <!-- =========================================
+         TEACHER INBOX
+         Hidden until teacher signs in
+         ========================================= -->
+
+    <section
+      id="teacher-inbox"
+      class="teacher-panel hidden"
+    >
+
+      <div class="inbox-heading">
+
+        <div>
+          <h2>Pending Recordings</h2>
+
+          <p>
+            Student recordings waiting for review.
+          </p>
+        </div>
+
+
+        <button
+          id="teacher-logout-button"
+          type="button"
+        >
+          Sign Out
+        </button>
+
+      </div>
+
+
+      <div id="recording-list">
+
+        <!-- Recordings will appear here later -->
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <!-- Supabase -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+  ></script>
+
+
+  <!-- Teacher inbox code -->
+  <script src="teacher.js"></script>
+
+</body>
+
+</html>

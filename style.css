@@ -226,3 +226,280 @@ body.overlay-open { overflow: hidden; }
 
 /* small accessibility tweak for focus */
 .achievement-card:focus { outline: 3px solid rgba(255,255,255,0.06); outline-offset: 3px; }
+
+/* ==========================================================
+   PRACTICE / AUDIO RECORDER
+   ========================================================== */
+
+#practice-section {
+  max-width: 1400px;
+  margin: 24px auto 0;
+  padding: 0 24px;
+}
+
+#openRecorderBtn {
+  display: block;
+  margin: 0 auto;
+  padding: 12px 22px;
+  border: none;
+  border-radius: 8px;
+  background: #415a77;
+  color: white;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#openRecorderBtn:hover {
+  background: #526f91;
+}
+
+.recorder-panel {
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 24px;
+  background: #000;
+  border-radius: 14px;
+  text-align: center;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+}
+
+.recorder-panel h2 {
+  margin-top: 0;
+  font-size: 1.5rem;
+}
+
+.recorder-instructions {
+  color: #c7d0da;
+  margin-bottom: 22px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+#recording-status {
+  font-size: 1.05rem;
+  font-weight: bold;
+  margin: 18px 0 12px;
+}
+
+#recording-status.recording {
+  color: #ff5b5b;
+}
+
+#recording-timer {
+  font-size: 2rem;
+  font-weight: bold;
+  margin: 16px 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.recorder-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.recorder-buttons button {
+  padding: 11px 18px;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.recorder-buttons button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+#startRecordingBtn {
+  background: #b83232;
+  color: white;
+}
+
+#stopRecordingBtn {
+  background: #555;
+  color: white;
+}
+
+#discardRecordingBtn {
+  background: #39495c;
+  color: white;
+}
+
+#submitRecordingBtn {
+  background: #328a52;
+  color: white;
+}
+
+#recording-preview {
+  margin-top: 24px;
+}
+
+#audioPlayback {
+  width: 100%;
+  margin: 10px 0 20px;
+}
+
+.coming-soon {
+  font-size: 0.8rem;
+  color: #8d9aa7;
+  margin-top: 14px;
+}
+
+
+/* Mobile recorder */
+
+@media (max-width: 600px) {
+
+  #practice-section {
+    padding: 0 14px;
+  }
+
+  .recorder-panel {
+    padding: 20px 14px;
+    border-radius: 10px;
+  }
+
+  #openRecorderBtn {
+    width: 100%;
+    font-size: 1.05rem;
+    padding: 14px;
+  }
+
+  .recorder-buttons {
+    flex-direction: column;
+  }
+
+  .recorder-buttons button {
+    width: 100%;
+    padding: 14px;
+    font-size: 1rem;
+  }
+
+}
+
+.student-selection {
+  margin: 20px 0;
+  text-align: left;
+}
+
+.student-selection label {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #c7d0da;
+}
+
+.student-selection select {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background: #122033;
+  color: white;
+  font-size: 1rem;
+}
+
+/* ==========================================================
+   STUDENT RECORDING FEEDBACK
+   ========================================================== */
+
+#student-feedback-section {
+  max-width: 700px;
+  margin: 24px auto;
+  padding: 0 24px;
+}
+
+.feedback-panel {
+  background: #000;
+  border-radius: 14px;
+  padding: 22px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.35);
+}
+
+.feedback-panel h2 {
+  margin-top: 0;
+}
+
+.feedback-description {
+  color: #aab5c1;
+  margin-bottom: 18px;
+}
+
+.feedback-item {
+  background: #111820;
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.feedback-item:last-child {
+  margin-bottom: 0;
+}
+
+.feedback-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+}
+
+.feedback-name {
+  font-weight: bold;
+}
+
+.feedback-date {
+  font-size: 0.8rem;
+  color: #8f9ba8;
+}
+
+.feedback-status {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 5px 9px;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 0.85rem;
+}
+
+.feedback-status.pending {
+  background: #5c4d24;
+  color: #ffe39b;
+}
+
+.feedback-status.success {
+  background: #234f34;
+  color: #a9f2bf;
+}
+
+.feedback-status.try-again {
+  background: #5b2d2d;
+  color: #ffb6b6;
+}
+
+.feedback-comment {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #273545;
+  color: #d7dee6;
+  line-height: 1.4;
+}
+
+@media (max-width: 600px) {
+
+  #student-feedback-section {
+    padding: 0 14px;
+  }
+
+  .feedback-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+}
