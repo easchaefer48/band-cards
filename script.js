@@ -111,9 +111,17 @@ const STUDENTS_GID = "7781822";
 const ACHIEVEMENTS_GID = "509720984";
 const EARNED_CARDS_GID = "1663037260";
 const CLASSES_GID = "894952475";
+const BAND_LEVELS_GID = "912222653";
+const BAND_LEVEL_REQUIREMENTS_GID = "959194788";
 
 // Global student list
 let allStudents = [];
+
+// Band Level data loaded from Google Sheets
+let allBandLevels = [];
+let allBandLevelRequirements = [];
+let selectedBandLevelSubmission = null;
+let currentBandLevelProgress = [];
 
 // Category display order
 const CATEGORY_ORDER = [
@@ -797,33 +805,20 @@ async function loadAndRender() {
     // ========================================================
 
     const [
-      studentsCSV,
-      classesCSV,
-      achievementsCSV,
-      earnedCSV
-    ] = await Promise.all([
-
-      fetchSheetCSV(
-        SHEET_ID,
-        STUDENTS_GID
-      ),
-
-      fetchSheetCSV(
-        SHEET_ID,
-        CLASSES_GID
-      ),
-
-      fetchSheetCSV(
-        SHEET_ID,
-        ACHIEVEMENTS_GID
-      ),
-
-      fetchSheetCSV(
-        SHEET_ID,
-        EARNED_CARDS_GID
-      )
-
-    ]);
+  studentsCSV,
+  classesCSV,
+  achievementsCSV,
+  earnedCSV,
+  bandLevelsCSV,
+  bandLevelRequirementsCSV
+] = await Promise.all([
+  fetchSheetCSV(SHEET_ID, STUDENTS_GID),
+  fetchSheetCSV(SHEET_ID, CLASSES_GID),
+  fetchSheetCSV(SHEET_ID, ACHIEVEMENTS_GID),
+  fetchSheetCSV(SHEET_ID, EARNED_CARDS_GID),
+  fetchSheetCSV(SHEET_ID, BAND_LEVELS_GID),
+  fetchSheetCSV(SHEET_ID, BAND_LEVEL_REQUIREMENTS_GID)
+]);
 
 
     // ========================================================
@@ -849,6 +844,41 @@ async function loadAndRender() {
       rowsToObjects(
         parseCSV(earnedCSV)
       );
+
+      const bandLevelsData =
+  rowsToObjects(
+    parseCSV(bandLevelsCSV)
+  );
+
+const bandLevelRequirementsData =
+  rowsToObjects(
+    parseCSV(bandLevelRequirementsCSV)
+  );
+
+  allBandLevels =
+  bandLevelsData
+    .filter(row =>
+      String(row["active"]).toLowerCase() !== "false"
+    )
+    .map(row => ({
+      id: row["level id"],
+      number: Number(row["level number"]),
+      name: row["level name"],
+      image: row["image file"] || ""
+    }))
+    .sort((a, b) => a.number - b.number);
+
+
+allBandLevelRequirements =
+  bandLevelRequirementsData
+    .map(row => ({
+      id: row["requirement id"],
+      levelId: row["level id"],
+      name: row["requirement name"],
+      description: row["description"] || "",
+      order: Number(row["order"]) || 0
+    }))
+    .sort((a, b) => a.order - b.order);
 
 
     console.log(
@@ -1176,6 +1206,7 @@ async function loadAndRender() {
       );
 
       populateRecordingStudentSelect();
+      populateBandLevelStudentSelect();
 
 
     console.log(
@@ -1825,6 +1856,20 @@ if (!currentStudentAuthUser) {
               class_id:
                 classId,
 
+                submission_type:
+                  selectedBandLevelSubmission
+                    ? "Band Level"
+                    : null,
+
+                level_id:
+                  selectedBandLevelSubmission?.levelId || null,
+
+                requirement_id:
+                  selectedBandLevelSubmission?.requirementId || null,
+
+                requirement_name:
+                  selectedBandLevelSubmission?.requirementName || null,
+
               storage_path:
                 uploadData.path,
 
@@ -2152,6 +2197,677 @@ async function loadStudentFeedback() {
 
     list.innerHTML =
       "<p>Could not load recording history.</p>";
+
+  }
+
+}
+
+// ============================================================
+// BAND LEVEL DASHBOARD - FIRST VERSION
+// ============================================================
+
+function populateBandLevelStudentSelect() {
+
+  const select =
+    document.getElementById(
+      "bandLevelStudentSelect"
+    );
+
+  if (!select) return;
+
+
+  select.innerHTML = `
+    <option value="">
+      Select a 5th grade student…
+    </option>
+  `;
+
+
+  // C004 = 5th Grade Band
+  const fifthGradeStudents =
+    allStudents
+      .filter(
+        student =>
+          student.classId === "C004"
+      )
+      .sort(
+        (a, b) =>
+          a.name.localeCompare(b.name)
+      );
+
+
+  fifthGradeStudents.forEach(
+    student => {
+
+      const option =
+        document.createElement(
+          "option"
+        );
+
+      option.value =
+        student.id;
+
+      option.textContent =
+        student.name;
+
+      select.appendChild(
+        option
+      );
+
+    }
+  );
+
+}
+
+
+// ------------------------------------------------------------
+// Get only levels that currently have requirements
+// ------------------------------------------------------------
+
+function getConfiguredBandLevels() {
+
+  const configuredLevelIds =
+    new Set(
+      allBandLevelRequirements.map(
+        requirement =>
+          requirement.levelId
+      )
+    );
+
+
+  return allBandLevels.filter(
+    level =>
+      configuredLevelIds.has(
+        level.id
+      )
+  );
+
+}
+
+
+// ------------------------------------------------------------
+// Render Band Level journey
+// FIRST VERSION:
+// No progress loaded yet.
+// Level 1 is current.
+// Levels after Level 1 are locked.
+// ------------------------------------------------------------
+
+async function renderBandLevelDashboard(
+  studentId
+) {
+
+  const profile =
+    document.getElementById(
+      "bandLevelStudentProfile"
+    );
+
+  const nameElement =
+    document.getElementById(
+      "bandLevelStudentName"
+    );
+
+  const journey =
+    document.getElementById(
+      "bandLevelJourney"
+    );
+
+  const currentLevelNumber =
+    document.getElementById(
+      "currentBandLevelNumber"
+    );
+
+  const currentLevelProgress =
+    document.getElementById(
+      "currentBandLevelProgress"
+    );
+
+
+  if (
+    !profile ||
+    !nameElement ||
+    !journey
+  ) {
+    return;
+  }
+
+
+  const student =
+    allStudents.find(
+      item =>
+        item.id === studentId
+    );
+
+
+  if (!student) {
+
+    profile.classList.add(
+      "hidden"
+    );
+
+    return;
+
+  }
+
+
+  profile.classList.remove(
+    "hidden"
+  );
+
+
+  nameElement.textContent =
+    student.name;
+
+
+  const levels =
+    getConfiguredBandLevels();
+
+
+  if (!levels.length) {
+
+    journey.innerHTML =
+      "<p>No Band Levels configured.</p>";
+
+    return;
+
+  }
+
+
+  // --------------------------------------------------------
+  // Load this student's completed requirements
+  // --------------------------------------------------------
+
+  currentBandLevelProgress =
+    await loadBandLevelProgressForStudent(
+      studentId
+    );
+
+
+  const completedRequirementIds =
+    new Set(
+      currentBandLevelProgress.map(
+        progress =>
+          progress.requirement_id
+      )
+    );
+
+
+  // --------------------------------------------------------
+  // Determine each level's status
+  // --------------------------------------------------------
+
+  const levelStates =
+    levels.map(
+      level => {
+
+        const requirements =
+          allBandLevelRequirements
+            .filter(
+              requirement =>
+                requirement.levelId ===
+                level.id
+            )
+            .sort(
+              (a, b) =>
+                a.order - b.order
+            );
+
+
+        const completedCount =
+          requirements.filter(
+            requirement =>
+              completedRequirementIds.has(
+                requirement.id
+              )
+          ).length;
+
+
+        const isCompleted =
+          requirements.length > 0 &&
+          completedCount ===
+          requirements.length;
+
+
+        return {
+          level,
+          requirements,
+          completedCount,
+          isCompleted
+        };
+
+      }
+    );
+
+
+  // --------------------------------------------------------
+  // Find the first incomplete level.
+  // That becomes the current unlocked level.
+  // --------------------------------------------------------
+
+  let currentLevelIndex =
+    levelStates.findIndex(
+      state =>
+        !state.isCompleted
+    );
+
+
+  // If every configured level is complete
+  if (currentLevelIndex === -1) {
+
+    currentLevelIndex =
+      levelStates.length - 1;
+
+  }
+
+
+  const activeState =
+    levelStates[
+      currentLevelIndex
+    ];
+
+
+  currentLevelNumber.textContent =
+    activeState.isCompleted
+      ? `Level ${activeState.level.number} Complete`
+      : `Level ${activeState.level.number}`;
+
+
+  currentLevelProgress.textContent =
+    `${activeState.completedCount} / ${activeState.requirements.length} requirements complete`;
+
+
+  journey.innerHTML = "";
+
+
+  // --------------------------------------------------------
+  // Render each level
+  // --------------------------------------------------------
+
+  levelStates.forEach(
+    (state, index) => {
+
+      const {
+        level,
+        requirements,
+        completedCount,
+        isCompleted
+      } = state;
+
+
+      const isCurrent =
+        index === currentLevelIndex &&
+        !isCompleted;
+
+
+      const isLocked =
+        index > currentLevelIndex;
+
+
+      const levelElement =
+        document.createElement(
+          "div"
+        );
+
+
+      levelElement.className =
+        "band-level-item";
+
+
+      if (isCompleted) {
+
+        levelElement.classList.add(
+          "completed"
+        );
+
+      }
+
+      else if (isCurrent) {
+
+        levelElement.classList.add(
+          "current"
+        );
+
+      }
+
+      else if (isLocked) {
+
+        levelElement.classList.add(
+          "locked"
+        );
+
+      }
+
+
+      let statusText = "";
+      let statusClass = "";
+
+
+      if (isCompleted) {
+
+        statusText =
+          "Completed";
+
+        statusClass =
+          "completed";
+
+      }
+
+      else if (isCurrent) {
+
+        statusText =
+          "Current";
+
+        statusClass =
+          "current";
+
+      }
+
+      else {
+
+        statusText =
+          "Locked";
+
+        statusClass =
+          "locked";
+
+      }
+
+
+      const requirementsHtml =
+        requirements
+          .map(
+            requirement => {
+
+              const requirementComplete =
+                completedRequirementIds.has(
+                  requirement.id
+                );
+
+
+              const icon =
+                requirementComplete
+                  ? "✓"
+                  : "○";
+
+
+              const recordButton =
+                !isLocked &&
+                !requirementComplete
+                  ? `
+                    <button
+                      type="button"
+                      class="band-level-record-button"
+                      data-student-id="${escapeHtml(student.id)}"
+                      data-student-name="${escapeHtml(student.name)}"
+                      data-class-id="${escapeHtml(student.classId || "")}"
+                      data-level-id="${escapeHtml(level.id)}"
+                      data-level-name="${escapeHtml(level.name)}"
+                      data-requirement-id="${escapeHtml(requirement.id)}"
+                      data-requirement-name="${escapeHtml(requirement.name)}"
+                    >
+                      🎙 Submit Recording
+                    </button>
+                  `
+                  : "";
+
+
+              return `
+
+                <div class="band-level-requirement">
+
+                  <span class="requirement-icon">
+                    ${icon}
+                  </span>
+
+                  <span class="requirement-name">
+                    ${escapeHtml(
+                      requirement.name
+                    )}
+                  </span>
+
+                  ${recordButton}
+
+                </div>
+
+              `;
+
+            }
+          )
+          .join("");
+
+
+      const levelLockIcon =
+        isLocked
+          ? "🔒 "
+          : "";
+
+
+      levelElement.innerHTML = `
+
+        <div class="band-level-item-header">
+
+          <div class="band-level-item-title">
+            ${levelLockIcon}${escapeHtml(
+              level.name
+            )}
+          </div>
+
+          <div
+            class="band-level-status ${statusClass}"
+          >
+            ${statusText}
+          </div>
+
+        </div>
+
+
+        <div class="band-level-requirements">
+
+          ${requirementsHtml}
+
+        </div>
+
+      `;
+
+
+      journey.appendChild(
+        levelElement
+      );
+
+    }
+  );
+
+}
+
+
+  
+
+// ------------------------------------------------------------
+// Student selector change
+// ------------------------------------------------------------
+
+document.addEventListener(
+  "change",
+  event => {
+
+    if (
+      event.target.id !==
+      "bandLevelStudentSelect"
+    ) {
+      return;
+    }
+
+
+    const studentId =
+      event.target.value;
+
+
+    if (!studentId) {
+
+      document
+        .getElementById(
+          "bandLevelStudentProfile"
+        )
+        ?.classList
+        .add("hidden");
+
+      return;
+
+    }
+
+
+    renderBandLevelDashboard(
+      studentId
+    );
+
+  }
+);
+
+// ============================================================
+// BAND LEVEL RECORDING BUTTONS
+// ============================================================
+
+document.addEventListener(
+  "click",
+  event => {
+
+    const button =
+      event.target.closest(
+        ".band-level-record-button"
+      );
+
+    if (!button) return;
+
+
+    selectedBandLevelSubmission = {
+
+      studentId:
+        button.dataset.studentId,
+
+      studentName:
+        button.dataset.studentName,
+
+      classId:
+        button.dataset.classId,
+
+      levelId:
+        button.dataset.levelId,
+
+      levelName:
+        button.dataset.levelName,
+
+      requirementId:
+        button.dataset.requirementId,
+
+      requirementName:
+        button.dataset.requirementName
+
+    };
+
+
+    // Open the recorder panel
+    const recorderPanel =
+      document.getElementById(
+        "recorder-panel"
+      );
+
+    recorderPanel?.classList.remove(
+      "hidden"
+    );
+
+
+    // Automatically select the correct student
+    const studentSelect =
+      document.getElementById(
+        "recordingStudent"
+      );
+
+    if (studentSelect) {
+
+      studentSelect.value =
+        selectedBandLevelSubmission.studentId;
+
+    }
+
+
+    // Update recorder instructions
+    const recordingStatus =
+      document.getElementById(
+        "recording-status"
+      );
+
+    if (recordingStatus) {
+
+      recordingStatus.textContent =
+        `${selectedBandLevelSubmission.levelName}: ${selectedBandLevelSubmission.requirementName}`;
+
+    }
+
+
+    // Scroll to recorder
+    document
+      .getElementById(
+        "practice-section"
+      )
+      ?.scrollIntoView({
+        behavior: "smooth"
+      });
+
+  }
+
+  
+);
+
+// ============================================================
+// LOAD BAND LEVEL PROGRESS FOR SELECTED STUDENT
+// ============================================================
+
+async function loadBandLevelProgressForStudent(studentId) {
+
+  const user =
+    studentAuthUser ||
+    await ensureAnonymousStudentSession();
+
+  if (!user) {
+    return [];
+  }
+
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .from("band_level_progress")
+        .select(
+          "student_id, requirement_id, completed_at"
+        )
+        .eq(
+          "student_id",
+          studentId
+        )
+        .eq(
+          "submitter_uid",
+          user.id
+        );
+
+    if (error) {
+      throw error;
+    }
+
+    return data || [];
+
+  }
+
+  catch (error) {
+
+    console.error(
+      "Could not load Band Level progress:",
+      error
+    );
+
+    return [];
 
   }
 

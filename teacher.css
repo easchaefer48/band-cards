@@ -420,3 +420,33 @@ body {
   }
 
 }
+
+/* Band Level submission details */
+
+.band-level-submission-info {
+  margin: 12px 0 6px;
+  padding: 12px;
+  background: #172332;
+  border-radius: 8px;
+}
+
+.submission-type-label {
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #7dbaff;
+  margin-bottom: 5px;
+}
+
+.submission-requirement {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #fff;
+}
+
+.submission-level {
+  margin-top: 4px;
+  font-size: 0.85rem;
+  color: #9aa7b5;
+}

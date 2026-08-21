@@ -338,6 +338,32 @@ async function loadPendingRecordings() {
               )}
             </p>
 
+                        ${
+              submission.submission_type === "Band Level"
+                ? `
+                  <div class="band-level-submission-info">
+
+                    <div class="submission-type-label">
+                      Band Level Submission
+                    </div>
+
+                    <div class="submission-requirement">
+                      ${escapeTeacherHtml(
+                        submission.requirement_name || ""
+                      )}
+                    </div>
+
+                    <div class="submission-level">
+                      ${escapeTeacherHtml(
+                        submission.level_id || ""
+                      )}
+                    </div>
+
+                  </div>
+                `
+                : ""
+            }
+
             <p style="font-size:0.75rem; color:#7f8b98;">
               Student ID:
               ${escapeTeacherHtml(
@@ -454,6 +480,107 @@ async function reviewSubmission(
 
   try {
 
+    // --------------------------------------------------------
+    // If this is a successful Band Level submission,
+    // mark the requirement complete first.
+    // --------------------------------------------------------
+
+    if (newStatus === "Success") {
+
+      const {
+        data: submission,
+        error: submissionReadError
+      } =
+        await supabaseClient
+          .from("recording_submissions")
+          .select(
+            "id, student_id, submission_type, requirement_id, submitter_uid"
+          )
+          .eq("id", submissionId)
+          .single();
+
+
+      if (submissionReadError) {
+        throw submissionReadError;
+      }
+
+
+      if (
+        submission.submission_type === "Band Level" &&
+        submission.requirement_id
+      ) {
+
+        const {
+          data: userData,
+          error: userError
+        } =
+          await supabaseClient.auth
+            .getUser();
+
+
+        if (userError) {
+          throw userError;
+        }
+
+
+        const teacherUid =
+          userData.user?.id || null;
+
+
+        const {
+          error: progressError
+        } =
+          await supabaseClient
+            .from("band_level_progress")
+            .insert([
+              {
+                student_id:
+                  submission.student_id,
+
+                submitter_uid:
+                  submission.submitter_uid,  
+
+                requirement_id:
+                  submission.requirement_id,
+
+                submission_id:
+                  submission.id,
+
+                teacher_comment:
+                  teacherComment,
+
+                completed_by:
+                  teacherUid
+              }
+            ]);
+
+
+        // 23505 means the student already completed
+        // this requirement. That's okay — don't fail
+        // the review just because it was already recorded.
+
+        if (
+          progressError &&
+          progressError.code !== "23505"
+        ) {
+
+          console.error(
+            "Band Level progress error:",
+            progressError
+          );
+
+          throw progressError;
+        }
+
+      }
+
+    }
+
+
+    // --------------------------------------------------------
+    // Update the recording review itself
+    // --------------------------------------------------------
+
     const {
       error
     } =
@@ -482,7 +609,6 @@ async function reviewSubmission(
       );
 
 
-    // If nothing is left, show empty message
     if (
       recordingList &&
       recordingList.children.length === 0
