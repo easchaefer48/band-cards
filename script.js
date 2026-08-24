@@ -24,89 +24,7 @@ let studentAuthUser = null;
 let currentStudentAccount = null;
 let currentLoggedInStudent = null;
 
-async function ensureAnonymousStudentSession() {
 
-  try {
-
-    const {
-      data: sessionData,
-      error: sessionError
-    } =
-      await supabaseClient.auth
-        .getSession();
-
-
-    if (sessionError) {
-      throw sessionError;
-    }
-
-
-    // Reuse existing session if one already exists
-    if (sessionData.session?.user) {
-
-      studentAuthUser =
-        sessionData.session.user;
-
-      console.log(
-        "Existing student session:",
-        studentAuthUser.id
-      );
-
-      return studentAuthUser;
-
-    }
-
-
-    // Otherwise create an anonymous Supabase user
-    const {
-      data,
-      error
-    } =
-      await supabaseClient.auth
-        .signInAnonymously();
-
-
-    if (error) {
-      throw error;
-    }
-
-
-    studentAuthUser =
-      data.user;
-
-
-    console.log(
-      "Anonymous student session created:",
-      studentAuthUser.id
-    );
-
-
-    return studentAuthUser;
-
-  }
-
-  catch (error) {
-
-  console.error(
-    "Could not create student session:",
-    error
-  );
-
-  console.error(
-    "Auth error code:",
-    error?.code
-  );
-
-  console.error(
-    "Auth error message:",
-    error?.message
-  );
-
-  return null;
-
-}
-
-}  
 
 // Google Sheet GIDs
 const STUDENTS_GID = "7781822";
@@ -1730,14 +1648,6 @@ if (!currentStudentAuthUser) {
 }
 
 
-if (!currentStudentAuthUser) {
-
-  recordingStatus.textContent =
-    "Could not verify this device. Please refresh and try again.";
-
-  return;
-}
-
 
     // --------------------------------------------------------
     // 2. Get selected student
@@ -2040,10 +1950,8 @@ async function loadStudentFeedback() {
   if (!list) return;
 
 
-  // Make sure there is an authenticated anonymous student
   const user =
-    studentAuthUser ||
-    await ensureAnonymousStudentSession();
+    studentAuthUser;
 
 
   if (!user) {
@@ -2872,8 +2780,7 @@ stopRecordingBtn?.classList.add(
 async function loadBandLevelProgressForStudent(studentId) {
 
   const user =
-    studentAuthUser ||
-    await ensureAnonymousStudentSession();
+    studentAuthUser;
 
   if (!user) {
     return [];
