@@ -20,24 +20,88 @@
   </header>
 
   <main>
-    <section id="band-level-dashboard-section">
 
-  <div class="band-level-dashboard">
+  <section id="student-login-section">
 
-    <div class="band-level-preview-controls">
+  <div class="student-login-panel">
 
-      <label for="bandLevelStudentSelect">
-        Band Level Student
+    <h2>Student Login</h2>
+
+    <form id="student-login-form">
+
+      <label for="student-username">
+        Username
       </label>
 
-      <select id="bandLevelStudentSelect">
-        <option value="">
-          Select a 5th grade student…
-        </option>
-      </select>
+      <input
+        type="text"
+        id="student-username"
+        autocomplete="username"
+        required
+      >
 
+
+      <label for="student-password">
+        Password
+      </label>
+
+      <input
+        type="password"
+        id="student-password"
+        autocomplete="current-password"
+        required
+      >
+
+
+      <button
+        type="submit"
+        id="student-login-button"
+      >
+        Sign In
+      </button>
+
+    </form>
+
+
+    <div
+      id="student-login-message"
+      class="message"
+    ></div>
+
+  </div>
+
+</section> 
+
+<section
+  id="student-account-section"
+  class="hidden"
+>
+
+  <div class="student-account-bar">
+
+    <div>
+      Signed in as
+      <strong id="logged-in-student-name">
+        Student
+      </strong>
     </div>
 
+    <button
+      id="student-logout-button"
+      type="button"
+    >
+      Sign Out
+    </button>
+
+  </div>
+
+</section>
+    <section
+  id="band-level-dashboard-section"
+  class="hidden"
+>
+
+  <div class="band-level-dashboard">
 
     <div
       id="bandLevelStudentProfile"
@@ -129,19 +193,7 @@
       Select a song to begin.
     </p>
 
-    <div class="student-selection">
-
-  <label for="recordingStudent">
-    Your Name
-  </label>
-
-  <select id="recordingStudent">
-    <option value="">
-      Select your name…
-    </option>
-  </select>
-
-</div>
+    
 
     <div id="recording-status">
       Ready to record

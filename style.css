@@ -803,3 +803,96 @@ body.recorder-open {
 .recorder-panel #recording-preview p {
   color: #263544;
 }
+
+/* ==========================================================
+   STUDENT LOGIN
+   ========================================================== */
+
+#student-login-section {
+  max-width: 500px;
+  margin: 30px auto;
+  padding: 0 20px;
+}
+
+.student-login-panel {
+  background: #000;
+  border-radius: 14px;
+  padding: 24px;
+}
+
+.student-login-panel h2 {
+  margin-top: 0;
+}
+
+#student-login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#student-login-form label {
+  margin-top: 8px;
+  font-weight: bold;
+  color: #c7d0da;
+}
+
+#student-login-form input {
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background: #122033;
+  color: white;
+  font-size: 1rem;
+}
+
+#student-login-button {
+  margin-top: 14px;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background: #415a77;
+  color: white;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#student-login-message {
+  margin-top: 14px;
+  color: #ff9a9a;
+}
+
+/* ==========================================================
+   LOGGED-IN STUDENT ACCOUNT BAR
+   ========================================================== */
+
+#student-account-section {
+  max-width: 900px;
+  margin: 20px auto;
+  padding: 0 20px;
+}
+
+.student-account-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+
+  background: #1b263b;
+  padding: 14px 18px;
+  border-radius: 10px;
+}
+
+#student-logout-button {
+  border: none;
+  border-radius: 7px;
+  padding: 9px 14px;
+  background: #415a77;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#student-logout-button:hover {
+  background: #526f91;
+}

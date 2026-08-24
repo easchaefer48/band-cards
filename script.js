@@ -21,6 +21,8 @@ const supabaseClient =
 // ============================================================
 
 let studentAuthUser = null;
+let currentStudentAccount = null;
+let currentLoggedInStudent = null;
 
 async function ensureAnonymousStudentSession() {
 
@@ -1221,6 +1223,8 @@ allBandLevelRequirements =
 
     applyFilters();
 
+    restoreStudentLogin();
+
   }
 
   catch (err) {
@@ -1713,8 +1717,17 @@ submitRecordingBtn?.addEventListener(
 // an authenticated student session before submitting
 
 const currentStudentAuthUser =
-  studentAuthUser ||
-  await ensureAnonymousStudentSession();
+  studentAuthUser;
+
+
+if (!currentStudentAuthUser) {
+
+  recordingStatus.textContent =
+    "Please sign in before submitting.";
+
+  return;
+
+}
 
 
 if (!currentStudentAuthUser) {
@@ -1730,38 +1743,30 @@ if (!currentStudentAuthUser) {
     // 2. Get selected student
     // --------------------------------------------------------
 
-    const studentSelect =
-      document.getElementById(
-        "recordingStudent"
-      );
+    if (
+  !currentLoggedInStudent ||
+  !studentAuthUser
+) {
+
+  recordingStatus.textContent =
+    "Please sign in before submitting.";
+
+  return;
+
+}
 
 
-    const selectedOption =
-      studentSelect?.selectedOptions[0];
+const studentId =
+  currentLoggedInStudent.id;
 
+const studentName =
+  currentLoggedInStudent.name;
 
-    const studentId =
-      selectedOption?.value || "";
-
-
-    const studentName =
-      selectedOption?.textContent?.trim() || "";
-
-
-    const classId =
-      selectedOption?.dataset?.classId || "";
-
+const classId =
+  currentLoggedInStudent.classId;
 
     // Student must choose their name
 
-    if (!studentId) {
-
-      alert(
-        "Please select your name before submitting your recording."
-      );
-
-      return;
-    }
 
 
     // --------------------------------------------------------
@@ -1893,7 +1898,7 @@ if (!currentStudentAuthUser) {
                 "Pending",
 
               submitter_uid:
-                currentStudentAuthUser.id
+                studentAuthUser.id
             }
           ]);
 
@@ -2020,10 +2025,6 @@ function populateRecordingStudentSelect() {
 
 }
 
-ensureAnonymousStudentSession()
-  .then(() => {
-    loadStudentFeedback();
-  });
 
   // ============================================================
 // STUDENT FEEDBACK / RECENT RECORDINGS
@@ -2776,17 +2777,27 @@ document.addEventListener(
 
     if (!button) return;
 
+    if (!currentLoggedInStudent) {
+
+  alert(
+    "Please sign in before submitting a recording."
+  );
+
+  return;
+
+}
+
 
     selectedBandLevelSubmission = {
 
       studentId:
-        button.dataset.studentId,
+        currentLoggedInStudent.id,
 
       studentName:
-        button.dataset.studentName,
+        currentLoggedInStudent.name,
 
       classId:
-        button.dataset.classId,
+        currentLoggedInStudent.classId,
 
       levelId:
         button.dataset.levelId,
@@ -2802,19 +2813,6 @@ document.addEventListener(
 
     };
 
-
-    // Automatically select the correct student
-    const studentSelect =
-      document.getElementById(
-        "recordingStudent"
-      );
-
-    if (studentSelect) {
-
-      studentSelect.value =
-        selectedBandLevelSubmission.studentId;
-
-    }
 
 
 // Show exactly what the student is submitting
@@ -2973,3 +2971,421 @@ document
 
     }
   );
+
+  // ============================================================
+// STUDENT ACCOUNT LOGIN
+// ============================================================
+
+async function loginStudentAccount(
+  username,
+  password
+) {
+
+  const normalizedUsername =
+    username
+      .trim()
+      .toLowerCase();
+
+
+  const internalEmail =
+    `${normalizedUsername}@bandcards.local`;
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.auth
+      .signInWithPassword({
+        email: internalEmail,
+        password: password
+      });
+
+
+  if (error) {
+    throw error;
+  }
+
+
+  const authUser =
+    data.user;
+
+
+  const {
+    data: account,
+    error: accountError
+  } =
+    await supabaseClient
+      .from("student_accounts")
+      .select(
+        "student_id, username, active"
+      )
+      .eq(
+        "auth_user_id",
+        authUser.id
+      )
+      .single();
+
+
+  if (accountError) {
+    throw accountError;
+  }
+
+
+  if (!account.active) {
+    throw new Error(
+      "This student account is inactive."
+    );
+  }
+
+
+  return {
+    authUser,
+    account
+  };
+
+}
+
+document
+  .getElementById(
+    "student-login-form"
+  )
+  ?.addEventListener(
+    "submit",
+    async event => {
+
+      event.preventDefault();
+
+
+      const username =
+        document
+          .getElementById(
+            "student-username"
+          )
+          .value;
+
+
+      const password =
+        document
+          .getElementById(
+            "student-password"
+          )
+          .value;
+
+
+      const message =
+        document.getElementById(
+          "student-login-message"
+        );
+
+
+      message.textContent =
+        "Signing in...";
+
+
+      try {
+
+      const {
+        authUser,
+        account
+      } =
+        await loginStudentAccount(
+          username,
+          password
+        );
+
+
+        message.textContent = "";
+
+
+        console.log(
+          "Student account mapping:",
+          account
+        );
+
+
+        const loggedInStudent =
+          allStudents.find(
+            student =>
+              student.id ===
+              account.student_id
+          );
+
+
+        if (!loggedInStudent) {
+
+          throw new Error(
+            "Student profile could not be found."
+          );
+
+        }
+
+        currentStudentAccount =
+          account;
+
+        currentLoggedInStudent =
+          loggedInStudent;
+
+        studentAuthUser =
+          authUser;
+
+        showLoggedInStudentView(
+          loggedInStudent
+        );
+
+
+        renderBandLevelDashboard(
+          loggedInStudent.id
+        );
+
+              }
+
+
+      catch (error) {
+
+        console.error(
+          "Student login failed:",
+          error
+        );
+
+
+        message.textContent =
+          "Could not sign in. Check your username and password.";
+
+      }
+
+    }
+  );
+
+  // ============================================================
+// STUDENT AUTH VIEW STATE
+// ============================================================
+
+function showLoggedOutStudentView() {
+
+  document
+    .getElementById(
+      "student-login-section"
+    )
+    ?.classList
+    .remove("hidden");
+
+
+  document
+    .getElementById(
+      "student-account-section"
+    )
+    ?.classList
+    .add("hidden");
+
+
+  document
+    .getElementById(
+      "band-level-dashboard-section"
+    )
+    ?.classList
+    .add("hidden");
+
+}
+
+
+function showLoggedInStudentView(
+  student
+) {
+
+  document
+    .getElementById(
+      "student-login-section"
+    )
+    ?.classList
+    .add("hidden");
+
+
+  document
+    .getElementById(
+      "student-account-section"
+    )
+    ?.classList
+    .remove("hidden");
+
+
+  document
+    .getElementById(
+      "band-level-dashboard-section"
+    )
+    ?.classList
+    .remove("hidden");
+
+
+  const nameElement =
+    document.getElementById(
+      "logged-in-student-name"
+    );
+
+
+  if (nameElement) {
+
+    nameElement.textContent =
+      student.name;
+
+  }
+
+}
+
+document
+  .getElementById(
+    "student-logout-button"
+  )
+  ?.addEventListener(
+    "click",
+    async () => {
+
+      await supabaseClient.auth
+        .signOut();
+
+      currentStudentAccount =
+        null;
+
+      currentLoggedInStudent =
+        null;
+
+      studentAuthUser =
+        null;  
+
+
+      selectedBandLevelSubmission =
+        null;
+
+
+      showLoggedOutStudentView();
+
+    }
+  );
+
+  // ============================================================
+// RESTORE EXISTING STUDENT LOGIN
+// ============================================================
+
+async function restoreStudentLogin() {
+
+  try {
+
+    const {
+      data: sessionData,
+      error: sessionError
+    } =
+      await supabaseClient.auth
+        .getSession();
+
+
+    if (sessionError) {
+      throw sessionError;
+    }
+
+
+    const session =
+      sessionData.session;
+
+
+    // No student is signed in.
+    // Keep the normal public website visible.
+    if (!session?.user) {
+
+      showLoggedOutStudentView();
+
+      return;
+    }
+
+
+    const authUser =
+      session.user;
+
+
+    // Look for a student account attached to this Auth user.
+    const {
+      data: account,
+      error: accountError
+    } =
+      await supabaseClient
+        .from("student_accounts")
+        .select(
+          "student_id, username, active"
+        )
+        .eq(
+          "auth_user_id",
+          authUser.id
+        )
+        .maybeSingle();
+
+
+    // A valid Supabase session may exist that is NOT a student
+    // account. Don't treat that as a student login.
+    if (
+      accountError ||
+      !account ||
+      !account.active
+    ) {
+
+      showLoggedOutStudentView();
+
+      return;
+    }
+
+
+    const student =
+      allStudents.find(
+        item =>
+          item.id ===
+          account.student_id
+      );
+
+
+    if (!student) {
+
+      console.error(
+        "Logged-in student was not found in Students data."
+      );
+
+      showLoggedOutStudentView();
+
+      return;
+    }
+
+
+    currentStudentAccount =
+      account;
+
+    currentLoggedInStudent =
+      student;
+
+    studentAuthUser =
+      authUser;
+
+
+    showLoggedInStudentView(
+      student
+    );
+
+
+    renderBandLevelDashboard(
+      student.id
+    );
+
+
+    loadStudentFeedback();
+
+  }
+
+  catch (error) {
+
+    console.error(
+      "Could not restore student login:",
+      error
+    );
+
+
+    showLoggedOutStudentView();
+
+  }
+
+}
