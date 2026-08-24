@@ -1549,6 +1549,14 @@ startRecordingBtn?.addEventListener(
       stopRecordingBtn.disabled =
         false;
 
+      startRecordingBtn.classList.add(
+        "hidden"
+      );
+
+      stopRecordingBtn.classList.remove(
+        "hidden"
+      );
+
 
       recordingPreview.classList.add(
         "hidden"
@@ -1613,6 +1621,14 @@ stopRecordingBtn?.addEventListener(
 
     stopRecordingBtn.disabled =
       true;
+
+    startRecordingBtn.classList.add(
+      "hidden"
+    );
+
+    stopRecordingBtn.classList.add(
+      "hidden"
+);
 
   }
 );
@@ -1905,6 +1921,12 @@ if (!currentStudentAuthUser) {
 
       recordingStatus.textContent =
         "Recording submitted!";
+
+      setTimeout(() => {
+
+        closeRecorderModal();
+
+        }, 1200);
 
 
       submitRecordingBtn.textContent =
@@ -2461,19 +2483,35 @@ async function renderBandLevelDashboard(
 
 
   const activeState =
-    levelStates[
-      currentLevelIndex
-    ];
+  levelStates[
+    currentLevelIndex
+  ];
 
 
-  currentLevelNumber.textContent =
-    activeState.isCompleted
-      ? `Level ${activeState.level.number} Complete`
-      : `Level ${activeState.level.number}`;
+// The student's earned/current Band Level is the
+// previous completed level.
+// If they're working on Level 1, their current level is 0.
+
+const earnedLevelNumber =
+  currentLevelIndex === 0
+    ? 0
+    : levelStates[
+        currentLevelIndex - 1
+      ].level.number;
 
 
-  currentLevelProgress.textContent =
-    `${activeState.completedCount} / ${activeState.requirements.length} requirements complete`;
+const targetLevelNumber =
+  activeState.level.number;
+
+
+currentLevelNumber.textContent =
+  earnedLevelNumber === 0
+    ? "Starting Band Levels"
+    : `Level ${earnedLevelNumber}`;
+
+
+currentLevelProgress.textContent =
+  `${activeState.completedCount} / ${activeState.requirements.length} requirements complete toward Level ${targetLevelNumber}`;
 
 
   journey.innerHTML = "";
@@ -2765,17 +2803,6 @@ document.addEventListener(
     };
 
 
-    // Open the recorder panel
-    const recorderPanel =
-      document.getElementById(
-        "recorder-panel"
-      );
-
-    recorderPanel?.classList.remove(
-      "hidden"
-    );
-
-
     // Automatically select the correct student
     const studentSelect =
       document.getElementById(
@@ -2790,28 +2817,50 @@ document.addEventListener(
     }
 
 
-    // Update recorder instructions
-    const recordingStatus =
-      document.getElementById(
-        "recording-status"
+// Show exactly what the student is submitting
+const recordingTarget =
+  document.getElementById(
+    "recording-target"
+  );
+
+if (recordingTarget) {
+
+  recordingTarget.textContent =
+    `${selectedBandLevelSubmission.requirementName} for ${selectedBandLevelSubmission.levelName}`;
+
+}
+
+
+        const recorderOverlay =
+        document.getElementById(
+          "recorder-overlay"
+        );
+
+      const recorderPanel =
+        document.getElementById(
+          "recorder-panel"
+        );
+
+
+      recorderOverlay?.classList.remove(
+        "hidden"
       );
 
-    if (recordingStatus) {
+      recorderPanel?.classList.remove(
+        "hidden"
+      );
 
-      recordingStatus.textContent =
-        `${selectedBandLevelSubmission.levelName}: ${selectedBandLevelSubmission.requirementName}`;
+      document.body.classList.add(
+        "recorder-open"
+      );
 
-    }
+      startRecordingBtn?.classList.remove(
+         "hidden"
+      );
 
-
-    // Scroll to recorder
-    document
-      .getElementById(
-        "practice-section"
-      )
-      ?.scrollIntoView({
-        behavior: "smooth"
-      });
+stopRecordingBtn?.classList.add(
+  "hidden"
+);
 
   }
 
@@ -2872,3 +2921,55 @@ async function loadBandLevelProgressForStudent(studentId) {
   }
 
 }
+
+// ============================================================
+// RECORDER MODAL CLOSE
+// ============================================================
+
+function closeRecorderModal() {
+
+  const overlay =
+    document.getElementById(
+      "recorder-overlay"
+    );
+
+  overlay?.classList.add(
+    "hidden"
+  );
+
+  document.body.classList.remove(
+    "recorder-open"
+  );
+
+}
+
+
+document
+  .getElementById(
+    "closeRecorderBtn"
+  )
+  ?.addEventListener(
+    "click",
+    closeRecorderModal
+  );
+
+
+document
+  .getElementById(
+    "recorder-overlay"
+  )
+  ?.addEventListener(
+    "click",
+    event => {
+
+      if (
+        event.target.id ===
+        "recorder-overlay"
+      ) {
+
+        closeRecorderModal();
+
+      }
+
+    }
+  );

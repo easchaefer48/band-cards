@@ -104,18 +104,29 @@
 
 </section>
 
+  <div id="recorder-overlay" class="recorder-overlay hidden">   
+  
     <section id="practice-section">
 
-  <button id="openRecorderBtn" type="button">
-    🎙️ Send in Recording
-  </button>
 
   <div id="recorder-panel" class="recorder-panel hidden">
 
-    <h2>Send in Recording</h2>
+    <button
+  id="closeRecorderBtn"
+  class="close-recorder-button"
+  type="button"
+  aria-label="Close recorder"
+>
+  ×
+</button>
 
-    <p class="recorder-instructions">
-      Record yourself playing, then listen back before submitting.
+    <h2>Send in a Recording</h2>
+
+    <p
+      id="recording-target"
+      class="recorder-instructions"
+    >
+      Select a song to begin.
     </p>
 
     <div class="student-selection">
@@ -142,7 +153,12 @@
         ● Start Recording
       </button>
 
-      <button id="stopRecordingBtn" type="button" disabled>
+     <button
+        id="stopRecordingBtn"
+        class="hidden"
+        type="button"
+        disabled
+      >
         ■ Stop
       </button>
 
@@ -182,6 +198,8 @@
   </div>
 
 </section>
+
+</div>
 
 <section id="student-feedback-section">
 

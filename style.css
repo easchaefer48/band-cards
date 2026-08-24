@@ -701,3 +701,105 @@ body.overlay-open { overflow: hidden; }
   }
 
 }
+
+/* ==========================================================
+   RECORDING MODAL / OVERLAY
+   ========================================================== */
+
+.recorder-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(6px);
+}
+
+.recorder-overlay.hidden {
+  display: none !important;
+}
+
+#practice-section {
+  width: 100%;
+  max-width: 620px;
+  margin: 0;
+  padding: 0;
+}
+
+.recorder-panel {
+  position: relative;
+  margin: 0 auto;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.close-recorder-button {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+
+  width: 36px;
+  height: 36px;
+
+  border: none;
+  border-radius: 50%;
+
+  background: #263543;
+  color: white;
+
+  font-size: 1.5rem;
+  line-height: 1;
+
+  cursor: pointer;
+}
+
+.close-recorder-button:hover {
+  background: #3a4c60;
+}
+
+body.recorder-open {
+  overflow: hidden;
+}
+
+/* Recorder modal appearance */
+
+.recorder-panel {
+  background: #e4e7eb;
+  color: #17202a;
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 20px 70px rgba(0,0,0,0.65);
+}
+
+.recorder-panel h2 {
+  color: #17202a;
+  margin-top: 0;
+}
+
+.recorder-panel .recorder-instructions {
+  color: #43505c;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.recorder-panel #recording-status {
+  color: #263544;
+}
+
+.recorder-panel #recording-status.recording {
+  color: #b32626;
+}
+
+.recorder-panel #recording-timer {
+  color: #17202a;
+}
+
+.recorder-panel #recording-preview p {
+  color: #263544;
+}
