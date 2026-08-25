@@ -105,6 +105,97 @@
 
       <div class="inbox-heading">
 
+    <section
+      id="quick-actions-section"
+      class="teacher-panel"
+    >
+
+      <h2>Quick Actions</h2>
+
+      <p>
+        Search for a student and update their progress quickly.
+      </p>
+
+
+      <input
+        type="text"
+        id="quickStudentSearch"
+        placeholder="Search student..."
+        autocomplete="off"
+      >
+
+
+      <div
+        id="quickStudentResults"
+        class="quick-student-results"
+      ></div>
+
+
+      <div
+        id="quickSelectedStudent"
+        class="quick-selected-student hidden"
+      >
+
+        <div class="quick-selected-header">
+
+          <div>
+
+            <div
+              id="quickSelectedStudentName"
+              class="quick-selected-name"
+            >
+              Student
+            </div>
+
+            <div
+              id="quickSelectedStudentClass"
+              class="quick-selected-class"
+            >
+              Class
+            </div>
+
+          </div>
+
+
+          <button
+            id="quickClearStudent"
+            type="button"
+            class="quick-clear-button"
+          >
+            Change Student
+          </button>
+
+        </div>
+
+
+        <div class="quick-action-buttons">
+
+          <button
+            id="quickAddAchievement"
+            type="button"
+          >
+            + Add Achievement Card
+          </button>
+
+          <button
+            id="quickBandLevelProgress"
+            type="button"
+          >
+            ✓ Band Level Progress
+          </button>
+
+        </div>
+
+
+        <div
+          id="quickActionWorkspace"
+          class="quick-action-workspace"
+        ></div>
+
+      </div>
+
+    </section>
+
         <div>
           <h2>Pending Recordings</h2>
 
@@ -128,6 +219,48 @@
 
         <!-- Recordings will appear here later -->
 
+      </div>
+
+    </section>
+
+    <section
+      id="manual-band-level-section"
+      class="teacher-panel"
+    >
+
+      <h2>Manual Band Level Progress</h2>
+
+      <p>
+        Mark Band Level requirements complete for students who play them in person.
+      </p>
+
+      <label for="manualBandLevelClass">
+        Class
+      </label>
+
+      <select id="manualBandLevelClass">
+        <option value="">
+          Select a class…
+        </option>
+      </select>
+
+
+      <label for="manualBandLevelStudent">
+        Student
+      </label>
+
+      <select id="manualBandLevelStudent">
+        <option value="">
+          Select a student…
+        </option>
+      </select>
+
+
+      <div
+        id="manualBandLevelProgress"
+        class="manual-band-level-progress"
+      >
+        <p>Select a student to view their current Band Level.</p>
       </div>
 
     </section>

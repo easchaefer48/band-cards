@@ -1341,8 +1341,20 @@ startRecordingBtn?.addEventListener(
 
       recordingStream =
         await navigator.mediaDevices.getUserMedia({
-          audio: true
+          audio: {
+            autoGainControl: false,
+            noiseSuppression: false,
+            echoCancellation: false
+          }
         });
+
+        const audioTrack =
+          recordingStream.getAudioTracks()[0];
+
+        console.log(
+          "Actual microphone settings:",
+          audioTrack.getSettings()
+        );
 
 
       recordedChunks = [];
@@ -2800,10 +2812,6 @@ async function loadBandLevelProgressForStudent(studentId) {
         .eq(
           "student_id",
           studentId
-        )
-        .eq(
-          "submitter_uid",
-          user.id
         );
 
     if (error) {

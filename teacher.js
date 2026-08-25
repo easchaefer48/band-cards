@@ -14,6 +14,9 @@ const SUPABASE_URL =
 const SUPABASE_PUBLISHABLE_KEY =
   "sb_publishable_Svmi15-_UY2CxEwLfHm-Lw_ZXOGRPAC";
 
+const SHEET_ID =
+  "1Rdi7AdcFcNd2hCbvqUkmkO-WVxi1qjVZ9jlu_G4JPm4";  
+
 const supabaseClient =
   supabase.createClient(
     SUPABASE_URL,
@@ -543,6 +546,9 @@ async function reviewSubmission(
                 requirement_id:
                   submission.requirement_id,
 
+                source:
+                  "Recording",
+
                 submission_id:
                   submission.id,
 
@@ -722,6 +728,2008 @@ document.addEventListener(
       teacherComment,
       cardElement
     );
+
+  }
+);
+
+// ============================================================
+// MANUAL BAND LEVEL PROGRESS
+// ============================================================
+
+const BAND_LEVELS_GID = "912222653";
+const BAND_LEVEL_REQUIREMENTS_GID = "959194788";
+
+let manualBandLevels = [];
+let manualBandLevelRequirements = [];
+let manualStudents = [];
+let manualClasses = [];
+let manualAchievements = [];
+
+
+// ------------------------------------------------------------
+// Fetch CSV from Google Sheets
+// ------------------------------------------------------------
+
+async function fetchTeacherSheetCSV(
+  sheetId,
+  gid
+) {
+
+  const url =
+    `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
+
+  const response =
+    await fetch(url);
+
+  if (!response.ok) {
+
+    throw new Error(
+      "Could not load Google Sheet data."
+    );
+
+  }
+
+  return await response.text();
+
+}
+
+
+// ------------------------------------------------------------
+// CSV parser
+// ------------------------------------------------------------
+
+function parseTeacherCSV(csvText) {
+
+  const rows =
+    csvText
+      .split(/\r?\n/)
+      .filter(
+        row =>
+          row.trim() !== ""
+      );
+
+
+  return rows.map(
+    row => {
+
+      const columns = [];
+
+      let current = "";
+      let inQuotes = false;
+
+
+      for (
+        let i = 0;
+        i < row.length;
+        i++
+      ) {
+
+        const character =
+          row[i];
+
+
+        if (
+          character === '"' &&
+          row[i + 1] === '"'
+        ) {
+
+          current += '"';
+          i++;
+
+          continue;
+
+        }
+
+
+        if (character === '"') {
+
+          inQuotes =
+            !inQuotes;
+
+          continue;
+
+        }
+
+
+        if (
+          character === "," &&
+          !inQuotes
+        ) {
+
+          columns.push(
+            current
+          );
+
+          current = "";
+
+          continue;
+
+        }
+
+
+        current += character;
+
+      }
+
+
+      columns.push(
+        current
+      );
+
+
+      return columns.map(
+        column =>
+          column.trim()
+      );
+
+    }
+  );
+
+}
+
+
+// ------------------------------------------------------------
+// Rows -> objects
+// ------------------------------------------------------------
+
+function teacherRowsToObjects(
+  parsedRows
+) {
+
+  const header =
+    parsedRows[0].map(
+      heading =>
+        heading.toLowerCase()
+    );
+
+
+  return parsedRows
+    .slice(1)
+    .map(
+      row => {
+
+        const object = {};
+
+
+        for (
+          let i = 0;
+          i < header.length;
+          i++
+        ) {
+
+          object[
+            header[i]
+          ] =
+            row[i] !== undefined
+              ? row[i]
+              : "";
+
+        }
+
+
+        return object;
+
+      }
+    );
+
+}
+
+
+// ------------------------------------------------------------
+// Load Band Level curriculum + student roster
+// ------------------------------------------------------------
+
+async function loadManualBandLevelData() {
+
+  try {
+
+     const [
+      studentsCSV,
+      classesCSV,
+      achievementsCSV,
+      levelsCSV,
+      requirementsCSV
+    ] =
+      await Promise.all([
+
+        fetchTeacherSheetCSV(
+          SHEET_ID,
+          "7781822"
+        ),
+
+        fetchTeacherSheetCSV(
+          SHEET_ID,
+          "894952475"
+        ),
+
+        fetchTeacherSheetCSV(
+          SHEET_ID,
+          "509720984"
+        ),
+
+        fetchTeacherSheetCSV(
+          SHEET_ID,
+          BAND_LEVELS_GID
+        ),
+
+        fetchTeacherSheetCSV(
+          SHEET_ID,
+          BAND_LEVEL_REQUIREMENTS_GID
+        )
+
+      ]);
+
+
+    const studentsData =
+      teacherRowsToObjects(
+        parseTeacherCSV(
+          studentsCSV
+        )
+      );
+
+    const classesData =
+      teacherRowsToObjects(
+        parseTeacherCSV(
+          classesCSV
+        )
+      );
+
+    const achievementsData =
+      teacherRowsToObjects(
+        parseTeacherCSV(
+          achievementsCSV
+        )
+      );
+
+
+    const levelsData =
+      teacherRowsToObjects(
+        parseTeacherCSV(
+          levelsCSV
+        )
+      );
+
+
+    const requirementsData =
+      teacherRowsToObjects(
+        parseTeacherCSV(
+          requirementsCSV
+        )
+      );
+
+
+    manualStudents =
+      studentsData
+        .filter(
+          row =>
+            row["student id"] &&
+            row["student name"]
+        )
+        .map(
+          row => ({
+            id:
+              row["student id"],
+
+            name:
+              row["student name"],
+
+            classId:
+              row["class id"]
+          })
+        )
+        .sort(
+          (a, b) =>
+            a.name.localeCompare(
+              b.name
+            )
+        );
+
+    manualClasses =
+      classesData
+        .filter(
+          row =>
+            row["class id"] &&
+            row["class name"] &&
+            String(
+              row["active"]
+            ).toLowerCase() !==
+            "false"
+        )
+        .map(
+          row => ({
+            id:
+              row["class id"],
+
+            name:
+              row["class name"],
+
+            grade:
+              row["grade"]
+          })
+        )
+        .sort(
+          (a, b) =>
+            a.name.localeCompare(
+              b.name
+            )
+        );
+
+      manualAchievements =
+        achievementsData
+          .filter(
+            row =>
+              row["achievement id"] &&
+              row["card name"] &&
+              String(
+                row["active"]
+              ).toLowerCase() !==
+              "false"
+          )
+          .map(
+            row => ({
+              id:
+                row["achievement id"],
+
+              name:
+                row["card name"],
+
+              points:
+                Number(
+                  row["points"]
+                ) || 0,
+
+              category:
+                row["category"] || "",
+
+              subcategory:
+                row["subcategory"] || ""
+            })
+          )
+          .sort(
+            (a, b) =>
+              a.name.localeCompare(
+                b.name
+              )
+          );
+
+          manualBandLevels =
+            levelsData
+              .filter(
+                row =>
+                  String(
+                    row["active"]
+                  ).toLowerCase() !==
+                  "false"
+              )
+              .map(
+                row => ({
+                  id:
+                    row["level id"],
+
+                  number:
+                    Number(
+                      row["level number"]
+                    ),
+
+                  name:
+                    row["level name"]
+                })
+              )
+              .sort(
+                (a, b) =>
+                  a.number -
+                  b.number
+              );
+
+
+    manualBandLevelRequirements =
+      requirementsData
+        .map(
+          row => ({
+            id:
+              row["requirement id"],
+
+            levelId:
+              row["level id"],
+
+            name:
+              row["requirement name"],
+
+            order:
+              Number(
+                row["order"]
+              ) || 0
+          })
+        );
+
+
+    populateManualClassSelect();
+
+  }
+
+  catch (error) {
+
+    console.error(
+      "Could not load manual Band Level data:",
+      error
+    );
+
+  }
+
+}
+
+
+// ------------------------------------------------------------
+// Populate student selector
+// ------------------------------------------------------------
+
+function populateManualStudentSelect() {
+
+  const select =
+    document.getElementById(
+      "manualBandLevelStudent"
+    );
+
+
+  if (!select) return;
+
+
+  select.innerHTML = `
+    <option value="">
+      Select a student…
+    </option>
+  `;
+
+
+  manualStudents.forEach(
+    student => {
+
+      const option =
+        document.createElement(
+          "option"
+        );
+
+      option.value =
+        student.id;
+
+      option.textContent =
+        `${student.name} (${student.classId})`;
+
+
+      select.appendChild(
+        option
+      );
+
+    }
+  );
+
+}
+
+
+// ------------------------------------------------------------
+// Get only configured levels
+// ------------------------------------------------------------
+
+function getManualConfiguredLevels() {
+
+  const levelIds =
+    new Set(
+      manualBandLevelRequirements.map(
+        requirement =>
+          requirement.levelId
+      )
+    );
+
+
+  return manualBandLevels.filter(
+    level =>
+      levelIds.has(
+        level.id
+      )
+  );
+
+}
+
+
+// ------------------------------------------------------------
+// Render selected student's current Band Level
+// ------------------------------------------------------------
+
+async function renderManualBandLevelProgress(
+  studentId
+) {
+
+  const container =
+    document.getElementById(
+      "manualBandLevelProgress"
+    );
+
+
+  if (!container) return;
+
+
+  container.innerHTML =
+    "<p>Loading progress...</p>";
+
+
+  try {
+
+    const {
+      data: progressRows,
+      error
+    } =
+      await supabaseClient
+        .from("band_level_progress")
+        .select(
+          "requirement_id"
+        )
+        .eq(
+          "student_id",
+          studentId
+        );
+
+
+    if (error) {
+      throw error;
+    }
+
+
+    const completedIds =
+      new Set(
+        (progressRows || [])
+          .map(
+            row =>
+              row.requirement_id
+          )
+      );
+
+
+    const levels =
+      getManualConfiguredLevels();
+
+
+    const states =
+      levels.map(
+        level => {
+
+          const requirements =
+            manualBandLevelRequirements
+              .filter(
+                requirement =>
+                  requirement.levelId ===
+                  level.id
+              )
+              .sort(
+                (a, b) =>
+                  a.order -
+                  b.order
+              );
+
+
+          const completedCount =
+            requirements.filter(
+              requirement =>
+                completedIds.has(
+                  requirement.id
+                )
+            ).length;
+
+
+          return {
+
+            level,
+
+            requirements,
+
+            completedCount,
+
+            complete:
+              requirements.length > 0 &&
+              completedCount ===
+              requirements.length
+
+          };
+
+        }
+      );
+
+
+    let currentIndex =
+      states.findIndex(
+        state =>
+          !state.complete
+      );
+
+
+    if (currentIndex === -1) {
+
+      container.innerHTML =
+        "<p>All configured Band Levels are complete.</p>";
+
+      return;
+
+    }
+
+
+    const current =
+      states[
+        currentIndex
+      ];
+
+
+    let html = `
+
+      <div class="manual-level-header">
+
+        <h3>
+          Working Toward
+          ${escapeTeacherHtml(
+            current.level.name
+          )}
+        </h3>
+
+        <div>
+          ${current.completedCount}
+          /
+          ${current.requirements.length}
+          requirements complete
+        </div>
+
+      </div>
+
+    `;
+
+
+    current.requirements.forEach(
+      requirement => {
+
+        const complete =
+          completedIds.has(
+            requirement.id
+          );
+
+
+        html += `
+
+          <div
+            class="manual-requirement
+            ${complete ? "completed" : ""}"
+            data-requirement-id="${escapeTeacherHtml(requirement.id)}"
+          >
+
+            <div class="manual-requirement-name">
+
+              ${complete ? "✓ " : ""}
+
+              ${escapeTeacherHtml(
+                requirement.name
+              )}
+
+            </div>
+
+            ${
+              complete
+                ? `
+                  <div>
+                    Already completed
+                  </div>
+                `
+                : `
+                  <textarea
+                    class="manual-comment"
+                    placeholder="Optional teacher comment..."
+                  ></textarea>
+
+                  <button
+                    type="button"
+                    class="manual-complete-button"
+                    data-student-id="${escapeTeacherHtml(studentId)}"
+                    data-requirement-id="${escapeTeacherHtml(requirement.id)}"
+                  >
+                    Mark Complete
+                  </button>
+                `
+            }
+
+          </div>
+
+        `;
+
+      }
+    );
+
+
+    container.innerHTML =
+      html;
+
+  }
+
+  catch (error) {
+
+    console.error(
+      "Could not load manual progress:",
+      error
+    );
+
+
+    container.innerHTML =
+      "<p>Could not load Band Level progress.</p>";
+
+  }
+
+}
+
+
+// ------------------------------------------------------------
+// Student selector change
+// ------------------------------------------------------------
+
+document
+  .getElementById(
+    "manualBandLevelStudent"
+  )
+  ?.addEventListener(
+    "change",
+    event => {
+
+      const studentId =
+        event.target.value;
+
+
+      if (!studentId) {
+
+        document.getElementById(
+          "manualBandLevelProgress"
+        ).innerHTML =
+          "<p>Select a student to view their current Band Level.</p>";
+
+        return;
+
+      }
+
+
+      renderManualBandLevelProgress(
+        studentId
+      );
+
+    }
+  );
+
+
+// ------------------------------------------------------------
+// Mark requirement complete manually
+// ------------------------------------------------------------
+
+document.addEventListener(
+  "click",
+  async event => {
+
+    const button =
+      event.target.closest(
+        ".manual-complete-button"
+      );
+
+
+    if (!button) return;
+
+
+    const studentId =
+      button.dataset.studentId;
+
+    const requirementId =
+      button.dataset.requirementId;
+
+
+    const requirementBox =
+      button.closest(
+        ".manual-requirement"
+      );
+
+
+    const comment =
+      requirementBox
+        ?.querySelector(
+          ".manual-comment"
+        )
+        ?.value
+        ?.trim() || "";
+
+
+    button.disabled = true;
+    button.textContent =
+      "Saving...";
+
+
+    try {
+
+      const {
+        data: userData,
+        error: userError
+      } =
+        await supabaseClient.auth
+          .getUser();
+
+
+      if (userError) {
+        throw userError;
+      }
+
+
+      const {
+        error
+      } =
+        await supabaseClient
+          .from(
+            "band_level_progress"
+          )
+          .insert([
+            {
+
+              student_id:
+                studentId,
+
+              requirement_id:
+                requirementId,
+
+              source:
+                "In Person",
+
+              teacher_comment:
+                comment,
+
+              completed_by:
+                userData.user?.id ||
+                null
+
+            }
+          ]);
+
+
+      if (
+        error &&
+        error.code !==
+        "23505"
+      ) {
+
+        throw error;
+
+      }
+
+
+      await renderManualBandLevelProgress(
+        studentId
+      );
+
+    }
+
+    catch (error) {
+
+      console.error(
+        "Could not manually complete requirement:",
+        error
+      );
+
+
+      alert(
+        "Could not save Band Level progress."
+      );
+
+
+      button.disabled = false;
+      button.textContent =
+        "Mark Complete";
+
+    }
+
+  }
+);
+
+
+// Start loading manual Band Level data
+loadManualBandLevelData();
+
+function populateManualClassSelect() {
+
+  const select =
+    document.getElementById(
+      "manualBandLevelClass"
+    );
+
+  if (!select) return;
+
+  select.innerHTML = `
+    <option value="">
+      Select a class…
+    </option>
+  `;
+
+  manualClasses.forEach(
+    classInfo => {
+
+      const option =
+        document.createElement(
+          "option"
+        );
+
+      option.value =
+        classInfo.id;
+
+      option.textContent =
+        classInfo.name;
+
+      select.appendChild(
+        option
+      );
+
+    }
+  );
+
+}
+
+
+function populateManualStudentSelect(
+  classId
+) {
+
+  const select =
+    document.getElementById(
+      "manualBandLevelStudent"
+    );
+
+  if (!select) return;
+
+  select.innerHTML = `
+    <option value="">
+      Select a student…
+    </option>
+  `;
+
+  if (!classId) return;
+
+  manualStudents
+    .filter(
+      student =>
+        student.classId === classId
+    )
+    .forEach(
+      student => {
+
+        const option =
+          document.createElement(
+            "option"
+          );
+
+        option.value =
+          student.id;
+
+        option.textContent =
+          student.name;
+
+        select.appendChild(
+          option
+        );
+
+      }
+    );
+
+}
+
+function populateManualClassSelect() {
+
+  const select =
+    document.getElementById(
+      "manualBandLevelClass"
+    );
+
+  if (!select) return;
+
+  select.innerHTML = `
+    <option value="">
+      Select a class…
+    </option>
+  `;
+
+  manualClasses.forEach(
+    classInfo => {
+
+      const option =
+        document.createElement(
+          "option"
+        );
+
+      option.value =
+        classInfo.id;
+
+      option.textContent =
+        classInfo.name;
+
+      select.appendChild(
+        option
+      );
+
+    }
+  );
+
+}
+
+
+function populateManualStudentSelect(
+  classId
+) {
+
+  const select =
+    document.getElementById(
+      "manualBandLevelStudent"
+    );
+
+  if (!select) return;
+
+  select.innerHTML = `
+    <option value="">
+      Select a student…
+    </option>
+  `;
+
+  if (!classId) return;
+
+  manualStudents
+    .filter(
+      student =>
+        student.classId === classId
+    )
+    .forEach(
+      student => {
+
+        const option =
+          document.createElement(
+            "option"
+          );
+
+        option.value =
+          student.id;
+
+        option.textContent =
+          student.name;
+
+        select.appendChild(
+          option
+        );
+
+      }
+    );
+
+}
+
+document
+  .getElementById(
+    "manualBandLevelClass"
+  )
+  ?.addEventListener(
+    "change",
+    event => {
+
+      const classId =
+        event.target.value;
+
+      populateManualStudentSelect(
+        classId
+      );
+
+      document.getElementById(
+        "manualBandLevelProgress"
+      ).innerHTML =
+        "<p>Select a student to view their current Band Level.</p>";
+
+    }
+  );
+
+  // ============================================================
+// QUICK ACTIONS
+// ============================================================
+
+let quickSelectedStudent = null;
+
+
+// ------------------------------------------------------------
+// Live student search
+// ------------------------------------------------------------
+
+function renderQuickStudentSearchResults(
+  query
+) {
+
+  const results =
+    document.getElementById(
+      "quickStudentResults"
+    );
+
+
+  if (!results) return;
+
+
+  const search =
+    query
+      .trim()
+      .toLowerCase();
+
+
+  if (!search) {
+
+    results.innerHTML = "";
+
+    return;
+
+  }
+
+
+  const matches =
+    manualStudents
+      .filter(
+        student =>
+          student.name
+            .toLowerCase()
+            .includes(search)
+      )
+      .slice(0, 8);
+
+
+  if (!matches.length) {
+
+    results.innerHTML =
+      "<div class='quick-student-result'>No students found.</div>";
+
+    return;
+
+  }
+
+
+  results.innerHTML =
+    matches
+      .map(
+        student => `
+
+          <div
+            class="quick-student-result"
+            data-student-id="${escapeTeacherHtml(student.id)}"
+          >
+            <strong>
+              ${escapeTeacherHtml(student.name)}
+            </strong>
+
+            <br>
+
+            <span>
+              ${escapeTeacherHtml(student.classId || "")}
+            </span>
+          </div>
+
+        `
+      )
+      .join("");
+
+}
+
+
+// ------------------------------------------------------------
+// Select student
+// ------------------------------------------------------------
+
+function selectQuickStudent(
+  studentId
+) {
+
+  const student =
+    manualStudents.find(
+      item =>
+        item.id === studentId
+    );
+
+
+  if (!student) return;
+
+
+  quickSelectedStudent =
+    student;
+
+
+  document
+    .getElementById(
+      "quickSelectedStudent"
+    )
+    ?.classList
+    .remove("hidden");
+
+
+  const nameElement =
+    document.getElementById(
+      "quickSelectedStudentName"
+    );
+
+
+  const classElement =
+    document.getElementById(
+      "quickSelectedStudentClass"
+    );
+
+
+  if (nameElement) {
+
+    nameElement.textContent =
+      student.name;
+
+  }
+
+
+  if (classElement) {
+
+    classElement.textContent =
+      student.classId || "";
+
+  }
+
+
+  const searchInput =
+    document.getElementById(
+      "quickStudentSearch"
+    );
+
+
+  if (searchInput) {
+
+    searchInput.value = "";
+
+  }
+
+
+  const results =
+    document.getElementById(
+      "quickStudentResults"
+    );
+
+
+  if (results) {
+
+    results.innerHTML = "";
+
+  }
+
+
+  const workspace =
+    document.getElementById(
+      "quickActionWorkspace"
+    );
+
+
+  if (workspace) {
+
+    workspace.innerHTML = "";
+
+  }
+
+}
+
+
+// ------------------------------------------------------------
+// Quick Band Level display
+// ------------------------------------------------------------
+
+async function showQuickBandLevelProgress() {
+
+  if (!quickSelectedStudent) {
+    return;
+  }
+
+
+  const workspace =
+    document.getElementById(
+      "quickActionWorkspace"
+    );
+
+
+  if (!workspace) return;
+
+
+  workspace.innerHTML =
+    "<p>Loading Band Level progress...</p>";
+
+
+  try {
+
+    const {
+      data: progressRows,
+      error
+    } =
+      await supabaseClient
+        .from("band_level_progress")
+        .select(
+          "requirement_id"
+        )
+        .eq(
+          "student_id",
+          quickSelectedStudent.id
+        );
+
+
+    if (error) {
+      throw error;
+    }
+
+
+    const completedIds =
+      new Set(
+        (progressRows || [])
+          .map(
+            row =>
+              row.requirement_id
+          )
+      );
+
+
+    const levels =
+      getManualConfiguredLevels();
+
+
+    const states =
+      levels.map(
+        level => {
+
+          const requirements =
+            manualBandLevelRequirements
+              .filter(
+                requirement =>
+                  requirement.levelId ===
+                  level.id
+              )
+              .sort(
+                (a, b) =>
+                  a.order -
+                  b.order
+              );
+
+
+          const completedCount =
+            requirements.filter(
+              requirement =>
+                completedIds.has(
+                  requirement.id
+                )
+            ).length;
+
+
+          return {
+
+            level,
+
+            requirements,
+
+            complete:
+              requirements.length > 0 &&
+              completedCount ===
+              requirements.length
+
+          };
+
+        }
+      );
+
+
+    const current =
+      states.find(
+        state =>
+          !state.complete
+      );
+
+
+    if (!current) {
+
+      workspace.innerHTML =
+        "<p>All configured Band Levels are complete.</p>";
+
+      return;
+
+    }
+
+
+    let html = `
+
+      <div class="manual-level-header">
+
+        <h3>
+          Working Toward
+          ${escapeTeacherHtml(
+            current.level.name
+          )}
+        </h3>
+
+      </div>
+
+    `;
+
+
+    current.requirements.forEach(
+      requirement => {
+
+        const complete =
+          completedIds.has(
+            requirement.id
+          );
+
+
+        html += `
+
+          <div
+            class="quick-band-level-card
+            ${complete ? "completed" : ""}"
+          >
+
+            <div class="quick-band-level-title">
+
+              ${complete ? "✓ " : ""}
+
+              ${escapeTeacherHtml(
+                requirement.name
+              )}
+
+            </div>
+
+
+            ${
+              complete
+                ? "<div>Completed</div>"
+                : `
+                  <button
+                    type="button"
+                    class="quick-band-level-complete"
+                    data-student-id="${escapeTeacherHtml(
+                      quickSelectedStudent.id
+                    )}"
+                    data-requirement-id="${escapeTeacherHtml(
+                      requirement.id
+                    )}"
+                  >
+                    ✓ Complete
+                  </button>
+                `
+            }
+
+          </div>
+
+        `;
+
+      }
+    );
+
+
+    workspace.innerHTML =
+      html;
+
+  }
+
+  catch (error) {
+
+    console.error(
+      "Could not load Quick Band Level progress:",
+      error
+    );
+
+
+    workspace.innerHTML =
+      "<p>Could not load Band Level progress.</p>";
+
+  }
+
+}
+
+
+// ------------------------------------------------------------
+// Quick student search typing
+// ------------------------------------------------------------
+
+document
+  .getElementById(
+    "quickStudentSearch"
+  )
+  ?.addEventListener(
+    "input",
+    event => {
+
+      renderQuickStudentSearchResults(
+        event.target.value
+      );
+
+    }
+  );
+
+
+// ------------------------------------------------------------
+// Quick Actions clicks
+// ------------------------------------------------------------
+
+document.addEventListener(
+  "click",
+  async event => {
+
+    const studentResult =
+      event.target.closest(
+        ".quick-student-result[data-student-id]"
+      );
+
+
+    if (studentResult) {
+
+      selectQuickStudent(
+        studentResult.dataset.studentId
+      );
+
+      return;
+
+    }
+
+
+    if (
+      event.target.id ===
+      "quickClearStudent"
+    ) {
+
+      quickSelectedStudent =
+        null;
+
+
+      document
+        .getElementById(
+          "quickSelectedStudent"
+        )
+        ?.classList
+        .add("hidden");
+
+
+      document
+        .getElementById(
+          "quickStudentSearch"
+        )
+        ?.focus();
+
+
+      return;
+
+    }
+
+
+    if (
+      event.target.id ===
+      "quickBandLevelProgress"
+    ) {
+
+      await showQuickBandLevelProgress();
+
+      return;
+
+    }
+
+
+    const completeButton =
+      event.target.closest(
+        ".quick-band-level-complete"
+      );
+
+
+    if (completeButton) {
+
+      const studentId =
+        completeButton.dataset.studentId;
+
+      const requirementId =
+        completeButton.dataset.requirementId;
+
+
+      completeButton.disabled =
+        true;
+
+      completeButton.textContent =
+        "Saving...";
+
+
+      try {
+
+        const {
+          data: userData,
+          error: userError
+        } =
+          await supabaseClient.auth
+            .getUser();
+
+
+        if (userError) {
+          throw userError;
+        }
+
+
+        const {
+          error
+        } =
+          await supabaseClient
+            .from(
+              "band_level_progress"
+            )
+            .insert([
+              {
+
+                student_id:
+                  studentId,
+
+                requirement_id:
+                  requirementId,
+
+                source:
+                  "In Person",
+
+                completed_by:
+                  userData.user?.id ||
+                  null
+
+              }
+            ]);
+
+
+        if (
+          error &&
+          error.code !== "23505"
+        ) {
+
+          throw error;
+
+        }
+
+
+        await showQuickBandLevelProgress();
+
+      }
+
+      catch (error) {
+
+        console.error(
+          "Quick Band Level completion failed:",
+          error
+        );
+
+
+        completeButton.disabled =
+          false;
+
+        completeButton.textContent =
+          "✓ Complete";
+
+      }
+
+    }
+
+  }
+);
+
+// ============================================================
+// QUICK ACHIEVEMENT CARD AWARD
+// ============================================================
+
+function showQuickAchievementSearch() {
+
+  if (!quickSelectedStudent) {
+    return;
+  }
+
+
+  const workspace =
+    document.getElementById(
+      "quickActionWorkspace"
+    );
+
+
+  if (!workspace) return;
+
+
+  workspace.innerHTML = `
+
+    <input
+      type="text"
+      id="quickAchievementSearch"
+      placeholder="Search achievement card..."
+      autocomplete="off"
+    >
+
+    <div
+      id="quickAchievementResults"
+      class="quick-achievement-results"
+    ></div>
+
+  `;
+
+
+  document
+    .getElementById(
+      "quickAchievementSearch"
+    )
+    ?.focus();
+
+}
+
+
+function renderQuickAchievementResults(
+  query
+) {
+
+  const results =
+    document.getElementById(
+      "quickAchievementResults"
+    );
+
+
+  if (!results) return;
+
+
+  const search =
+    query
+      .trim()
+      .toLowerCase();
+
+
+  if (!search) {
+
+    results.innerHTML = "";
+
+    return;
+
+  }
+
+
+  const matches =
+    manualAchievements
+      .filter(
+        achievement =>
+          achievement.name
+            .toLowerCase()
+            .includes(search) ||
+
+          achievement.category
+            .toLowerCase()
+            .includes(search) ||
+
+          achievement.subcategory
+            .toLowerCase()
+            .includes(search)
+      )
+      .slice(0, 10);
+
+
+  if (!matches.length) {
+
+    results.innerHTML =
+      "<div class='quick-achievement-result'>No achievement cards found.</div>";
+
+    return;
+
+  }
+
+
+  results.innerHTML =
+    matches
+      .map(
+        achievement => `
+
+          <div
+            class="quick-achievement-result"
+            data-achievement-id="${escapeTeacherHtml(achievement.id)}"
+          >
+
+            <strong>
+              ${escapeTeacherHtml(
+                achievement.name
+              )}
+            </strong>
+
+            <br>
+
+            <span>
+              ${escapeTeacherHtml(
+                achievement.category
+              )}
+
+              ${
+                achievement.subcategory
+                  ? ` — ${escapeTeacherHtml(
+                      achievement.subcategory
+                    )}`
+                  : ""
+              }
+            </span>
+
+          </div>
+
+        `
+      )
+      .join("");
+
+}
+
+
+// Live achievement search
+document.addEventListener(
+  "input",
+  event => {
+
+    if (
+      event.target.id !==
+      "quickAchievementSearch"
+    ) {
+      return;
+    }
+
+
+    renderQuickAchievementResults(
+      event.target.value
+    );
+
+  }
+);
+
+
+// Add Achievement button
+document.addEventListener(
+  "click",
+  event => {
+
+    if (
+      event.target.id ===
+      "quickAddAchievement"
+    ) {
+
+      showQuickAchievementSearch();
+
+    }
+
+  }
+);
+
+
+// Award selected achievement
+document.addEventListener(
+  "click",
+  async event => {
+
+    const result =
+      event.target.closest(
+        ".quick-achievement-result[data-achievement-id]"
+      );
+
+
+    if (!result) return;
+
+
+    if (!quickSelectedStudent) {
+      return;
+    }
+
+
+    const achievementId =
+      result.dataset.achievementId;
+
+
+    const achievement =
+      manualAchievements.find(
+        item =>
+          item.id ===
+          achievementId
+      );
+
+
+    if (!achievement) {
+      return;
+    }
+
+
+    try {
+
+      const {
+        data: userData,
+        error: userError
+      } =
+        await supabaseClient.auth
+          .getUser();
+
+
+      if (userError) {
+        throw userError;
+      }
+
+
+      const {
+        error
+      } =
+        await supabaseClient
+          .from(
+            "earned_achievements"
+          )
+          .insert([
+            {
+
+              student_id:
+                quickSelectedStudent.id,
+
+              achievement_id:
+                achievement.id,
+
+              source:
+                "In Person",
+
+              awarded_by:
+                userData.user?.id ||
+                null
+
+            }
+          ]);
+
+
+      if (
+        error &&
+        error.code ===
+        "23505"
+      ) {
+
+        alert(
+          `${quickSelectedStudent.name} already has ${achievement.name}.`
+        );
+
+        return;
+
+      }
+
+
+      if (error) {
+        throw error;
+      }
+
+
+      const workspace =
+        document.getElementById(
+          "quickActionWorkspace"
+        );
+
+
+      if (workspace) {
+
+        workspace.innerHTML = `
+
+          <div class="quick-award-success">
+
+            ✓ ${escapeTeacherHtml(
+              achievement.name
+            )}
+
+            awarded to
+
+            ${escapeTeacherHtml(
+              quickSelectedStudent.name
+            )}
+
+          </div>
+
+        `;
+
+      }
+
+    }
+
+    catch (error) {
+
+      console.error(
+        "Could not award achievement:",
+        error
+      );
+
+
+      alert(
+        "Could not award achievement card."
+      );
+
+    }
 
   }
 );

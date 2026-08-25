@@ -450,3 +450,191 @@ body {
   font-size: 0.85rem;
   color: #9aa7b5;
 }
+
+/* ==========================================================
+   MANUAL BAND LEVEL PROGRESS
+   ========================================================== */
+
+#manual-band-level-section {
+  margin-top: 24px;
+}
+
+#manual-band-level-section label {
+  display: block;
+  margin: 18px 0 7px;
+  font-weight: bold;
+}
+
+#manualBandLevelClass,
+#manualBandLevelStudent {
+  width: 100%;
+  padding: 11px;
+  border: none;
+  border-radius: 8px;
+  background: #122033;
+  color: white;
+  font-size: 1rem;
+}
+
+.manual-band-level-progress {
+  margin-top: 20px;
+}
+
+.manual-level-header {
+  background: #172332;
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 14px;
+}
+
+.manual-level-header h3 {
+  margin: 0 0 5px;
+}
+
+.manual-requirement {
+  background: #111820;
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 10px;
+}
+
+.manual-requirement.completed {
+  opacity: 0.6;
+}
+
+.manual-requirement-name {
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.manual-comment {
+  width: 100%;
+  min-height: 70px;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: #122033;
+  color: white;
+  font-family: inherit;
+  margin-bottom: 10px;
+}
+
+.manual-complete-button {
+  padding: 9px 13px;
+  border: none;
+  border-radius: 7px;
+  background: #328a52;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* ==========================================================
+   QUICK ACTIONS
+   ========================================================== */
+
+#quickStudentSearch {
+  width: 100%;
+  padding: 13px;
+  border: none;
+  border-radius: 9px;
+  background: #122033;
+  color: white;
+  font-size: 1rem;
+}
+
+.quick-student-results {
+  margin-top: 8px;
+}
+
+.quick-student-result {
+  padding: 11px 13px;
+  background: #111820;
+  border-radius: 8px;
+  margin-bottom: 6px;
+  cursor: pointer;
+}
+
+.quick-student-result:hover {
+  background: #1b2a3a;
+}
+
+.quick-selected-student {
+  margin-top: 18px;
+}
+
+.quick-selected-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  background: #172332;
+  padding: 14px;
+  border-radius: 10px;
+}
+
+.quick-selected-name {
+  font-size: 1.15rem;
+  font-weight: bold;
+}
+
+.quick-selected-class {
+  color: #9aa7b5;
+  margin-top: 3px;
+}
+
+.quick-clear-button {
+  border: none;
+  border-radius: 7px;
+  padding: 8px 11px;
+  background: #415a77;
+  color: white;
+  cursor: pointer;
+}
+
+.quick-action-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.quick-action-buttons button {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background: #263d58;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.quick-action-workspace {
+  margin-top: 16px;
+}
+
+.quick-band-level-card {
+  background: #111820;
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 10px;
+}
+
+.quick-band-level-card.completed {
+  opacity: 0.6;
+}
+
+.quick-band-level-title {
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.quick-band-level-complete {
+  border: none;
+  border-radius: 7px;
+  padding: 8px 12px;
+  background: #328a52;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
