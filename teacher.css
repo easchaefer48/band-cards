@@ -638,3 +638,1070 @@ body {
   font-weight: bold;
   cursor: pointer;
 }
+
+/* ==========================================================
+   TEACHER PORTAL APP SHELL
+   ========================================================== */
+
+body {
+  margin: 0;
+  background: #111b2d;
+  color: #172033;
+}
+
+.teacher-app {
+  min-height: 100vh;
+  background: #111b2d;
+}
+
+.teacher-app:not(.hidden) {
+  display: grid;
+  grid-template-columns: 245px minmax(0, 1fr);
+}
+
+
+/* ----------------------------------------------------------
+   SIDEBAR
+   ---------------------------------------------------------- */
+
+.teacher-sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+
+  display: flex;
+  flex-direction: column;
+
+  padding: 26px 18px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #111b2d 0%,
+      #0b1626 100%
+    );
+
+  color: white;
+}
+
+.teacher-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  margin-bottom: 38px;
+  padding: 0 5px;
+}
+
+.teacher-brand-icon {
+  width: 44px;
+  height: 44px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 12px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #6f42c1,
+      #9b5de5
+    );
+
+  font-size: 1.6rem;
+}
+
+.teacher-brand-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.teacher-brand-subtitle {
+  margin-top: 2px;
+  color: #aeb9c8;
+  font-size: 0.82rem;
+}
+
+
+.teacher-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.teacher-nav-label {
+  margin: 20px 9px 5px;
+
+  color: #8290a4;
+
+  font-size: 0.72rem;
+  font-weight: 800;
+
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.teacher-nav-link {
+  display: block;
+
+  padding: 11px 12px;
+
+  border-radius: 8px;
+
+  color: #d9e0e9;
+  text-decoration: none;
+
+  font-size: 0.92rem;
+
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.teacher-nav-link:hover {
+  background: rgba(255,255,255,0.08);
+  color: white;
+}
+
+.teacher-nav-link.active {
+  background:
+    linear-gradient(
+      90deg,
+      #6336a8,
+      #7948bd
+    );
+
+  color: white;
+}
+
+
+.teacher-sidebar-bottom {
+  margin-top: auto;
+}
+
+.sidebar-logout-button {
+  width: 100%;
+
+  padding: 11px;
+
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 8px;
+
+  background: transparent;
+  color: #d9e0e9;
+
+  cursor: pointer;
+}
+
+.sidebar-logout-button:hover {
+  background: rgba(255,255,255,0.08);
+}
+
+
+/* ----------------------------------------------------------
+   MAIN WORKSPACE
+   ---------------------------------------------------------- */
+
+.teacher-workspace {
+  min-width: 0;
+
+  padding:
+    32px
+    clamp(24px, 4vw, 58px)
+    60px;
+
+  background: #f4f6f9;
+}
+
+.workspace-header {
+  margin-bottom: 26px;
+}
+
+.workspace-header h1 {
+  margin: 0;
+
+  color: #182033;
+
+  font-size: 2rem;
+  font-weight: 800;
+}
+
+.workspace-header p {
+  margin: 6px 0 0;
+
+  color: #6e7888;
+}
+
+
+/* ----------------------------------------------------------
+   DASHBOARD CARDS
+   ---------------------------------------------------------- */
+
+.dashboard-card {
+  margin-bottom: 24px;
+  padding: 24px;
+
+  border: 1px solid #e0e5eb;
+  border-radius: 14px;
+
+  background: white;
+
+  box-shadow:
+    0 3px 12px
+    rgba(22, 34, 55, 0.05);
+}
+
+.dashboard-section-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+
+  margin-bottom: 20px;
+}
+
+.dashboard-section-heading h2 {
+  margin: 2px 0 4px;
+
+  color: #182033;
+
+  font-size: 1.35rem;
+}
+
+.dashboard-section-heading p {
+  margin: 0;
+
+  color: #758093;
+}
+
+.section-eyebrow {
+  color: #7142af;
+
+  font-size: 0.72rem;
+  font-weight: 800;
+
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+
+/* ----------------------------------------------------------
+   QUICK SEARCH
+   ---------------------------------------------------------- */
+
+.quick-search-wrapper {
+  position: relative;
+}
+
+.quick-search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  pointer-events: none;
+}
+
+#quickStudentSearch {
+  box-sizing: border-box;
+
+  width: 100%;
+
+  padding:
+    13px
+    14px
+    13px
+    44px;
+
+  border: 1px solid #d9dfe7;
+  border-radius: 9px;
+
+  background: #f9fafc;
+  color: #172033;
+
+  font-size: 1rem;
+}
+
+#quickStudentSearch:focus {
+  outline: none;
+
+  border-color: #7950b8;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(121,80,184,0.12);
+
+  background: white;
+}
+
+
+/* ----------------------------------------------------------
+   QUICK SEARCH RESULTS
+   ---------------------------------------------------------- */
+
+.quick-student-results {
+  margin-top: 7px;
+}
+
+.quick-student-result {
+  padding: 11px 13px;
+
+  border: 1px solid #e0e5eb;
+  border-radius: 8px;
+
+  background: white;
+  color: #172033;
+
+  cursor: pointer;
+}
+
+.quick-student-result:hover {
+  background: #f2eef9;
+  border-color: #cab8e5;
+}
+
+
+/* ----------------------------------------------------------
+   SELECTED STUDENT
+   ---------------------------------------------------------- */
+
+.quick-selected-student {
+  margin-top: 20px;
+}
+
+.quick-selected-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 15px 17px;
+
+  border: 1px solid #e2e5eb;
+  border-radius: 11px;
+
+  background: #fafbfc;
+}
+
+.quick-student-identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.quick-student-avatar {
+  width: 46px;
+  height: 46px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background:
+    linear-gradient(
+      135deg,
+      #7142af,
+      #9b6ad6
+    );
+
+  color: white;
+  font-size: 1.3rem;
+}
+
+.quick-selected-name {
+  color: #182033;
+
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.quick-selected-class {
+  margin-top: 2px;
+
+  color: #768194;
+}
+
+.quick-clear-button {
+  padding: 8px 12px;
+
+  border: 1px solid #d8dee7;
+  border-radius: 7px;
+
+  background: white;
+  color: #4b5668;
+
+  cursor: pointer;
+}
+
+
+/* ----------------------------------------------------------
+   QUICK ACTION BUTTONS
+   ---------------------------------------------------------- */
+
+.quick-action-buttons {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: 10px;
+
+  margin-top: 14px;
+}
+
+.quick-action-buttons button {
+  padding: 12px;
+
+  border: none;
+  border-radius: 8px;
+
+  background: #6440a0;
+  color: white;
+
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.quick-action-buttons button:hover {
+  background: #553588;
+}
+
+.quick-action-workspace {
+  margin-top: 18px;
+}
+
+
+/* ----------------------------------------------------------
+   FORM CONTROLS INSIDE WORKSPACE
+   ---------------------------------------------------------- */
+
+.teacher-workspace select,
+.teacher-workspace textarea,
+#quickAchievementSearch {
+  box-sizing: border-box;
+
+  width: 100%;
+
+  border: 1px solid #d9dfe7;
+  border-radius: 8px;
+
+  background: #f9fafc;
+  color: #172033;
+}
+
+.teacher-workspace select,
+#quickAchievementSearch {
+  padding: 11px 12px;
+}
+
+.teacher-workspace textarea {
+  padding: 11px;
+}
+
+
+/* ----------------------------------------------------------
+   MANUAL BAND LEVEL AREA
+   ---------------------------------------------------------- */
+
+#manual-band-level-section label {
+  display: block;
+
+  margin: 15px 0 6px;
+
+  color: #394456;
+  font-weight: 700;
+}
+
+.manual-level-header {
+  background: #f2eef9;
+  color: #33204f;
+}
+
+.manual-requirement,
+.quick-band-level-card {
+  border: 1px solid #e1e5eb;
+
+  background: #fafbfc;
+  color: #172033;
+}
+
+
+/* ----------------------------------------------------------
+   RESPONSIVE
+   ---------------------------------------------------------- */
+
+@media (max-width: 850px) {
+
+  .teacher-app:not(.hidden) {
+    display: block;
+  }
+
+  .teacher-sidebar {
+    position: static;
+
+    width: auto;
+    height: auto;
+  }
+
+  .teacher-nav {
+    display: none;
+  }
+
+  .teacher-sidebar-bottom {
+    margin-top: 18px;
+  }
+
+  .teacher-workspace {
+    padding: 22px 15px 50px;
+  }
+
+  .quick-action-buttons {
+    grid-template-columns: 1fr;
+  }
+
+}
+
+/* ==========================================================
+   ACHIEVEMENT COLLECTION GRID
+   ========================================================== */
+
+.collection-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+
+  padding: 18px 20px;
+  margin-bottom: 24px;
+
+  border: 1px solid #e1e5eb;
+  border-radius: 12px;
+
+  background: #fafbfc;
+}
+
+.collection-student-name {
+  color: #182033;
+  font-size: 1.35rem;
+  font-weight: 800;
+}
+
+.collection-student-class {
+  margin-top: 3px;
+  color: #748094;
+}
+
+.collection-totals {
+  display: flex;
+  gap: 28px;
+}
+
+.collection-total-box {
+  text-align: center;
+  min-width: 90px;
+}
+
+.collection-total-label {
+  color: #7a8494;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.collection-total-value {
+  margin-top: 4px;
+  color: #6b3dad;
+  font-size: 1.65rem;
+  font-weight: 800;
+}
+
+.collection-category {
+  margin-top: 26px;
+}
+
+.collection-category-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+
+  border-bottom: 2px solid #e4e8ee;
+}
+
+.collection-category-header h3 {
+  margin: 0;
+  color: #253147;
+  font-size: 1.05rem;
+}
+
+.collection-category-header span {
+  color: #778295;
+  font-size: 0.82rem;
+}
+
+.collection-card-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(auto-fill, minmax(150px, 1fr));
+  gap: 14px;
+}
+
+.collection-card {
+  overflow: hidden;
+
+  border: 1px solid #e0e5eb;
+  border-radius: 10px;
+
+  background: white;
+
+  box-shadow:
+    0 2px 7px
+    rgba(22,34,55,0.05);
+}
+
+.collection-card-image,
+.collection-card-placeholder {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+
+  object-fit: cover;
+  display: block;
+}
+
+.collection-card-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background:
+    linear-gradient(
+      135deg,
+      #6642a5,
+      #9b6ad6
+    );
+
+  color: white;
+  font-size: 2rem;
+}
+
+.collection-card-body {
+  padding: 10px;
+}
+
+.collection-card-name {
+  color: #172033;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.collection-card-points {
+  margin-top: 5px;
+  color: #7b8492;
+  font-size: 0.8rem;
+}
+
+.collection-card .quick-remove-achievement {
+  width: 100%;
+  margin-top: 9px;
+}
+
+@media (max-width: 700px) {
+
+  .collection-summary {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .collection-totals {
+    width: 100%;
+    justify-content: space-around;
+  }
+
+}
+
+/* ==========================================================
+   COMPACT ACHIEVEMENT COLLECTION
+   ========================================================== */
+
+.compact-collection-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 25px;
+
+  margin-top: 8px;
+  padding: 6px 4px 18px;
+
+  border-bottom: 1px solid #e3e7ed;
+}
+
+.compact-collection-title {
+  color: #182033;
+
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+
+/* TOTALS */
+
+.compact-collection-totals {
+  display: flex;
+  align-items: center;
+}
+
+.compact-collection-totals > div {
+  min-width: 130px;
+
+  padding: 0 22px;
+
+  text-align: center;
+}
+
+.compact-collection-totals > div + div {
+  border-left: 1px solid #dfe4eb;
+}
+
+.compact-collection-totals span {
+  display: block;
+
+  margin-bottom: 3px;
+
+  color: #697588;
+  font-size: 0.72rem;
+}
+
+.compact-collection-totals strong {
+  color: #6836ad;
+
+  font-size: 1.55rem;
+}
+
+
+/* ==========================================================
+   CATEGORY ROW
+   ========================================================== */
+
+.compact-category-row {
+  display: grid;
+
+  grid-template-columns:
+    165px minmax(0, 1fr);
+
+  gap: 16px;
+
+  min-height: 135px;
+
+  padding: 16px 0;
+
+  border-bottom: 1px solid #e4e8ed;
+}
+
+
+/* CATEGORY LABEL */
+
+.compact-category-label {
+  align-self: start;
+
+  padding-top: 9px;
+}
+
+.compact-category-name {
+  font-size: 1rem;
+  font-weight: 800;
+
+  line-height: 1.15;
+}
+
+.compact-category-count {
+  margin-top: 5px;
+
+  color: #7b8594;
+
+  font-size: 0.78rem;
+}
+
+
+/* CATEGORY COLORS */
+
+.category-band-level
+.compact-category-name {
+  color: #6332a7;
+}
+
+.category-practice
+.compact-category-name {
+  color: #20842c;
+}
+
+.category-performance
+.compact-category-name {
+  color: #ce7400;
+}
+
+.category-skill
+.compact-category-name {
+  color: #125ab5;
+}
+
+.category-band-music
+.compact-category-name {
+  color: #16836e;
+}
+
+.category-special
+.compact-category-name {
+  color: #7135ae;
+}
+
+
+/* ==========================================================
+   HORIZONTAL CARD AREA
+   ========================================================== */
+
+.compact-card-area {
+  position: relative;
+
+  min-width: 0;
+
+  padding-left: 48px;
+  padding-right: 48px;
+}
+
+
+.compact-card-scroller {
+  display: flex;
+
+  gap: 14px;
+
+  overflow-x: auto;
+  overflow-y: hidden;
+
+  padding: 2px 2px 8px;
+
+  scrollbar-width: none;
+
+  scroll-behavior: smooth;
+}
+
+.compact-card-scroller::-webkit-scrollbar {
+  display: none;
+}
+
+
+/* ==========================================================
+   SMALL ACHIEVEMENT CARD
+   ========================================================== */
+
+.compact-achievement-card {
+  position: relative;
+
+  flex:
+    0 0 105px;
+
+  width: 105px;
+
+  overflow: hidden;
+
+  border: 1px solid #dfe4ea;
+  border-radius: 7px;
+
+  background: white;
+
+  box-shadow:
+    0 2px 6px
+    rgba(20, 31, 48, 0.05);
+}
+
+
+.compact-image-wrapper {
+  width: 100%;
+  height: 72px;
+
+  overflow: hidden;
+
+  background: #f3f1f7;
+}
+
+
+.compact-achievement-image,
+.compact-achievement-placeholder {
+  width: 100%;
+  height: 100%;
+}
+
+
+.compact-achievement-image {
+  display: block;
+
+  object-fit: cover;
+}
+
+
+.compact-achievement-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background:
+    linear-gradient(
+      135deg,
+      #563092,
+      #8a56c5
+    );
+
+  color: white;
+
+  font-size: 1.8rem;
+}
+
+
+.compact-achievement-name {
+  min-height: 30px;
+
+  padding: 5px 5px 1px;
+
+  color: #172033;
+
+  font-size: 0.68rem;
+  font-weight: 800;
+
+  line-height: 1.1;
+  text-align: center;
+}
+
+
+.compact-achievement-points {
+  padding: 2px 4px 6px;
+
+  color: #697487;
+
+  font-size: 0.65rem;
+
+  text-align: center;
+}
+
+
+/* REMOVE BUTTON */
+
+.compact-remove-button {
+  position: absolute;
+
+  top: 3px;
+  right: 3px;
+
+  width: 20px !important;
+  height: 20px;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  border: none;
+  border-radius: 50%;
+
+  background: rgba(20, 25, 35, 0.78);
+
+  color: white;
+
+  font-size: 0.9rem;
+  line-height: 20px;
+
+  opacity: 0;
+
+  transition: opacity 0.15s ease;
+}
+
+.compact-achievement-card:hover
+.compact-remove-button {
+  opacity: 1;
+}
+
+
+/* ==========================================================
+   ROW ARROW
+   ========================================================== */
+
+.collection-scroll-button {
+  position: absolute;
+
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  width: 38px;
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #dce2e9;
+  border-radius: 50%;
+
+  background: white;
+
+  color: #172033;
+
+  font-size: 1.8rem;
+
+  box-shadow:
+    0 2px 8px
+    rgba(20, 31, 48, 0.08);
+
+  cursor: pointer;
+}
+
+.collection-scroll-left {
+  left: 4px;
+}
+
+.collection-scroll-right {
+  right: 4px;
+}
+
+
+.collection-scroll-button:hover {
+  background: #f3eef9;
+
+  border-color: #cbb7e6;
+}
+
+
+/* ==========================================================
+   MOBILE
+   ========================================================== */
+
+@media (max-width: 700px) {
+
+  .compact-collection-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+
+  .compact-collection-totals {
+    width: 100%;
+  }
+
+
+  .compact-collection-totals > div {
+    flex: 1;
+  }
+
+
+  .compact-category-row {
+    display: block;
+  }
+
+
+  .compact-category-label {
+    margin-bottom: 9px;
+  }
+
+}

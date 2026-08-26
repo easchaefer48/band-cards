@@ -99,30 +99,159 @@
          ========================================= -->
 
     <section
-      id="teacher-inbox"
-      class="teacher-panel hidden"
-    >
+  id="teacher-inbox"
+  class="hidden teacher-app"
+>
 
-      <div class="inbox-heading">
+  <!-- =========================================
+       SIDEBAR
+       ========================================= -->
+
+  <aside class="teacher-sidebar">
+
+    <div class="teacher-brand">
+
+      <div class="teacher-brand-icon">
+        ♫
+      </div>
+
+      <div>
+        <div class="teacher-brand-title">
+          Teacher Portal
+        </div>
+
+        <div class="teacher-brand-subtitle">
+          Band Achievements
+        </div>
+      </div>
+
+    </div>
+
+
+    <nav class="teacher-nav">
+
+      <div class="teacher-nav-label">
+        Dashboard
+      </div>
+
+      <a
+        href="#quick-actions-section"
+        class="teacher-nav-link active"
+      >
+        ⚡ Quick Actions
+      </a>
+
+      <a
+        href="#recordings-section"
+        class="teacher-nav-link"
+      >
+        🎙 Pending Recordings
+      </a>
+
+
+      <div class="teacher-nav-label">
+        Students
+      </div>
+
+      <a
+        href="#manual-band-level-section"
+        class="teacher-nav-link"
+      >
+        ✓ Band Level Progress
+      </a>
+
+      <a
+        href="#quick-actions-section"
+        class="teacher-nav-link"
+      >
+        🏆 Achievement Cards
+      </a>
+
+    </nav>
+
+
+    <div class="teacher-sidebar-bottom">
+
+      <button
+        id="teacher-logout-button"
+        type="button"
+        class="sidebar-logout-button"
+      >
+        Sign Out
+      </button>
+
+    </div>
+
+  </aside>
+
+
+  <!-- =========================================
+       MAIN WORKSPACE
+       ========================================= -->
+
+  <div class="teacher-workspace">
+
+    <header class="workspace-header">
+
+      <div>
+
+        <h1>
+          Teacher Dashboard
+        </h1>
+
+        <p>
+          Manage student progress, recordings, and achievements.
+        </p>
+
+      </div>
+
+    </header>
+
+
+    <!-- =========================================
+         QUICK ACTIONS
+         ========================================= -->
 
     <section
       id="quick-actions-section"
-      class="teacher-panel"
+      class="dashboard-card quick-actions-card"
     >
 
-      <h2>Quick Actions</h2>
+      <div class="dashboard-section-heading">
 
-      <p>
-        Search for a student and update their progress quickly.
-      </p>
+        <div>
+
+          <div class="section-eyebrow">
+            Classroom Tools
+          </div>
+
+          <h2>
+            Quick Actions
+          </h2>
+
+          <p>
+            Search for a student and update their progress in seconds.
+          </p>
+
+        </div>
+
+      </div>
 
 
-      <input
-        type="text"
-        id="quickStudentSearch"
-        placeholder="Search student..."
-        autocomplete="off"
-      >
+      <div class="quick-search-wrapper">
+
+        <span class="quick-search-icon">
+          🔎
+        </span>
+
+        <input
+          type="text"
+          id="quickStudentSearch"
+          placeholder="Search student..."
+          autocomplete="off"
+        >
+
+      </div>
 
 
       <div
@@ -138,20 +267,28 @@
 
         <div class="quick-selected-header">
 
-          <div>
+          <div class="quick-student-identity">
 
-            <div
-              id="quickSelectedStudentName"
-              class="quick-selected-name"
-            >
-              Student
+            <div class="quick-student-avatar">
+              ♪
             </div>
 
-            <div
-              id="quickSelectedStudentClass"
-              class="quick-selected-class"
-            >
-              Class
+            <div>
+
+              <div
+                id="quickSelectedStudentName"
+                class="quick-selected-name"
+              >
+                Student
+              </div>
+
+              <div
+                id="quickSelectedStudentClass"
+                class="quick-selected-class"
+              >
+                Class
+              </div>
+
             </div>
 
           </div>
@@ -184,6 +321,13 @@
             ✓ Band Level Progress
           </button>
 
+          <button
+            id="quickViewAchievements"
+            type="button"
+          >
+            🏆 View Collection
+          </button>
+
         </div>
 
 
@@ -196,28 +340,40 @@
 
     </section>
 
+
+    <!-- =========================================
+         PENDING RECORDINGS
+         ========================================= -->
+
+    <section
+      id="recordings-section"
+      class="dashboard-card"
+    >
+
+      <div class="dashboard-section-heading">
+
         <div>
-          <h2>Pending Recordings</h2>
+
+          <div class="section-eyebrow">
+            Student Submissions
+          </div>
+
+          <h2>
+            Pending Recordings
+          </h2>
 
           <p>
-            Student recordings waiting for review.
+            Recordings waiting for your review.
           </p>
+
         </div>
-
-
-        <button
-          id="teacher-logout-button"
-          type="button"
-        >
-          Sign Out
-        </button>
 
       </div>
 
 
       <div id="recording-list">
 
-        <!-- Recordings will appear here later -->
+        <!-- Recordings load here -->
 
       </div>
 
@@ -225,7 +381,7 @@
 
     <section
       id="manual-band-level-section"
-      class="teacher-panel"
+      class="dashboard-card"
     >
 
       <h2>Manual Band Level Progress</h2>
@@ -264,6 +420,12 @@
       </div>
 
     </section>
+
+  </div>
+
+</section>
+
+    
 
   </main>
 

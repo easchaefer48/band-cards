@@ -2410,142 +2410,511 @@ document.addEventListener(
 // QUICK ACHIEVEMENT CARD AWARD
 // ============================================================
 
-function showQuickAchievementSearch() {
+function teacherCardNameToFilename(cardName) {
+
+  if (!cardName) {
+    return "missing-card.png";
+  }
+
+  const fname = cardName
+    .toLowerCase()
+    .replace(/[\/\\]/g, "_")
+    .replace(/[^a-z0-9_\- ]+/g, "")
+    .trim()
+    .replace(/\s+/g, "_");
+
+  return fname + ".png";
+}
+
+async function showQuickAchievementCollection() {
 
   if (!quickSelectedStudent) {
     return;
   }
-
 
   const workspace =
     document.getElementById(
       "quickActionWorkspace"
     );
 
-
   if (!workspace) return;
 
+  workspace.innerHTML =
+    "<p>Loading achievement collection...</p>";
 
-  workspace.innerHTML = `
+  try {
 
-    <input
-      type="text"
-      id="quickAchievementSearch"
-      placeholder="Search achievement card..."
-      autocomplete="off"
-    >
+    const {
+      data: earnedRows,
+      error
+    } =
+      await supabaseClient
+        .from("earned_achievements")
+        .select(
+          "id, achievement_id, awarded_at, source"
+        )
+        .eq(
+          "student_id",
+          quickSelectedStudent.id
+        );
 
-    <div
-      id="quickAchievementResults"
-      class="quick-achievement-results"
-    ></div>
-
-  `;
-
-
-  document
-    .getElementById(
-      "quickAchievementSearch"
-    )
-    ?.focus();
-
-}
+    if (error) {
+      throw error;
+    }
 
 
-function renderQuickAchievementResults(
-  query
-) {
+    if (
+      !earnedRows ||
+      earnedRows.length === 0
+    ) {
 
-  const results =
-    document.getElementById(
-      "quickAchievementResults"
+      workspace.innerHTML =
+        "<p>No achievement cards awarded yet.</p>";
+
+      return;
+    }
+
+
+    const cards =
+      earnedRows
+        .map(
+          earned => {
+
+            const achievement =
+              manualAchievements.find(
+                item =>
+                  item.id ===
+                  earned.achievement_id
+              );
+
+            return {
+              ...earned,
+              achievement
+            };
+
+          }
+        )
+        .filter(
+          item =>
+            item.achievement
+        );
+
+
+    const totalCards =
+      cards.length;
+
+
+    const totalPoints =
+      cards.reduce(
+        (sum, item) =>
+          sum +
+          (
+            Number(
+              item.achievement.points
+            ) || 0
+          ),
+        0
+      );
+
+
+    // ------------------------------------------
+    // Group cards by category
+    // ------------------------------------------
+
+    const grouped = {};
+
+
+    cards.forEach(
+      item => {
+
+        const category =
+          item.achievement.category ||
+          "Other";
+
+
+        if (!grouped[category]) {
+
+          grouped[category] = [];
+
+        }
+
+
+        grouped[category].push(
+          item
+        );
+
+      }
     );
 
 
-  if (!results) return;
+    const categoryOrder = [
+      "Band Levels",
+      "Band Level",
+      "Practice",
+      "Band Music",
+      "Scales",
+      "Skills & Technique",
+      "Solos",
+      "Rhythm Challenges",
+      "Rhythm",
+      "Performance",
+      "Special Achievements",
+      "Special",
+      "Other"
+    ];
 
 
-  const search =
-    query
-      .trim()
-      .toLowerCase();
+    const categoryNames =
+      Object.keys(grouped)
+        .sort(
+          (a, b) => {
+
+            const aIndex =
+              categoryOrder.indexOf(a);
+
+            const bIndex =
+              categoryOrder.indexOf(b);
 
 
-  if (!search) {
+            if (
+              aIndex === -1 &&
+              bIndex === -1
+            ) {
 
-    results.innerHTML = "";
+              return a.localeCompare(b);
 
-    return;
-
-  }
-
-
-  const matches =
-    manualAchievements
-      .filter(
-        achievement =>
-          achievement.name
-            .toLowerCase()
-            .includes(search) ||
-
-          achievement.category
-            .toLowerCase()
-            .includes(search) ||
-
-          achievement.subcategory
-            .toLowerCase()
-            .includes(search)
-      )
-      .slice(0, 10);
+            }
 
 
-  if (!matches.length) {
+            if (aIndex === -1) return 1;
 
-    results.innerHTML =
-      "<div class='quick-achievement-result'>No achievement cards found.</div>";
-
-    return;
-
-  }
+            if (bIndex === -1) return -1;
 
 
-  results.innerHTML =
-    matches
-      .map(
-        achievement => `
+            return aIndex - bIndex;
 
-          <div
-            class="quick-achievement-result"
-            data-achievement-id="${escapeTeacherHtml(achievement.id)}"
-          >
+          }
+        );
 
-            <strong>
-              ${escapeTeacherHtml(
-                achievement.name
-              )}
-            </strong>
 
-            <br>
+    // ------------------------------------------
+    // Student summary
+    // ------------------------------------------
+
+    let html = `
+
+      <div class="compact-collection-header">
+
+        <div>
+
+          <div class="compact-collection-title">
+            🏆
+            ${escapeTeacherHtml(
+              quickSelectedStudent.name
+            )}'s Achievement Collection
+          </div>
+
+        </div>
+
+
+        <div class="compact-collection-totals">
+
+          <div>
 
             <span>
-              ${escapeTeacherHtml(
-                achievement.category
-              )}
-
-              ${
-                achievement.subcategory
-                  ? ` — ${escapeTeacherHtml(
-                      achievement.subcategory
-                    )}`
-                  : ""
-              }
+              Total Cards Earned
             </span>
+
+            <strong>
+              ${totalCards}
+            </strong>
 
           </div>
 
-        `
-      )
-      .join("");
+
+          <div>
+
+            <span>
+              Total Points Earned
+            </span>
+
+            <strong>
+              ${totalPoints}
+            </strong>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    `;
+
+
+    // ------------------------------------------
+    // Category rows
+    // ------------------------------------------
+
+    categoryNames.forEach(
+      (category, categoryIndex) => {
+
+        const categoryCards =
+          grouped[category];
+
+
+        const rowId =
+          `achievement-row-${categoryIndex}`;
+
+
+        const categoryClass =
+          getAchievementCategoryClass(
+            category
+          );
+
+
+        html += `
+
+          <div
+            class="compact-category-row ${categoryClass}"
+          >
+
+            <div class="compact-category-label">
+
+              <div class="compact-category-name">
+                ${escapeTeacherHtml(
+                  category
+                )}
+              </div>
+
+              <div class="compact-category-count">
+                ${categoryCards.length}
+                ${
+                  categoryCards.length === 1
+                    ? "card"
+                    : "cards"
+                }
+              </div>
+
+            </div>
+
+            <div class="compact-card-area">
+
+              <button
+                type="button"
+                class="collection-scroll-button collection-scroll-left"
+                data-scroll-target="${rowId}"
+                data-scroll-direction="left"
+                aria-label="Show previous achievements"
+              >
+                ‹
+              </button>
+
+
+              <div
+                id="${rowId}"
+                class="compact-card-scroller"
+              >
+
+        `;
+
+
+        categoryCards.forEach(
+          item => {
+
+            const achievement =
+              item.achievement;
+
+
+            const imageFile =
+              achievement.image ||
+              teacherCardNameToFilename(
+                achievement.name
+              );
+
+
+            const imageHtml = `
+
+              <img
+                src="images/${escapeTeacherHtml(
+                  imageFile
+                )}"
+                alt="${escapeTeacherHtml(
+                  achievement.name
+                )}"
+                class="compact-achievement-image"
+                onerror="
+                  this.onerror=null;
+                  this.src='images/missing-card.png';
+                "
+              >
+
+            `;
+
+
+            html += `
+
+              <div class="compact-achievement-card">
+
+                <div class="compact-image-wrapper">
+
+                  ${imageHtml}
+
+                </div>
+
+
+                <div class="compact-achievement-name">
+
+                  ${escapeTeacherHtml(
+                    achievement.name
+                  )}
+
+                </div>
+
+
+                <div class="compact-achievement-points">
+
+                  ${achievement.points}
+                  ${
+                    achievement.points === 1
+                      ? "pt"
+                      : "pts"
+                  }
+
+                </div>
+
+
+                <button
+                  type="button"
+                  class="quick-remove-achievement compact-remove-button"
+                  data-earned-id="${escapeTeacherHtml(
+                    item.id
+                  )}"
+                  data-achievement-name="${escapeTeacherHtml(
+                    achievement.name
+                  )}"
+                  title="Remove achievement"
+                >
+                  ×
+                </button>
+
+              </div>
+
+            `;
+
+          }
+        );
+
+
+        html += `
+
+              </div>
+
+
+              <button
+                type="button"
+                class="collection-scroll-button collection-scroll-right"
+                data-scroll-target="${rowId}"
+                data-scroll-direction="right"
+                aria-label="Show more achievements"
+              >
+                ›
+              </button>
+
+            </div>
+
+          </div>
+
+        `;
+
+      }
+    );
+
+
+    workspace.innerHTML =
+      html;
+
+  }
+
+  catch (error) {
+
+    console.error(
+      "Could not load achievement collection:",
+      error
+    );
+
+
+    workspace.innerHTML =
+      "<p>Could not load achievement collection.</p>";
+
+  }
+
+}
+
+function getAchievementCategoryClass(
+  category
+) {
+
+  const name =
+    category.toLowerCase();
+
+
+  if (
+    name.includes("band level")
+  ) {
+
+    return "category-band-level";
+
+  }
+
+
+  if (
+    name.includes("practice")
+  ) {
+
+    return "category-practice";
+
+  }
+
+
+  if (
+    name.includes("performance")
+  ) {
+
+    return "category-performance";
+
+  }
+
+
+  if (
+    name.includes("scale") ||
+    name.includes("skill") ||
+    name.includes("rhythm")
+  ) {
+
+    return "category-skill";
+
+  }
+
+
+  if (
+    name.includes("band music")
+  ) {
+
+    return "category-band-music";
+
+  }
+
+
+  if (
+    name.includes("special")
+  ) {
+
+    return "category-special";
+
+  }
+
+
+  return "category-other";
 
 }
 
@@ -2733,3 +3102,309 @@ document.addEventListener(
 
   }
 );
+
+// ============================================================
+// QUICK VIEW / REMOVE ACHIEVEMENTS
+// ============================================================
+
+
+// Open collection
+document.addEventListener(
+  "click",
+  async event => {
+
+    if (
+      event.target.id ===
+      "quickViewAchievements"
+    ) {
+
+      await showQuickAchievementCollection();
+
+    }
+
+  }
+);
+
+
+// Remove achievement
+document.addEventListener(
+  "click",
+  async event => {
+
+    const button =
+      event.target.closest(
+        ".quick-remove-achievement"
+      );
+
+
+    if (!button) return;
+
+
+    const earnedId =
+      button.dataset.earnedId;
+
+    const achievementName =
+      button.dataset.achievementName;
+
+
+    const confirmed =
+      confirm(
+        `Remove "${achievementName}" from ${quickSelectedStudent?.name}?`
+      );
+
+
+    if (!confirmed) {
+      return;
+    }
+
+
+    button.disabled = true;
+    button.textContent =
+      "Removing...";
+
+
+    try {
+
+      const {
+        error
+      } =
+        await supabaseClient
+          .from(
+            "earned_achievements"
+          )
+          .delete()
+          .eq(
+            "id",
+            earnedId
+          );
+
+
+      if (error) {
+        throw error;
+      }
+
+
+      await showQuickAchievementCollection();
+
+    }
+
+    catch (error) {
+
+      console.error(
+        "Could not remove achievement:",
+        error
+      );
+
+
+      alert(
+        "Could not remove achievement card."
+      );
+
+
+      button.disabled = false;
+      button.textContent =
+        "Remove";
+
+    }
+
+  }
+);
+
+// ============================================================
+// ACHIEVEMENT COLLECTION ROW SCROLLING
+// ============================================================
+
+document.addEventListener(
+  "click",
+  event => {
+
+    const button =
+      event.target.closest(
+        ".collection-scroll-button"
+      );
+
+
+    if (!button) return;
+
+
+    const targetId =
+      button.dataset.scrollTarget;
+
+
+    const row =
+      document.getElementById(
+        targetId
+      );
+
+
+    if (!row) return;
+
+
+    const direction =
+      button.dataset.scrollDirection;
+
+    row.scrollBy({
+      left:
+        direction === "left"
+          ? -500
+          : 500,
+
+      behavior: "smooth"
+    });
+
+  }
+);
+
+function renderQuickAchievementResults(
+  searchText
+) {
+
+  const resultsContainer =
+    document.getElementById(
+      "quickAchievementResults"
+    );
+
+  if (!resultsContainer) {
+    return;
+  }
+
+
+  const query =
+    String(searchText || "")
+      .trim()
+      .toLowerCase();
+
+
+  if (!query) {
+
+    resultsContainer.innerHTML = "";
+
+    return;
+
+  }
+
+
+  const matches =
+    manualAchievements
+      .filter(
+        achievement => {
+
+          const name =
+            String(
+              achievement.name || ""
+            ).toLowerCase();
+
+          const category =
+            String(
+              achievement.category || ""
+            ).toLowerCase();
+
+          const subcategory =
+            String(
+              achievement.subcategory || ""
+            ).toLowerCase();
+
+
+          return (
+            name.includes(query) ||
+            category.includes(query) ||
+            subcategory.includes(query)
+          );
+
+        }
+      )
+      .slice(0, 12);
+
+
+  if (matches.length === 0) {
+
+    resultsContainer.innerHTML =
+      `<p class="quick-no-results">
+        No achievement cards found.
+      </p>`;
+
+    return;
+
+  }
+
+
+  resultsContainer.innerHTML =
+    matches
+      .map(
+        achievement => `
+
+          <button
+            type="button"
+            class="quick-achievement-result"
+            data-achievement-id="${escapeTeacherHtml(
+              achievement.id
+            )}"
+          >
+
+            <div class="quick-achievement-result-name">
+
+              ${escapeTeacherHtml(
+                achievement.name
+              )}
+
+            </div>
+
+
+            <div class="quick-achievement-result-meta">
+
+              ${escapeTeacherHtml(
+                achievement.category || ""
+              )}
+
+              ${
+                achievement.points
+                  ? ` · ${achievement.points} pts`
+                  : ""
+              }
+
+            </div>
+
+          </button>
+
+        `
+      )
+      .join("");
+
+}
+
+function showQuickAchievementSearch() {
+
+  if (!quickSelectedStudent) {
+    return;
+  }
+
+  const workspace =
+    document.getElementById(
+      "quickActionWorkspace"
+    );
+
+  if (!workspace) return;
+
+  workspace.innerHTML = `
+
+    <input
+      type="text"
+      id="quickAchievementSearch"
+      placeholder="Search achievement card..."
+      autocomplete="off"
+    >
+
+    <div
+      id="quickAchievementResults"
+      class="quick-achievement-results"
+    ></div>
+
+  `;
+
+  document
+    .getElementById(
+      "quickAchievementSearch"
+    )
+    ?.focus();
+
+}
