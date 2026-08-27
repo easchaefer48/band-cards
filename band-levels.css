@@ -903,3 +903,139 @@
 .requirement-name {
   color: #171717;
 }
+
+/* ==========================================================
+   HERO TEXT COLORS
+   ========================================================== */
+
+#bandLevelStudentProfile .current-level-summary,
+#bandLevelStudentProfile .current-level-summary .hero-current-label,
+#bandLevelStudentProfile .current-level-summary .hero-current-level,
+#bandLevelStudentProfile .current-level-summary .current-progress-heading,
+#bandLevelStudentProfile .current-level-summary .current-progress-count,
+#bandLevelStudentProfile .current-level-summary .current-progress-count strong,
+#bandLevelStudentProfile .current-level-summary .hero-progress-percent,
+#bandLevelStudentProfile .current-level-summary .hero-next-message {
+    color: #ffffff !important;
+}
+
+#bandLevelStudentProfile
+.current-level-summary
+.band-level-progress-bar {
+  background: rgba(255,255,255,0.28);
+}
+
+#bandLevelStudentProfile
+.current-level-summary
+.band-level-progress-fill {
+  background: #ffffff;
+}
+
+/* ==========================================================
+   HERO SPARKLES
+   ========================================================== */
+
+#currentBandLevelNumber {
+  position: relative;
+}
+
+#currentBandLevelNumber::before,
+#currentBandLevelNumber::after {
+  content: "✦";
+
+  position: absolute;
+
+  color: var(
+    --current-level-complementary,
+    #ffffff
+  );
+
+  text-shadow:
+    0 0 5px #ffffff,
+    0 0 12px
+      var(
+        --current-level-glow,
+        #e9c8ff
+      );
+
+  pointer-events: none;
+}
+
+#currentBandLevelNumber::before {
+  top: 13px;
+  right: 10px;
+
+  font-size: 1.15rem;
+
+  animation:
+    sparkleTwinkleOne
+    2.8s ease-in-out infinite;
+}
+
+#currentBandLevelNumber::after {
+  bottom: 23px;
+  left: 4px;
+
+  font-size: 1.5rem;
+
+  animation:
+    sparkleTwinkleTwo
+    3.7s ease-in-out infinite;
+}
+
+@keyframes sparkleTwinkleOne {
+
+  0%,
+  100% {
+    opacity: 0.15;
+    transform: scale(0.65);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.25);
+  }
+
+}
+
+@keyframes sparkleTwinkleTwo {
+
+  0%,
+  100% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.08;
+    transform: scale(0.55);
+  }
+
+}
+
+/* ==========================================================
+   CURRENT GOAL — FINAL COLOR RESTORE
+   ========================================================== */
+
+.band-level-item.current {
+  background: var(--level-accent, #4d8fd7) !important;
+  background-color: var(--level-accent, #4d8fd7) !important;
+
+  margin-top: -14px;
+  padding-top: 26px;
+
+  border-radius: 16px;
+
+  position: relative;
+  z-index: 1;
+}
+
+.band-level-item.current .future-level-card-inner,
+.band-level-item.current .future-level-content,
+.band-level-item.current .band-level-requirements {
+  background: transparent !important;
+}
+
+.band-level-item.current .band-level-requirement {
+  background: #ffffff !important;
+}
