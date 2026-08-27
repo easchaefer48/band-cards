@@ -20,7 +20,13 @@ const SHEET_ID =
 const supabaseClient =
   supabase.createClient(
     SUPABASE_URL,
-    SUPABASE_PUBLISHABLE_KEY
+    SUPABASE_PUBLISHABLE_KEY,
+    {
+      auth: {
+        storageKey:
+          "band-cards-teacher-auth"
+      }
+    }
   );
 
 
@@ -1899,7 +1905,14 @@ function renderQuickStudentSearchResults(
             <br>
 
             <span>
-              ${escapeTeacherHtml(student.classId || "")}
+              ${escapeTeacherHtml(
+                manualClasses.find(
+                  item =>
+                    item.id === student.classId
+                )?.name ||
+                student.classId ||
+                ""
+              )}
             </span>
           </div>
 
@@ -1962,8 +1975,16 @@ function selectQuickStudent(
 
   if (classElement) {
 
+    const classInfo =
+      manualClasses.find(
+        item =>
+          item.id === student.classId
+      );
+
     classElement.textContent =
-      student.classId || "";
+      classInfo?.name ||
+      student.classId ||
+      "";
 
   }
 

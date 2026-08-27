@@ -13,7 +13,13 @@ const SUPABASE_PUBLISHABLE_KEY =
 const supabaseClient =
   supabase.createClient(
     SUPABASE_URL,
-    SUPABASE_PUBLISHABLE_KEY
+    SUPABASE_PUBLISHABLE_KEY,
+    {
+      auth: {
+        storageKey:
+          "band-cards-student-auth"
+      }
+    }
   );
 
 // ============================================================
@@ -776,17 +782,43 @@ const bandLevelRequirementsData =
   );
 
   allBandLevels =
-  bandLevelsData
-    .filter(row =>
-      String(row["active"]).toLowerCase() !== "false"
-    )
-    .map(row => ({
-      id: row["level id"],
-      number: Number(row["level number"]),
-      name: row["level name"],
-      image: row["image file"] || ""
-    }))
-    .sort((a, b) => a.number - b.number);
+    bandLevelsData
+      .filter(row =>
+        String(row["active"]).toLowerCase() !== "false"
+      )
+      .map(row => ({
+        id: row["level id"],
+        number: row["level number"],
+        name: row["level name"],
+        image: row["image file"] || "",
+        track: row["track"] || "Main",
+        sortOrder: Number(row["sort order"]) || 0,
+        accentColor:
+          row["accent color"] || "#4d8fd7",
+
+        glowColor:
+          row["glow color"] || "#d9a7ff",
+
+        complementaryColor:
+          row["complementary color"] || "#ffffff",  
+
+      }))
+      .sort((a, b) => {
+
+        if (a.track !== b.track) {
+
+          if (a.track === "Main") return -1;
+          if (b.track === "Main") return 1;
+
+          return a.track.localeCompare(
+            b.track
+          );
+
+      }
+
+      return a.sortOrder - b.sortOrder;
+
+    });
 
 
 allBandLevelRequirements =
@@ -2218,12 +2250,18 @@ function getConfiguredBandLevels() {
     );
 
 
-  return allBandLevels.filter(
-    level =>
-      configuredLevelIds.has(
-        level.id
-      )
-  );
+  return allBandLevels
+    .filter(
+      level =>
+        configuredLevelIds.has(
+          level.id
+        ) &&
+        level.track === "Main"
+    )
+    .sort(
+      (a, b) =>
+        a.sortOrder - b.sortOrder
+    );
 
 }
 
@@ -2413,27 +2451,217 @@ async function renderBandLevelDashboard(
 // previous completed level.
 // If they're working on Level 1, their current level is 0.
 
-const earnedLevelNumber =
+const earnedState =
   currentLevelIndex === 0
-    ? 0
+    ? null
     : levelStates[
         currentLevelIndex - 1
-      ].level.number;
+      ];
+
+
+const earnedAccentColor =
+  earnedState?.level?.accentColor ||
+  "#6e32b8";
+
+
+profile.style.setProperty(
+  "--current-level-color",
+  earnedAccentColor
+);      
+
+const earnedGlowColor =
+  earnedState?.level?.glowColor ||
+  "#d9a7ff";
+
+
+profile.style.setProperty(
+  "--current-level-glow",
+  earnedGlowColor
+);
+
+const earnedComplementaryColor =
+  earnedState?.level?.complementaryColor ||
+  "#ffffff";
+
+
+profile.style.setProperty(
+  "--current-level-complementary",
+  earnedComplementaryColor
+);
+
+
+const earnedLevelNumber =
+  earnedState
+    ? earnedState.level.number
+    : 0;
+
+
+const numericEarnedLevel =
+  Number(
+    String(earnedLevelNumber)
+      .replace(/[^0-9]/g, "")
+  ) || 0;
+
+
+const sparkleCount =
+  numericEarnedLevel > 0
+    ? ((numericEarnedLevel - 1) % 10) + 1
+    : 0;
 
 
 const targetLevelNumber =
   activeState.level.number;
 
 
-currentLevelNumber.textContent =
-  earnedLevelNumber === 0
-    ? "Starting Band Levels"
-    : `Level ${earnedLevelNumber}`;
+const earnedLevelImage =
+  earnedState?.level?.image
+    ? `images/${earnedState.level.image}`
+    : "";
+
+if (earnedLevelImage) {
+
+  profile.style.setProperty(
+    "--current-level-art",
+    `url("${earnedLevelImage}")`
+  );
+
+  profile.classList.add(
+    "has-current-level-art"
+  );
+
+}
+
+else {
+
+  profile.classList.remove(
+    "has-current-level-art"
+  );
+
+}
 
 
-currentLevelProgress.textContent =
-  `${activeState.completedCount} / ${activeState.requirements.length} requirements complete toward Level ${targetLevelNumber}`;
+if (earnedState) {
 
+  currentLevelNumber.innerHTML = `
+
+    <div class="current-level-badge-display">
+
+      ${
+        earnedLevelImage
+          ? `
+            <img
+              src="${escapeHtml(
+                earnedLevelImage
+              )}"
+              alt="Band Level ${escapeHtml(
+                earnedLevelNumber
+              )}"
+              class="current-level-badge-image"
+            >
+          `
+          : ""
+      }
+
+
+    </div>
+
+  `;
+
+}
+
+else {
+
+  currentLevelNumber.innerHTML = `
+
+    <div class="current-level-starting">
+      Starting Band Levels
+    </div>
+
+  `;
+
+}
+
+
+const progressPercent =
+  activeState.requirements.length
+    ? (
+        activeState.completedCount /
+        activeState.requirements.length
+      ) * 100
+    : 0;
+
+
+currentLevelProgress.innerHTML = `
+
+  <div class="hero-level-info">
+
+    <div class="hero-current-label">
+      Current Band Level
+    </div>
+
+    <div class="hero-current-level">
+      Level ${escapeHtml(
+        earnedLevelNumber
+      )}
+    </div>
+
+    <div class="hero-progress-divider"></div>
+
+    <div class="current-progress-heading">
+      Progress toward Level
+      ${escapeHtml(
+        targetLevelNumber
+      )}
+    </div>
+
+    <div class="current-progress-count">
+
+      <strong>
+        ${activeState.completedCount}
+      </strong>
+
+      /
+
+      ${activeState.requirements.length}
+
+      complete
+
+    </div>
+
+    <div class="band-level-progress-bar">
+
+      <div
+        class="band-level-progress-fill"
+        style="width: ${progressPercent}%"
+      ></div>
+
+    </div>
+
+    <div class="hero-progress-percent">
+      ${Math.round(progressPercent)}%
+    </div>
+
+  </div>
+
+
+  <div class="hero-next-message">
+
+    <img
+      src="images/trophy.png"
+      alt=""
+      class="hero-trophy-image"
+    >
+
+    <div>
+      Play the songs/exercises
+      for <strong>Level ${escapeHtml(targetLevelNumber)}</strong>
+      to earn your next
+      Band Level!
+    </div>
+
+  </div>
+
+`;
 
   journey.innerHTML = "";
 
@@ -2442,8 +2670,16 @@ currentLevelProgress.textContent =
   // Render each level
   // --------------------------------------------------------
 
-  levelStates.forEach(
-    (state, index) => {
+levelStates
+  .slice(
+    currentLevelIndex
+  )
+  .forEach(
+    (state, visibleIndex) => {
+
+      const index =
+        currentLevelIndex +
+        visibleIndex;
 
       const {
         level,
@@ -2454,8 +2690,7 @@ currentLevelProgress.textContent =
 
 
       const isCurrent =
-        index === currentLevelIndex &&
-        !isCompleted;
+        index === currentLevelIndex;
 
 
       const isLocked =
@@ -2543,10 +2778,6 @@ currentLevelProgress.textContent =
                 );
 
 
-              const icon =
-                requirementComplete
-                  ? "✓"
-                  : "○";
 
 
               const recordButton =
@@ -2570,25 +2801,41 @@ currentLevelProgress.textContent =
                   : "";
 
 
-              return `
+             return `
 
-                <div class="band-level-requirement">
+              <div class="band-level-requirement">
 
-                  <span class="requirement-icon">
-                    ${icon}
-                  </span>
+                <span class="requirement-name">
+                  ${escapeHtml(
+                    requirement.name
+                  )}
+                </span>
 
-                  <span class="requirement-name">
-                    ${escapeHtml(
-                      requirement.name
-                    )}
-                  </span>
+                <div class="requirement-action">
 
-                  ${recordButton}
+                  ${
+                    requirementComplete
+                      ? `
+                        <div class="requirement-complete-status">
+
+                          <span class="requirement-complete-text">
+                            Complete!
+                          </span>
+
+                          <span class="requirement-complete-check">
+                            ✓
+                          </span>
+
+                        </div>
+                      `
+                      : recordButton
+                  }
 
                 </div>
 
-              `;
+              </div>
+
+            `;
 
             }
           )
@@ -2601,28 +2848,89 @@ currentLevelProgress.textContent =
           : "";
 
 
+      const levelImage =
+        level.image
+          ? `images/${level.image}`
+          : "";
+
+        levelElement.style.setProperty(
+          "--level-accent",
+          level.accentColor ||
+          "#4d8fd7"
+        );
+
+
+
       levelElement.innerHTML = `
 
-        <div class="band-level-item-header">
+        <div class="future-level-card-inner">
 
-          <div class="band-level-item-title">
-            ${levelLockIcon}${escapeHtml(
-              level.name
-            )}
+          <div class="future-level-badge">
+
+            ${
+              levelImage
+                ? `
+                  <img
+                    src="${escapeHtml(
+                      levelImage
+                    )}"
+                    alt="${escapeHtml(
+                      level.name
+                    )}"
+                    class="future-level-badge-image"
+                  >
+                `
+                : `
+                  <div class="future-level-badge-fallback">
+                    ${escapeHtml(
+                      level.number
+                    )}
+                  </div>
+                `
+            }
+
           </div>
 
-          <div
-            class="band-level-status ${statusClass}"
-          >
-            ${statusText}
+
+          <div class="future-level-content">
+
+            <div class="future-level-title-row">
+
+              <div class="future-level-title">
+
+                ${escapeHtml(
+                  level.name
+                )}
+
+              </div>
+
+
+              ${
+                isCurrent
+                  ? `
+                    <div class="current-goal-label">
+                      Current Goal
+                    </div>
+                  `
+                  : isLocked
+                    ? `
+                      <div class="locked-level-label">
+                        🔒 Locked
+                      </div>
+                    `
+                    : ""
+              }
+
+            </div>
+
+
+            <div class="band-level-requirements">
+
+              ${requirementsHtml}
+
+            </div>
+
           </div>
-
-        </div>
-
-
-        <div class="band-level-requirements">
-
-          ${requirementsHtml}
 
         </div>
 
