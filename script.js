@@ -1979,6 +1979,66 @@ function populateRecordingStudentSelect() {
 
 }
 
+function formatFeedbackTimeAgo(
+  submittedAt
+) {
+
+  if (!submittedAt) {
+    return "";
+  }
+
+
+  const submittedTime =
+    new Date(submittedAt).getTime();
+
+  const now =
+    Date.now();
+
+
+  const differenceMs =
+    Math.max(
+      0,
+      now - submittedTime
+    );
+
+
+  const hours =
+    Math.floor(
+      differenceMs /
+      (1000 * 60 * 60)
+    );
+
+
+  if (hours < 1) {
+    return "Less than 1 hour ago";
+  }
+
+
+  if (hours < 24) {
+
+    return `${hours} ${
+      hours === 1
+        ? "hour"
+        : "hours"
+    } ago`;
+
+  }
+
+
+  const days =
+    Math.floor(
+      hours / 24
+    );
+
+
+  return `${days} ${
+    days === 1
+      ? "day"
+      : "days"
+  } ago`;
+
+}
+
 
   // ============================================================
 // STUDENT FEEDBACK / RECENT RECORDINGS
@@ -2021,7 +2081,7 @@ async function loadStudentFeedback() {
       await supabaseClient
         .from("recording_submissions")
         .select(
-          "id, student_name, submitted_at, status, teacher_comment"
+          "id, submitted_at, status, teacher_comment, level_id, requirement_id, requirement_name, storage_path, reviewed_at, student_seen_at, submitter_uid"
         )
         .eq(
           "submitter_uid",
@@ -2041,6 +2101,7 @@ async function loadStudentFeedback() {
     }
 
 
+
     if (
       !submissions ||
       submissions.length === 0
@@ -2057,24 +2118,38 @@ async function loadStudentFeedback() {
     list.innerHTML = "";
 
 
-    submissions.forEach(
-      submission => {
+    for (
+      const submission of submissions
+    ) {
 
         const item =
           document.createElement(
             "div"
           );
 
+
         item.className =
           "feedback-item";
 
+        
+          const isNewFeedback =
+            submission.reviewed_at &&
+            !submission.student_seen_at;
 
-        const submittedDate =
-          submission.submitted_at
-            ? new Date(
-                submission.submitted_at
-              ).toLocaleString()
-            : "";
+
+          if (isNewFeedback) {
+
+            item.classList.add(
+              "new-feedback"
+            );
+
+          }
+
+
+        const timeAgo =
+          formatFeedbackTimeAgo(
+            submission.submitted_at
+          );
 
 
         const status =
@@ -2095,8 +2170,6 @@ async function loadStudentFeedback() {
             "success";
 
         }
-
-
         else if (
           status.toLowerCase() ===
           "try again"
@@ -2107,6 +2180,60 @@ async function loadStudentFeedback() {
 
         }
 
+
+        /*
+          Find the Band Level requirement so we can
+          show its number and name instead of the
+          student's own name.
+        */
+
+        const requirement =
+          allBandLevelRequirements.find(
+            item =>
+              item.id ===
+              submission.requirement_id
+          );
+
+
+        const requirementName =
+          submission.requirement_name ||
+          requirement?.name ||
+          "Band Level Recording";
+
+
+        const levels =
+          getConfiguredBandLevels();
+
+
+        const submissionLevel =
+          levels.find(
+            level =>
+              level.id ===
+              submission.level_id
+          );
+
+
+        const levelNumber =
+          submissionLevel?.number ??
+          submissionLevel?.levelNumber ??
+          "";
+
+
+        let recordingTitle =
+          requirementName;
+
+
+        if (levelNumber) {
+
+          recordingTitle =
+            `${requirementName} | Level ${levelNumber}`;
+
+        }
+
+
+        /*
+          Teacher comment
+        */
 
         const teacherComment =
           submission.teacher_comment
@@ -2121,19 +2248,23 @@ async function loadStudentFeedback() {
             : "";
 
 
+        /*
+          Create the card first.
+        */
+
         item.innerHTML = `
 
           <div class="feedback-header">
 
             <div class="feedback-name">
               ${escapeHtml(
-                submission.student_name
+                recordingTitle
               )}
             </div>
 
             <div class="feedback-date">
               ${escapeHtml(
-                submittedDate
+                timeAgo
               )}
             </div>
 
@@ -2149,6 +2280,13 @@ async function loadStudentFeedback() {
 
           ${teacherComment}
 
+
+          <div
+            class="feedback-audio-container"
+          >
+            Loading recording...
+          </div>
+
         `;
 
 
@@ -2156,11 +2294,148 @@ async function loadStudentFeedback() {
           item
         );
 
+
+        /*
+          Generate a temporary signed URL for the
+          student's private recording.
+        */
+
+        const audioContainer =
+          item.querySelector(
+            ".feedback-audio-container"
+          );
+
+
+        if (
+          audioContainer &&
+          submission.storage_path
+        ) {
+
+          try {
+
+            const {
+              data: signedData,
+              error: signedError
+            } =
+              await supabaseClient
+                .storage
+                .from("recordings")
+                .createSignedUrl(
+                  submission.storage_path,
+                  3600
+                );
+
+
+            if (
+              signedError ||
+              !signedData?.signedUrl
+            ) {
+
+              throw (
+                signedError ||
+                new Error(
+                  "No signed recording URL."
+                )
+              );
+
+            }
+
+
+            audioContainer.innerHTML = `
+
+              <audio
+                class="feedback-audio-player"
+                controls
+                preload="metadata"
+                src="${signedData.signedUrl}"
+              >
+              </audio>
+
+            `;
+
+          }
+
+          catch (audioError) {
+
+            console.error(
+              "Could not load recording audio:",
+              audioError
+            );
+
+
+            audioContainer.innerHTML = `
+              <div class="feedback-audio-unavailable">
+                Recording unavailable.
+              </div>
+            `;
+
+          }
+
+        }
+            else if (audioContainer) {
+
+          audioContainer.innerHTML = `
+            <div class="feedback-audio-unavailable">
+              Recording unavailable.
+            </div>
+          `;
+
+        }
+
+    }
+
+
+    const unreadSubmissionIds =
+      submissions
+        .filter(
+          submission =>
+            submission.reviewed_at &&
+            !submission.student_seen_at
+        )
+        .map(
+          submission =>
+            submission.id
+        );
+
+
+    if (unreadSubmissionIds.length) {
+
+
+      const {
+        data: seenRows,
+        error: seenError
+      } =
+        await supabaseClient
+          .rpc(
+            "mark_feedback_seen",
+            {
+              p_submission_ids:
+                unreadSubmissionIds
+            }
+          );
+
+
+      if (seenError) {
+
+        console.error(
+          "Could not mark feedback as seen:",
+          seenError
+        );
+
       }
-    );
+      else {
+
+        console.log(
+          "Rows successfully marked as seen:",
+          seenRows
+        );
+
+      }
+
+    }
+
 
   }
-
 
   catch (error) {
 
@@ -3380,6 +3655,324 @@ document
     }
   );
 
+
+  async function updateRecentFeedbackAlert() {
+
+  const alertElement =
+    document.getElementById(
+      "recent-feedback-alert"
+    );
+
+
+  if (
+    !alertElement ||
+    !studentAuthUser
+  ) {
+    return;
+  }
+
+
+  const {
+    count,
+    error
+  } =
+    await supabaseClient
+      .from(
+        "recording_submissions"
+      )
+      .select(
+        "id",
+        {
+          count: "exact",
+          head: true
+        }
+      )
+      .eq(
+        "submitter_uid",
+        studentAuthUser.id
+      )
+      .not(
+        "reviewed_at",
+        "is",
+        null
+      )
+      .is(
+        "student_seen_at",
+        null
+      );
+
+
+  if (error) {
+
+    console.error(
+      "Could not check for new feedback:",
+      error
+    );
+
+    return;
+
+  }
+
+
+  alertElement.classList.toggle(
+    "hidden",
+    !count
+  );
+
+}
+
+
+async function renderStudentHome(
+  student
+) {
+
+  const nameElement =
+    document.getElementById(
+      "student-home-name"
+    );
+
+  const classElement =
+    document.getElementById(
+      "student-home-class"
+    );
+
+  const levelNameElement =
+    document.getElementById(
+      "student-home-level-name"
+    );
+
+  const badgeElement =
+    document.getElementById(
+      "student-home-level-badge"
+    );
+
+  const bandLevelsCard =
+    document.getElementById(
+      "open-band-levels-button"
+    );
+
+
+  if (
+    !nameElement ||
+    !levelNameElement ||
+    !badgeElement ||
+    !bandLevelsCard
+  ) {
+    return;
+  }
+
+
+  nameElement.textContent =
+    student.name;
+
+
+  /*
+    For the 5th-grade home page, reuse the
+    class label already used by Band Levels.
+    We can make this fully data-driven when
+    we build the middle-school home screen.
+  */
+
+  if (classElement) {
+
+    classElement.textContent =
+      "5th Grade Band";
+
+  }
+
+
+  const levels =
+    getConfiguredBandLevels();
+
+
+  if (!levels.length) {
+
+    levelNameElement.textContent =
+      "Starting Band Levels";
+
+    return;
+
+  }
+
+
+  // Load this student's completed Band Level requirements
+
+  const studentProgress =
+    await loadBandLevelProgressForStudent(
+      student.id
+    );
+
+
+  const completedRequirementIds =
+    new Set(
+      studentProgress.map(
+        progress =>
+          progress.requirement_id
+      )
+    );
+
+
+  // Build the same level-state information
+  // used by the full Band Levels dashboard.
+
+  const levelStates =
+    levels.map(
+      level => {
+
+        const requirements =
+          allBandLevelRequirements
+            .filter(
+              requirement =>
+                requirement.levelId ===
+                level.id
+            )
+            .sort(
+              (a, b) =>
+                a.order - b.order
+            );
+
+
+        const completedCount =
+          requirements.filter(
+            requirement =>
+              completedRequirementIds.has(
+                requirement.id
+              )
+          ).length;
+
+
+        const isCompleted =
+          requirements.length > 0 &&
+          completedCount ===
+          requirements.length;
+
+
+        return {
+          level,
+          requirements,
+          completedCount,
+          isCompleted
+        };
+
+      }
+    );
+
+
+  let currentLevelIndex =
+    levelStates.findIndex(
+      state =>
+        !state.isCompleted
+    );
+
+
+  if (currentLevelIndex === -1) {
+
+    currentLevelIndex =
+      levelStates.length - 1;
+
+  }
+
+
+  const earnedState =
+    currentLevelIndex === 0
+      ? null
+      : levelStates[
+          currentLevelIndex - 1
+        ];
+
+
+  const earnedLevel =
+    earnedState?.level ||
+    null;
+
+
+  const earnedLevelNumber =
+    earnedLevel
+      ? earnedLevel.number
+      : 0;
+
+
+  const earnedAccentColor =
+    earnedLevel?.accentColor ||
+    "#404040";
+
+
+  const earnedGlowColor =
+    earnedLevel?.glowColor ||
+    "#eeeeee";
+
+
+  const earnedComplementaryColor =
+    earnedLevel?.complementaryColor ||
+    "#ffffff";
+
+
+  const earnedLevelImage =
+    earnedLevel?.image
+      ? `images/${earnedLevel.image}`
+      : "";
+
+
+  // --------------------------------------------------------
+  // Student summary card
+  // --------------------------------------------------------
+
+  levelNameElement.textContent =
+    earnedLevel
+      ? `Level ${earnedLevelNumber}`
+      : "Starting Band Levels";
+
+
+  badgeElement.innerHTML =
+    earnedLevelImage
+      ? `
+        <img
+          src="${escapeHtml(
+            earnedLevelImage
+          )}"
+          alt="Band Level ${escapeHtml(
+            earnedLevelNumber
+          )}"
+          class="student-home-level-image"
+        >
+      `
+      : "";
+
+
+  // Give the summary badge access to this level's glow colors.
+
+  badgeElement.style.setProperty(
+    "--home-level-glow",
+    earnedGlowColor
+  );
+
+
+  badgeElement.style.setProperty(
+    "--home-level-complementary",
+    earnedComplementaryColor
+  );
+
+
+  // --------------------------------------------------------
+  // Band Levels feature card
+  // --------------------------------------------------------
+
+  bandLevelsCard.style.setProperty(
+    "--home-band-level-color",
+    earnedAccentColor
+  );
+
+
+  /*
+    Check whether this student has
+    any new teacher feedback.
+  */
+
+  await updateRecentFeedbackAlert();
+
+
+}
+
   // ============================================================
 // STUDENT AUTH VIEW STATE
 // ============================================================
@@ -3391,7 +3984,7 @@ function showLoggedOutStudentView() {
       "student-login-section"
     )
     ?.classList
-    .remove("hidden");
+    .add("hidden");
 
 
   document
@@ -3404,15 +3997,31 @@ function showLoggedOutStudentView() {
 
   document
     .getElementById(
+      "student-home-section"
+    )
+    ?.classList
+    .add("hidden");
+
+
+  document
+    .getElementById(
       "band-level-dashboard-section"
     )
     ?.classList
     .add("hidden");
 
+
+  document
+    .getElementById(
+      "header-sign-in-button"
+    )
+    ?.classList
+    .remove("hidden");
+
 }
 
 
-function showLoggedInStudentView(
+async function showLoggedInStudentView(
   student
 ) {
 
@@ -3434,26 +4043,717 @@ function showLoggedInStudentView(
 
   document
     .getElementById(
+      "header-sign-in-button"
+    )
+    ?.classList
+    .add("hidden");
+
+
+  document
+    .getElementById(
+      "student-home-section"
+    )
+    ?.classList
+    .remove("hidden");
+
+
+  document
+    .getElementById(
+      "band-level-dashboard-section"
+    )
+    ?.classList
+    .add("hidden");
+
+
+  document
+    .getElementById(
+      "recent-recordings-section"
+    )
+    ?.classList
+    .add("hidden");
+
+
+  document
+    .getElementById(
+      "leaderboard-section"
+    )
+    ?.classList
+    .add("hidden");
+
+
+  document
+    .getElementById(
+      "achievement-section"
+    )
+    ?.classList
+    .add("hidden");
+
+  document
+    .getElementById(
+      "student-feedback-section"
+    )
+    ?.classList
+    .add("hidden");
+
+
+  document
+    .getElementById(
+      "student-container"
+    )
+    ?.classList
+    .add("hidden");
+
+
+    await renderStudentHome(
+      student
+    );
+
+
+    // Tell the browser that this history entry
+    // represents the student home screen.
+    history.replaceState(
+      { studentView: "home" },
+      "",
+      window.location.href
+    );
+
+}
+
+async function showBandLevelsView(
+  addToHistory = true
+) {
+
+  if (!currentLoggedInStudent) {
+    return;
+  }
+
+
+  document
+    .getElementById(
+      "student-home-section"
+    )
+    ?.classList
+    .add("hidden");
+
+
+  document
+    .getElementById(
       "band-level-dashboard-section"
     )
     ?.classList
     .remove("hidden");
 
 
-  const nameElement =
-    document.getElementById(
-      "logged-in-student-name"
+  if (addToHistory) {
+
+    history.pushState(
+      { studentView: "band-levels" },
+      "",
+      window.location.href
     );
-
-
-  if (nameElement) {
-
-    nameElement.textContent =
-      student.name;
 
   }
 
+
+  await renderBandLevelDashboard(
+    currentLoggedInStudent.id
+  );
+
 }
+
+async function renderFifthGradeLeaderboard() {
+
+  const listElement =
+    document.getElementById(
+      "leaderboard-list"
+    );
+
+
+  if (!listElement) {
+    return;
+  }
+
+
+  listElement.innerHTML = `
+    <div class="leaderboard-empty">
+      Loading leaderboard...
+    </div>
+  `;
+
+
+  /*
+    Get the configured Band Levels.
+  */
+
+  const levels =
+    getConfiguredBandLevels();
+
+
+  if (!levels.length) {
+
+    listElement.innerHTML = `
+      <div class="leaderboard-empty">
+        No Band Levels are configured yet.
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  /*
+    Get only 5th-grade students.
+
+    We are using the same students data that
+    is already loaded by the site.
+  */
+
+  const fifthGradeStudents =
+    allStudents.filter(
+      student =>
+        student.classId === "C004"
+    );
+
+
+  if (!fifthGradeStudents.length) {
+
+    listElement.innerHTML = `
+      <div class="leaderboard-empty">
+        No students have earned a Band Level yet.
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  const leaderboardEntries = [];
+
+
+  for (
+    const student of fifthGradeStudents
+  ) {
+
+    const studentProgress =
+      await loadBandLevelProgressForStudent(
+        student.id
+      );
+
+
+    const completedRequirementIds =
+      new Set(
+        studentProgress.map(
+          progress =>
+            progress.requirement_id
+        )
+      );
+
+
+    const levelStates =
+      levels.map(
+        level => {
+
+          const requirements =
+            allBandLevelRequirements
+              .filter(
+                requirement =>
+                  requirement.levelId ===
+                  level.id
+              )
+              .sort(
+                (a, b) =>
+                  a.order - b.order
+              );
+
+
+          const completedCount =
+            requirements.filter(
+              requirement =>
+                completedRequirementIds.has(
+                  requirement.id
+                )
+            ).length;
+
+
+          const isCompleted =
+            requirements.length > 0 &&
+            completedCount ===
+              requirements.length;
+
+
+          return {
+            level,
+            isCompleted
+          };
+
+        }
+      );
+
+
+    /*
+      Find the highest fully completed level.
+    */
+
+    let highestEarnedIndex = -1;
+
+
+    for (
+      let i = 0;
+      i < levelStates.length;
+      i++
+    ) {
+
+      if (
+        levelStates[i].isCompleted
+      ) {
+
+        highestEarnedIndex = i;
+
+      } else {
+
+        break;
+
+      }
+
+    }
+
+
+    /*
+      Students who have not earned Level 1
+      do not appear on the leaderboard.
+    */
+
+    if (highestEarnedIndex < 0) {
+      continue;
+    }
+
+
+    const earnedLevel =
+      levelStates[
+        highestEarnedIndex
+      ].level;
+
+
+    leaderboardEntries.push({
+      student,
+      level: earnedLevel,
+      levelIndex:
+        highestEarnedIndex
+    });
+
+  }
+
+
+  /*
+    Highest Band Level first.
+    Students tied at the same level are
+    sorted alphabetically.
+  */
+
+  leaderboardEntries.sort(
+    (a, b) => {
+
+      if (
+        b.levelIndex !==
+        a.levelIndex
+      ) {
+
+        return (
+          b.levelIndex -
+          a.levelIndex
+        );
+
+      }
+
+
+      return a.student.name
+        .localeCompare(
+          b.student.name
+        );
+
+    }
+  );
+
+
+  if (
+    !leaderboardEntries.length
+  ) {
+
+    listElement.innerHTML = `
+      <div class="leaderboard-empty">
+        No students have earned a Band Level yet.
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  listElement.innerHTML =
+    leaderboardEntries
+      .map(
+        (entry, index) => {
+
+          const levelNumber =
+            entry.level.number ??
+            entry.level.levelNumber ??
+            index + 1;
+
+
+          const imagePath =
+            entry.level.image
+              ? `images/${entry.level.image}`
+              : "";
+
+
+          return `
+            <div class="leaderboard-row">
+
+              <div class="leaderboard-student">
+
+                <div class="leaderboard-rank">
+                  ${index + 1}
+                </div>
+
+                <div class="leaderboard-name">
+                  ${entry.student.name}
+                </div>
+
+              </div>
+
+
+              <div class="leaderboard-level">
+
+                <div class="leaderboard-level-name">
+                  Level ${levelNumber}
+                </div>
+
+                ${
+                  imagePath
+                    ? `
+                      <img
+                        src="${imagePath}"
+                        alt="Level ${levelNumber}"
+                        class="leaderboard-level-image"
+                      >
+                    `
+                    : ""
+                }
+
+              </div>
+
+            </div>
+          `;
+
+        }
+      )
+      .join("");
+
+}
+
+
+async function showLeaderboardView(
+  addToHistory = true
+) {
+
+  if (!currentLoggedInStudent) {
+    return;
+  }
+
+
+  document
+    .getElementById(
+      "student-home-section"
+    )
+    ?.classList
+    .add("hidden");
+
+
+  document
+    .getElementById(
+      "band-level-dashboard-section"
+    )
+    ?.classList
+    .add("hidden");
+
+
+  document
+    .getElementById(
+      "leaderboard-section"
+    )
+    ?.classList
+    .remove("hidden");
+
+
+  if (addToHistory) {
+
+    history.pushState(
+      { studentView: "leaderboard" },
+      "",
+      window.location.href
+    );
+
+  }
+
+
+  await renderFifthGradeLeaderboard();
+
+}
+
+async function showRecentFeedbackView(
+  addToHistory = true
+) {
+
+  if (!currentLoggedInStudent) {
+    return;
+  }
+
+
+  document
+    .getElementById(
+      "student-home-section"
+    )
+    ?.classList
+    .add("hidden");
+
+
+  document
+    .getElementById(
+      "band-level-dashboard-section"
+    )
+    ?.classList
+    .add("hidden");
+
+
+  document
+    .getElementById(
+      "leaderboard-section"
+    )
+    ?.classList
+    .add("hidden");
+
+
+  document
+    .getElementById(
+      "student-feedback-section"
+    )
+    ?.classList
+    .remove("hidden");
+
+
+  if (addToHistory) {
+
+    history.pushState(
+      { studentView: "recent-feedback" },
+      "",
+      window.location.href
+    );
+
+  }
+
+
+  await loadStudentFeedback();
+
+}
+
+
+async function showStudentHomeView() {
+
+  document
+    .getElementById(
+      "band-level-dashboard-section"
+    )
+    ?.classList
+    .add("hidden");
+
+
+  document
+    .getElementById(
+      "leaderboard-section"
+    )
+    ?.classList
+    .add("hidden");
+
+  document
+    .getElementById(
+      "student-feedback-section"
+    )
+    ?.classList
+    .add("hidden");
+
+
+  document
+    .getElementById(
+      "student-home-section"
+    )
+    ?.classList
+    .remove("hidden");
+
+  await updateRecentFeedbackAlert();
+
+}
+
+
+document
+  .getElementById(
+    "open-band-levels-button"
+  )
+  ?.addEventListener(
+    "click",
+    async () => {
+
+      await showBandLevelsView(true);
+
+    }
+  );
+
+  document
+  .getElementById(
+    "view-leaderboard-button"
+  )
+  ?.addEventListener(
+    "click",
+    async () => {
+
+      await showLeaderboardView(true);
+
+    }
+  );
+
+  document
+  .getElementById(
+    "open-recent-feedback-button"
+  )
+  ?.addEventListener(
+    "click",
+    async () => {
+
+      await showRecentFeedbackView(true);
+
+    }
+  );
+
+document
+  .getElementById(
+    "back-to-student-home"
+  )
+  ?.addEventListener(
+    "click",
+    () => {
+
+      /*
+        If Band Levels was opened normally,
+        use browser history so our Back button
+        behaves exactly like the browser Back button.
+      */
+
+      if (
+        history.state?.studentView ===
+        "band-levels"
+      ) {
+
+        history.back();
+
+      } else {
+
+        showStudentHomeView();
+
+      }
+
+    }
+  );
+
+  document
+  .getElementById(
+    "back-from-leaderboard"
+  )
+  ?.addEventListener(
+    "click",
+    () => {
+
+      if (
+        history.state?.studentView ===
+        "leaderboard"
+      ) {
+
+        history.back();
+
+      } else {
+
+        showStudentHomeView();
+
+      }
+
+    }
+  );
+
+  document
+  .getElementById(
+    "back-from-feedback"
+  )
+  ?.addEventListener(
+    "click",
+    () => {
+
+      if (
+        history.state?.studentView ===
+        "recent-feedback"
+      ) {
+
+        history.back();
+
+      } else {
+
+        showStudentHomeView();
+
+      }
+
+    }
+  );
+
+
+window.addEventListener(
+  "popstate",
+  async event => {
+
+    /*
+      Ignore student-page navigation if nobody
+      is currently logged in.
+    */
+
+    if (
+      event.state?.studentView ===
+      "band-levels"
+    ) {
+
+      await showBandLevelsView(false);
+
+    } else if (
+      event.state?.studentView ===
+      "leaderboard"
+    ) {
+
+      await showLeaderboardView(false);
+
+    } else if (
+      event.state?.studentView ===
+      "recent-feedback"
+    ) {
+
+      await showRecentFeedbackView(false);
+
+    } else {
+
+      showStudentHomeView();
+
+    }
+
+  }
+);
+
 
 document
   .getElementById(
@@ -3590,10 +4890,6 @@ async function restoreStudentLogin() {
     );
 
 
-    renderBandLevelDashboard(
-      student.id
-    );
-
 
     loadStudentFeedback();
 
@@ -3612,3 +4908,32 @@ async function restoreStudentLogin() {
   }
 
 }
+
+const headerSignInButton =
+  document.getElementById(
+    "header-sign-in-button"
+  );
+
+
+headerSignInButton?.addEventListener(
+  "click",
+  () => {
+
+    const loginSection =
+      document.getElementById(
+        "student-login-section"
+      );
+
+    loginSection?.classList.remove(
+      "hidden"
+    );
+
+
+    document
+      .getElementById(
+        "student-username"
+      )
+      ?.focus();
+
+  }
+);

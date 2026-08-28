@@ -16,7 +16,7 @@
 
 body {
   font-family: "Trebuchet MS", Arial, sans-serif;
-  background: var(--bg);
+  background: var(--bg): #ffffff;
   margin: 0;
   padding: 0;
   color: var(--text);
@@ -504,203 +504,6 @@ body.overlay-open { overflow: hidden; }
 
 }
 
-/* ==========================================================
-   BAND LEVEL DASHBOARD - FIRST VERSION
-   ========================================================== */
-
-#band-level-dashboard-section {
-  max-width: 900px;
-  margin: 30px auto;
-  padding: 0 20px;
-}
-
-.band-level-dashboard {
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: none;
-}
-
-
-/* TEST STUDENT SELECTOR */
-
-.band-level-preview-controls {
-  margin-bottom: 24px;
-}
-
-.band-level-preview-controls label {
-  display: block;
-  margin-bottom: 7px;
-  font-weight: bold;
-  color: #c7d0da;
-}
-
-.band-level-preview-controls select {
-  width: 100%;
-  padding: 12px;
-  border: none;
-  border-radius: 8px;
-  background: #122033;
-  color: white;
-  font-size: 1rem;
-}
-
-
-/* PROFILE */
-
-.band-level-profile-header {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  margin-bottom: 24px;
-}
-
-.band-level-avatar {
-  width: 72px;
-  height: 72px;
-  border-radius: 50%;
-  background: #415a77;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2rem;
-}
-
-.band-level-profile-header h2 {
-  margin: 0 0 5px;
-  font-size: 1.7rem;
-}
-
-.band-level-grade {
-  color: #9aa7b5;
-}
-
-
-/* CURRENT LEVEL */
-
-.current-level-summary {
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 20px;
-  text-align: center;
-  margin-bottom: 28px;
-}
-
-.current-level-label {
-  color: #9aa7b5;
-  font-size: 0.9rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.current-level-number {
-  font-size: 2.2rem;
-  font-weight: bold;
-  margin: 7px 0;
-}
-
-.current-level-progress {
-  color: #c7d0da;
-}
-
-
-/* JOURNEY */
-
-.band-level-journey h3 {
-  margin-bottom: 18px;
-}
-
-.band-level-item {
-  position: relative;
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 18px;
-  margin-bottom: 14px;
-  border: 1px solid #dedede;
-}
-
-.band-level-item.current {
-  border-left-color: #5da9ff;
-}
-
-.band-level-item.completed {
-  border-left-color: #5dcc7a;
-}
-
-.band-level-item.locked {
-  opacity: 0.55;
-}
-
-.band-level-item-header {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  align-items: center;
-}
-
-.band-level-item-title {
-  font-size: 1.15rem;
-  font-weight: bold;
-}
-
-.band-level-status {
-  font-size: 0.8rem;
-  font-weight: bold;
-  text-transform: uppercase;
-}
-
-.band-level-status.current {
-  color: #7dbaff;
-}
-
-.band-level-status.completed {
-  color: #77dd93;
-}
-
-.band-level-status.locked {
-  color: #8b96a1;
-}
-
-
-/* REQUIREMENTS */
-
-.band-level-requirements {
-  margin-top: 14px;
-}
-
-.band-level-requirement {
-  padding: 10px 0;
-  border-top: 1px solid #263543;
-}
-
-.band-level-requirement:first-child {
-  border-top: none;
-}
-
-.requirement-icon {
-  display: inline-block;
-  width: 24px;
-  color: #9aa7b5;
-}
-
-
-/* MOBILE */
-
-@media (max-width: 600px) {
-
-  #band-level-dashboard-section {
-    padding: 0 12px;
-  }
-
-  .band-level-dashboard {
-    padding: 18px 14px;
-  }
-
-  .band-level-profile-header {
-    align-items: flex-start;
-  }
-
-}
 
 /* ==========================================================
    RECORDING MODAL / OVERLAY
@@ -895,246 +698,6 @@ body.recorder-open {
 
 #student-logout-button:hover {
   background: #526f91;
-}
-
-/* ==========================================================
-   VISUAL BAND LEVEL BADGES
-   ========================================================== */
-
-.band-level-item {
-  position: relative;
-  padding: 16px;
-}
-
-.band-level-visual-header {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.band-level-badge-wrap {
-  position: relative;
-
-  flex: 0 0 auto;
-
-  width: 92px;
-  height: 92px;
-}
-
-.band-level-badge-image,
-.band-level-badge-fallback {
-  width: 92px;
-  height: 92px;
-
-  border-radius: 50%;
-}
-
-.band-level-badge-image {
-  display: block;
-
-  object-fit: contain;
-}
-
-.band-level-badge-fallback {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  background: #415a77;
-  color: white;
-
-  font-size: 1.5rem;
-  font-weight: bold;
-}
-
-.band-level-visual-info {
-  min-width: 0;
-}
-
-.band-level-lock-overlay {
-  position: absolute;
-  inset: 0;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  border-radius: 50%;
-
-  background: rgba(0, 0, 0, 0.58);
-
-  font-size: 1.6rem;
-}
-
-.band-level-complete-check {
-  position: absolute;
-
-  right: -3px;
-  bottom: -3px;
-
-  width: 28px;
-  height: 28px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  border-radius: 50%;
-
-  background: #45a65b;
-  color: white;
-
-  font-weight: bold;
-
-  border: 3px solid #111820;
-}
-
-.band-level-item.current
-.band-level-badge-wrap {
-  width: 112px;
-  height: 112px;
-}
-
-.band-level-item.current
-.band-level-badge-image,
-.band-level-item.current
-.band-level-badge-fallback {
-  width: 112px;
-  height: 112px;
-}
-
-.band-level-item.locked
-.band-level-badge-image {
-  filter: grayscale(0.7);
-  opacity: 0.65;
-}
-
-.band-level-item.completed
-.band-level-badge-image {
-  opacity: 0.9;
-}
-
-/* ==========================================================
-   BAND LEVEL DASHBOARD — LIGHT VERSION
-   ========================================================== */
-
-#band-level-dashboard-section {
-  background: #f4f5f7;
-  color: #172033;
-}
-
-
-/* ----------------------------------------------------------
-   CURRENT BAND LEVEL
-   ---------------------------------------------------------- */
-
-.band-level-profile {
-  background: white;
-  color: #172033;
-
-  border: 1px solid #dde2e8;
-  border-radius: 16px;
-
-  box-shadow:
-    0 4px 16px
-    rgba(24, 32, 51, 0.07);
-}
-
-
-.current-level-badge-display {
-  text-align: center;
-}
-
-
-.current-level-badge-image {
-  width: 190px;
-  height: 190px;
-
-  display: block;
-
-  margin: 0 auto 8px;
-
-  object-fit: contain;
-}
-
-
-.current-level-small-label {
-  color: #6f39ad;
-
-  font-size: 1rem;
-  font-weight: 800;
-}
-
-
-.current-level-starting {
-  color: #172033;
-
-  font-size: 1.25rem;
-  font-weight: 800;
-}
-
-
-.current-progress-heading {
-  color: #172033;
-
-  font-size: 1.25rem;
-  font-weight: 800;
-
-  margin-bottom: 8px;
-}
-
-
-.current-progress-count {
-  color: #394457;
-
-  font-size: 1.2rem;
-
-  margin-bottom: 12px;
-}
-
-
-.current-progress-count strong {
-  color: #743fc1;
-
-  font-size: 1.65rem;
-}
-
-
-.band-level-progress-bar {
-  width: 100%;
-  height: 16px;
-
-  overflow: hidden;
-
-  border-radius: 999px;
-
-  background: #dfe3e8;
-
-  margin-bottom: 13px;
-}
-
-
-.band-level-progress-fill {
-  height: 100%;
-
-  border-radius: inherit;
-
-  background:
-    linear-gradient(
-      90deg,
-      #6838b5,
-      #8d55df
-    );
-
-  transition:
-    width 0.35s ease;
-}
-
-
-.current-progress-message {
-  color: #646f80;
-
-  line-height: 1.4;
 }
 
 
@@ -1380,323 +943,336 @@ body.recorder-open {
 }
 
 /* ==========================================================
-   BAND LEVEL PAGE CLEANUP
+   SITE HEADER
    ========================================================== */
 
-html,
-body {
-  background: #ffffff;
-}
-
-main {
-  background: #ffffff;
-}
-
-#band-level-dashboard-section {
-  background: #ffffff;
-}
-
-#bandLevelJourney {
-  background: #ffffff;
-}
-
-.band-level-journey {
-  background: #ffffff;
-}
-
-/* ==========================================================
-   CURRENT LEVEL COLOR + ANIMATED GLOW
-   ========================================================== */
-
-.band-level-profile {
-  position: relative;
-  isolation: isolate;
-
-  overflow: hidden;
+.site-header {
+  width: 100%;
 
   background: #ffffff;
 
-  border: 1px solid rgba(0,0,0,0.08);
+  border-bottom:
+    1px solid #e6e6e6;
 }
 
+.site-header-inner {
+  max-width: 900px;
 
+  margin: 0 auto;
+  padding: 14px 20px;
 
-@keyframes currentLevelColorDrift {
-
-  0% {
-    transform:
-      scale(1.18)
-      translate(-2%, -1%);
-  }
-
-  50% {
-    transform:
-      scale(1.28)
-      translate(2%, 1%);
-  }
-
-  100% {
-    transform:
-      scale(1.22)
-      translate(-1%, 2%);
-  }
-
-}
-
-.current-level-badge-image {
-  position: relative;
-  z-index: 2;
-
-  filter:
-    drop-shadow(
-      0 4px 10px
-      rgba(0,0,0,0.12)
-    );
-
-  animation: none;
-}
-
-
-.band-level-submit-button,
-.submit-band-level-recording {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  min-width: 160px;
-
-  padding: 10px 16px;
-
-  border: none;
-  border-radius: 9px;
-
-  background:
-    linear-gradient(
-      135deg,
-      #286bc5,
-      #174f9d
-    );
-
-  color: #ffffff;
-
-  font-size: 0.92rem;
-  font-weight: 800;
-
-  box-shadow:
-    0 4px 10px
-    rgba(31,90,170,0.22);
-
-  cursor: pointer;
-}
-
-.band-level-submit-button:hover,
-.submit-band-level-recording:hover {
-  transform: translateY(-1px);
-
-  box-shadow:
-    0 6px 14px
-    rgba(31,90,170,0.30);
-}
-
-/* ==========================================================
-   BAND LEVEL REQUIREMENT ACTIONS
-   ========================================================== */
-
-.band-level-requirement {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 18px;
 
-  width: 100%;
-  margin: 8px 0;
+  gap: 24px;
 }
 
-.requirement-name {
-  flex: 1;
+
+.site-brand {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+}
+
+
+.site-logo {
+  width: 52px;
+  height: 52px;
+
+  display: block;
+
+  object-fit: contain;
+}
+
+
+.site-title {
+  color: #171717;
+
+  font-size: 1.55rem;
+  font-weight: 800;
+
+  letter-spacing: -0.02em;
+}
+
+
+.site-header-account {
+  display: flex;
+  align-items: center;
+}
+
+
+.header-sign-in-button,
+.header-sign-out-button {
+  padding: 9px 16px;
+
+  border:
+    1px solid #1f1f1f;
+
+  border-radius: 8px;
+
+  background: #ffffff;
+  color: #171717;
+
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+
+.header-sign-in-button:hover,
+.header-sign-out-button:hover {
+  background: #f4f4f4;
+}
+
+
+.header-signed-in {
+  display: flex;
+  align-items: center;
+
+  gap: 14px;
+
+  color: #4d4d4d;
+
+  font-size: 0.9rem;
+}
+
+
+.header-signed-in strong {
+  color: #171717;
+}
+
+
+@media (max-width: 700px) {
+
+  .site-header-inner {
+    padding: 10px 12px;
+  }
+
+
+  .site-logo {
+    width: 42px;
+    height: 42px;
+  }
+
+
+  .site-title {
+    font-size: 1.25rem;
+  }
+
+
+  .header-signed-in {
+    gap: 8px;
+
+    font-size: 0.78rem;
+  }
+
+
+  .header-sign-in-button,
+  .header-sign-out-button {
+    padding: 7px 10px;
+
+    font-size: 0.78rem;
+  }
+
+}
+
+body {
+  font-family:
+    "Atkinson Hyperlegible",
+    Arial,
+    sans-serif;
+}
+
+
+.site-title {
+  font-family:
+    "Angkor",
+    serif;
+
+  font-weight: 400;
+}
+
+/* ==========================================================
+   STUDENT HOME DASHBOARD
+   ========================================================== */
+
+#student-home-section {
+  width: min(900px, calc(100% - 40px));
+
+  margin: 28px auto 60px;
+}
+
+
+.student-home {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+
+/* ==========================================================
+   HOME CARDS
+   ========================================================== */
+
+.student-home-card {
+  width: 100%;
+  box-sizing: border-box;
+
+  border: none;
+  border-radius: 18px;
+
+  overflow: hidden;
+
+  font-family:
+    "Atkinson Hyperlegible",
+    Arial,
+    sans-serif;
+}
+
+
+/* ----------------------------------------------------------
+   STUDENT SUMMARY CARD
+   ---------------------------------------------------------- */
+
+.student-summary-card {
+  min-height: 190px;
+
+  padding: 28px 32px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 28px;
+
+  background: #343434;
+  color: #ffffff;
+}
+
+
+.student-summary-text {
   min-width: 0;
 }
 
-.requirement-action {
-  flex: 0 0 auto;
 
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
+.student-summary-text h2 {
+  margin: 0 0 6px;
+
+  font-family: "Winky Rough", cursive;
+
+  font-size: 1.8rem;
+  font-weight: 600;
+
+  color: #ffffff;
 }
 
-.requirement-complete-check {
-  width: 34px;
-  height: 34px;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.student-home-class {
+  color:
+    rgba(255,255,255,0.78);
 
-  border-radius: 50%;
-
-  background: #38a85b;
-  color: white;
-
-  font-size: 1.1rem;
-  font-weight: 900;
-
-  box-shadow:
-    0 3px 8px
-    rgba(35, 135, 70, 0.22);
-}
-
-.band-level-record-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  min-width: 165px;
-
-  padding: 10px 16px;
-
-  border: none;
-  border-radius: 9px;
-
-  background:
-    linear-gradient(
-      135deg,
-      #2976d2,
-      #174f9d
-    );
-
-  color: white;
-
-  font-size: 0.9rem;
-  font-weight: 800;
-
-  box-shadow:
-    0 4px 11px
-    rgba(32, 92, 173, 0.25);
-
-  cursor: pointer;
-
-  transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease;
-}
-
-.band-level-record-button:hover {
-  transform: translateY(-2px);
-
-  box-shadow:
-    0 7px 15px
-    rgba(32, 92, 173, 0.32);
-}
-
-.requirement-complete-status {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.requirement-complete-text {
-  color: #278a49;
-  font-weight: 800;
-  font-size: 0.9rem;
-}
-
-.band-level-requirement .requirement-name {
-  color: #161616;
   font-size: 1rem;
-  font-weight: 750;
-  line-height: 1.3;
 }
 
-.current-goal-label {
-  padding: 8px 18px 3px;
 
-  color: #1d66b1;
+.student-summary-level {
+  display: flex;
+  align-items: center;
 
-  font-size: 0.72rem;
-  font-weight: 900;
+  gap: 20px;
 
-  letter-spacing: 0.09em;
+  flex: 0 0 auto;
+}
+
+
+.student-summary-level-text {
+  color:
+    rgba(255,255,255,0.78);
+
+  font-size: 0.82rem;
+  font-weight: 700;
+
   text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
-html,
-body,
-main,
-#band-level-dashboard-section,
-#bandLevelJourney,
-.band-level-profile,
-.band-level-item,
-.future-level-card-inner,
-.future-level-content,
-.band-level-requirements {
-  background-color: #ffffff;
+
+.student-home-level-name {
+  color: #ffffff;
+
+  font-size: 2rem;
+  font-weight: 700;
+
+  white-space: nowrap;
 }
 
-#band-level-dashboard-section {
-  color: #161616;
-}
 
-.band-level-item {
-  box-shadow: none;
-}
-
-.band-level-item.current {
-  background: #ffffff;
-  border: 2px solid #4d8fd7;
-}
-
-.band-level-item.locked {
-  background: #f5f5f5;
-}
-
-.current-level-badge-display {
+.student-home-level-badge {
   position: relative;
 
-  width: 220px;
-  height: 220px;
-
-  margin: 0 auto;
+  width: 130px;
+  height: 130px;
 
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
+
+  flex: 0 0 auto;
 }
 
-.current-level-badge-display::before {
+
+.student-home-level-image {
+  position: relative;
+  z-index: 2;
+
+  width: 105px;
+  height: 105px;
+
+  object-fit: contain;
+
+  filter:
+    drop-shadow(
+      0 0 10px
+      var(--home-level-glow, #ffffff)
+    );
+}
+
+
+/* Small glow on summary badge */
+
+.student-home-level-badge::before {
   content: "";
 
   position: absolute;
-
-  width: 200px;
-  height: 200px;
+  inset: 8px;
 
   border-radius: 50%;
 
   background:
     conic-gradient(
       from 0deg,
-      rgba(120, 72, 190, 0),
-      rgba(120, 72, 190, 0.42),
-      rgba(255,255,255,0),
-      rgba(120, 72, 190, 0.30),
-      rgba(120, 72, 190, 0)
+      transparent,
+      var(--home-level-glow, #ffffff),
+      transparent,
+      var(--home-level-complementary, #ffffff),
+      transparent
     );
 
-  filter: blur(12px);
+  filter: blur(10px);
 
-  opacity: 0.75;
+  opacity: 0.85;
 
   animation:
-    currentLevelShimmer
-    6s linear
-    infinite;
-
-  z-index: 0;
+    homeBadgeGlow
+    14s linear infinite;
 }
 
-@keyframes currentLevelShimmer {
+
+@keyframes homeBadgeGlow {
 
   from {
     transform: rotate(0deg);
@@ -1708,276 +1284,223 @@ main,
 
 }
 
-.band-level-profile {
-  background: #ffffff;
 
-  border: 1px solid #d9d9d9;
-  border-radius: 12px;
+/* ==========================================================
+   FEATURE CARDS
+   ========================================================== */
 
+.student-feature-card {
+  min-height: 160px;
+
+  padding: 24px 30px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 24px;
+
+  text-align: left;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+
+.student-feature-card:hover {
+  transform:
+    translateY(-2px);
+
+  box-shadow:
+    0 8px 20px
+    rgba(0,0,0,0.10);
+}
+
+
+.student-feature-copy {
+  min-width: 0;
+}
+
+
+.student-feature-copy h2 {
+  margin:
+    0 0 8px;
+
+  font-family:
+    "Angkor",
+    serif;
+
+  font-size: 1.45rem;
+  font-weight: 400;
+}
+
+
+.student-feature-copy p {
+  margin: 0;
+
+  max-width: 520px;
+
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+
+/* ----------------------------------------------------------
+   BAND LEVELS CARD
+   ---------------------------------------------------------- */
+
+.band-levels-home-card {
+  background:
+    var(
+      --home-band-level-color,
+      #6e32b8
+    );
+
+  color: #282828;
+}
+
+
+.band-levels-home-card h2,
+.band-levels-home-card p {
+  color: #282828;
+}
+
+
+/* ----------------------------------------------------------
+   RECENT FEEDBACK CARD
+   ---------------------------------------------------------- */
+
+.feedback-home-card {
+  background: #f8dbe5;
+
+  color: #34252b;
+}
+
+
+.feedback-home-card h2,
+.feedback-home-card p {
+  color: #34252b;
+}
+
+
+/* ----------------------------------------------------------
+   RHYTHM TRAINER CARD
+   ---------------------------------------------------------- */
+
+.rhythm-home-card {
+  position: relative;
+
+  background: #dcecf8;
+
+  color: #203545;
+
+  cursor: default;
+}
+
+
+.rhythm-home-card:hover {
+  transform: none;
   box-shadow: none;
 }
 
+
+.rhythm-home-card h2,
+.rhythm-home-card p {
+  color: #203545;
+}
+
+
 /* ==========================================================
-   FINAL BAND LEVEL WHITE BACKGROUND OVERRIDES
+   FEATURE CARD ART
    ========================================================== */
 
-html,
-body,
-main,
-#band-level-dashboard-section,
-#bandLevelStudentProfile,
-#bandLevelJourney,
-.band-level-profile,
-.band-level-item,
-.future-level-card-inner,
-.future-level-content,
-.band-level-requirements,
-.band-level-requirement,
-#student-feedback-section {
-  background: #ffffff !important;
-  background-color: #ffffff !important;
-}
+.student-feature-image,
+.student-feature-placeholder-icon {
+  width: 100px;
+  height: 100px;
 
-body {
-  color: #161616;
-}
-
-.band-level-item.locked {
-  background: #f3f4f6 !important;
-}
-
-.band-level-item.current {
-  background: #ffffff !important;
-}
-
-
-/* ----------------------------------------------------------
-   LEFT: STUDENT IDENTITY
-   ---------------------------------------------------------- */
-
-#bandLevelStudentProfile .band-level-profile-header {
-  position: static;
-
-  grid-area: student;
-
-  width: auto;
-  margin: 0;
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-
-  text-align: center;
-}
-
-
-#bandLevelStudentProfile .band-level-avatar {
-  width: 82px;
-  height: 82px;
-
-  margin: 0 0 14px;
-
-  border: 3px solid white;
-}
-
-
-#bandLevelStudentProfile
-.band-level-profile-header h2 {
-  margin: 0;
-
-  font-size: 1.25rem;
-  line-height: 1.15;
-}
-
-
-#bandLevelStudentProfile
-.band-level-grade {
-  margin-top: 6px;
-
-  font-size: 0.9rem;
-}
-
-
-/* ----------------------------------------------------------
-   MIDDLE LEFT: LEVEL + PROGRESS
-   ---------------------------------------------------------- */
-
-#currentBandLevelProgress {
-  display: contents;
-}
-
-
-.hero-level-info {
-  grid-area: progress;
-
-  margin: 0;
-
-  min-width: 0;
-}
-
-
-.hero-current-label {
-  font-size: 0.95rem;
-}
-
-
-.hero-current-level {
-  margin-top: 4px;
-
-  font-size: clamp(
-    2.4rem,
-    4vw,
-    3.7rem
-  );
-
-  white-space: nowrap;
-}
-
-
-.hero-progress-divider {
-  margin: 18px 0;
-}
-
-
-.hero-level-info
-.band-level-progress-bar {
-  width: 100%;
-  max-width: 300px;
-}
-
-
-/* ----------------------------------------------------------
-   CENTER: BADGE
-   ---------------------------------------------------------- */
-
-#currentBandLevelNumber {
-  grid-area: badge;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  min-width: 0;
-}
-
-
-.current-level-badge-display {
-  width: clamp(
-    190px,
-    20vw,
-    250px
-  );
-
-  height: clamp(
-    190px,
-    20vw,
-    250px
-  );
-
-  min-height: 0;
-}
-
-
-.current-level-badge-image {
-  width: 82%;
-  height: 82%;
+  flex: 0 0 auto;
 
   object-fit: contain;
 }
 
 
-/* ----------------------------------------------------------
-   RIGHT: NEXT LEVEL MESSAGE
-   ---------------------------------------------------------- */
-
-.hero-next-message {
-  grid-area: message;
-
-  align-self: stretch;
-
-  min-width: 0;
-
-  padding-left: 26px;
-
+.student-feature-placeholder-icon {
   display: flex;
-  flex-direction: column;
+  align-items: center;
   justify-content: center;
 
-  border-left:
-    1px solid
-    rgba(255,255,255,0.45);
+  font-size: 3.2rem;
+}
 
-  font-size: 1rem;
+
+/* Trophy is white on the Band Levels card */
+
+.band-levels-home-card
+.student-feature-image {
+  filter:
+    brightness(0)
+    invert(1);
 }
 
 
 /* ==========================================================
-   LEVEL CARDS
+   COMING SOON
    ========================================================== */
 
-.future-level-card-inner {
-  grid-template-columns:
-    130px minmax(0, 1fr);
+.coming-soon-label {
+  position: absolute;
 
-  gap: 22px;
+  top: 16px;
+  right: 18px;
 
-  padding: 18px 22px;
+  padding: 5px 10px;
+
+  border-radius: 999px;
+
+  background:
+    rgba(255,255,255,0.72);
+
+  color: #35556d;
+
+  font-size: 0.72rem;
+  font-weight: 700;
+
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
-
-.future-level-badge-image,
-.future-level-badge-fallback {
-  width: 110px;
-  height: 110px;
-}
-
-
-.band-level-requirement {
-  min-height: 58px;
-
-  padding: 11px 14px;
-}
 
 /* ==========================================================
-   TABLET
+   BAND LEVEL BACK BUTTON
    ========================================================== */
 
-@media (max-width: 1000px) {
+.student-back-button {
+  margin-bottom: 10px;
 
-  #bandLevelStudentProfile
-  .current-level-summary {
+  padding: 8px 12px;
 
-    grid-template-columns:
-      150px
-      minmax(200px, 1fr)
-      220px;
+  border:
+    1px solid #d5d5d5;
 
-    grid-template-areas:
-      "student progress badge"
-      "message message message";
+  border-radius: 8px;
 
-    gap: 24px;
-  }
+  background: #ffffff;
+  color: #252525;
 
+  font-family:
+    "Atkinson Hyperlegible",
+    Arial,
+    sans-serif;
 
-  .hero-next-message {
-    padding:
-      18px 0 0;
+  font-weight: 700;
 
-    border-left: none;
-
-    border-top:
-      1px solid
-      rgba(255,255,255,0.35);
-  }
-
-
-  .current-level-badge-display {
-    width: 205px;
-    height: 205px;
-  }
-
+  cursor: pointer;
 }
+
 
 /* ==========================================================
    MOBILE
@@ -1985,305 +1508,534 @@ body {
 
 @media (max-width: 700px) {
 
-  #bandLevelStudentProfile
-  .current-level-summary {
+  #student-home-section {
+    width: calc(100% - 16px);
 
-    display: flex;
-    flex-direction: column;
-
-    gap: 22px;
-
-    padding: 24px 18px;
-
-    text-align: center;
+    margin:
+      16px auto
+      40px;
   }
 
 
-  #bandLevelStudentProfile
-  .band-level-profile-header {
-
-    width: 100%;
+  .student-home {
+    gap: 12px;
   }
 
 
-  #bandLevelStudentProfile
-  .band-level-avatar {
+  .student-summary-card {
+    min-height: 0;
 
+    padding: 20px 18px;
+
+    gap: 16px;
+  }
+
+
+  .student-summary-text h2 {
+    font-size: 1.35rem;
+  }
+
+
+  .student-summary-level {
+    gap: 10px;
+  }
+
+
+  .student-summary-level-text {
+    display: none;
+  }
+
+
+  .student-home-level-name {
+    font-size: 1.45rem;
+  }
+
+
+  .student-home-level-badge {
+    width: 82px;
+    height: 82px;
+  }
+
+
+  .student-home-level-image {
     width: 68px;
     height: 68px;
   }
 
 
-  #bandLevelStudentProfile
-  .band-level-profile-header h2 {
+  .student-feature-card {
+    min-height: 125px;
 
+    padding: 18px;
+
+    gap: 14px;
+  }
+
+
+  .student-feature-copy h2 {
     font-size: 1.15rem;
   }
 
 
-  .hero-level-info {
-
-    width: 100%;
+  .student-feature-copy p {
+    font-size: 0.9rem;
   }
 
 
-  .hero-current-level {
-
-    font-size: 2.8rem;
+  .student-feature-image,
+  .student-feature-placeholder-icon {
+    width: 72px;
+    height: 72px;
   }
 
 
-  .hero-level-info
-  .band-level-progress-bar {
-
-    max-width: none;
+  .student-feature-placeholder-icon {
+    font-size: 2.4rem;
   }
 
 
-  #currentBandLevelNumber {
+  .student-summary-card {
+  flex-direction: column;
+  align-items: stretch;
+}
 
-    width: 100%;
+
+.student-summary-text {
+  width: 100%;
+}
+
+
+.student-summary-text h2 {
+  width: 100%;
+  white-space: nowrap;
+  font-size: 1.55rem;
+}
+
+
+.student-summary-level {
+  width: 100%;
+  justify-content: space-between;
+}
+
+}
+
+.note-reader-home-card {
+  position: relative;
+  background: #f7edbd;
+  color: #373329;
+  cursor: default;
+}
+
+
+.note-reader-home-card:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+
+.note-reader-home-card h2,
+.note-reader-home-card p {
+  color: #373329;
+}
+
+.student-leaderboard-button {
+  margin-top: 18px;
+  padding: 9px 15px;
+
+  border: 1px solid rgba(255,255,255,.35);
+  border-radius: 9px;
+
+  background: rgba(255,255,255,.10);
+  color: #ffffff;
+
+  font-family: "Atkinson Hyperlegible", Arial, sans-serif;
+  font-size: .9rem;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background .15s ease,
+    border-color .15s ease;
+}
+
+
+.student-leaderboard-button:hover {
+  background: rgba(255,255,255,.18);
+  border-color: rgba(255,255,255,.55);
+}
+
+/* BAND LEVEL LEADERBOARD */
+
+#leaderboard-section {
+  width: min(900px, calc(100% - 40px));
+  margin: 28px auto 60px;
+}
+
+
+.leaderboard-panel {
+  background: #343434;
+  color: #ffffff;
+
+  border-radius: 18px;
+  padding: 30px 32px;
+}
+
+
+.leaderboard-header {
+  margin-bottom: 24px;
+}
+
+
+.leaderboard-header h2 {
+  margin: 0 0 4px;
+
+  font-family: "Angkor", serif;
+  font-size: 1.8rem;
+  font-weight: 400;
+
+  color: #ffffff;
+}
+
+
+.leaderboard-header p {
+  margin: 0;
+
+  color: rgba(255,255,255,.72);
+  font-size: 1rem;
+}
+
+
+.leaderboard-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+
+.leaderboard-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 18px;
+
+  padding: 14px 16px;
+
+  border-radius: 12px;
+
+  background: rgba(255,255,255,.07);
+}
+
+
+.leaderboard-student {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  min-width: 0;
+}
+
+
+.leaderboard-rank {
+  width: 28px;
+
+  flex: 0 0 auto;
+
+  font-size: 1rem;
+  font-weight: 700;
+
+  color: rgba(255,255,255,.72);
+}
+
+
+.leaderboard-name {
+  font-size: 1.05rem;
+  font-weight: 700;
+
+  color: #ffffff;
+}
+
+
+.leaderboard-level {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  flex: 0 0 auto;
+}
+
+
+.leaderboard-level-name {
+  font-weight: 700;
+  color: rgba(255,255,255,.88);
+}
+
+
+.leaderboard-level-image {
+  width: 56px;
+  height: 56px;
+
+  object-fit: contain;
+
+  /* intentionally no glow */
+  filter: none;
+}
+
+
+.leaderboard-empty {
+  padding: 30px 20px;
+
+  text-align: center;
+
+  color: rgba(255,255,255,.65);
+}
+
+
+.leaderboard-back-button {
+  margin-bottom: 12px;
+}
+
+
+@media (max-width: 700px) {
+
+  #leaderboard-section {
+    width: calc(100% - 16px);
+    margin: 16px auto 40px;
   }
 
 
-  .current-level-badge-display {
-
-    width: 210px;
-    height: 210px;
+  .leaderboard-panel {
+    padding: 22px 18px;
   }
 
 
-  .hero-next-message {
-
-    width: 100%;
-
-    box-sizing: border-box;
-
-    padding:
-      18px 0 0;
-
-    border-left: none;
-
-    border-top:
-      1px solid
-      rgba(255,255,255,0.35);
+  .leaderboard-header h2 {
+    font-size: 1.4rem;
   }
 
 
-  .future-level-card-inner {
-
-    display: grid;
-
-    grid-template-columns:
-      82px minmax(0, 1fr);
-
-    gap: 12px;
-
-    padding: 14px;
+  .leaderboard-level-name {
+    display: none;
   }
 
 
-  .future-level-badge-image,
-  .future-level-badge-fallback {
+  .leaderboard-level-image {
+    width: 48px;
+    height: 48px;
+  }
 
-    width: 76px;
-    height: 76px;
+}
+
+.header-sign-out-button {
+  background: transparent !important;
+  color: #555555 !important;
+
+  border: 1px solid #cfcfcf !important;
+  border-radius: 8px;
+
+  padding: 7px 12px;
+
+  font-family: "Atkinson Hyperlegible", Arial, sans-serif;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.header-sign-out-button:hover {
+  background: #f7f7f7 !important;
+  border-color: #bdbdbd !important;
+}
+
+/* RECENT FEEDBACK PAGE */
+
+#student-feedback-section {
+  width: min(900px, calc(100% - 40px));
+  margin: 28px auto 60px;
+}
+
+
+.recent-feedback-panel {
+  background: #f8dbe5;
+  color: #34252b;
+
+  border-radius: 18px;
+  padding: 30px 32px;
+}
+
+
+.recent-feedback-header {
+  margin-bottom: 26px;
+}
+
+
+.recent-feedback-header h2 {
+  margin: 0 0 6px;
+
+  font-family: "Angkor", serif;
+  font-size: 1.8rem;
+  font-weight: 400;
+
+  color: #34252b;
+}
+
+
+.recent-feedback-header p {
+  margin: 0;
+
+  color: #665158;
+  font-size: 1rem;
+}
+
+
+/* Individual recording */
+
+.feedback-item {
+  background: rgba(255,255,255,.68);
+
+  border-radius: 12px;
+
+  padding: 18px 20px;
+  margin-bottom: 12px;
+}
+
+
+.feedback-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+
+  margin-bottom: 12px;
+}
+
+
+.feedback-name {
+  font-weight: 700;
+  color: #34252b;
+}
+
+
+.feedback-date {
+  font-size: .85rem;
+  color: #756269;
+}
+
+
+.feedback-status {
+  display: inline-block;
+
+  padding: 5px 10px;
+  margin-bottom: 12px;
+
+  border-radius: 999px;
+
+  font-size: .8rem;
+  font-weight: 700;
+}
+
+
+.feedback-status.pending {
+  background: #eeeeee;
+  color: #555555;
+}
+
+
+.feedback-status.success {
+  background: #dcefdc;
+  color: #315c31;
+}
+
+
+.feedback-status.try-again {
+  background: #f6dddd;
+  color: #7a3838;
+}
+
+
+.feedback-comment {
+  margin-top: 4px;
+
+  line-height: 1.45;
+  color: #45373c;
+}
+
+
+.feedback-back-button {
+  margin-bottom: 12px;
+}
+
+
+@media (max-width: 700px) {
+
+  #student-feedback-section {
+    width: calc(100% - 16px);
+    margin: 16px auto 40px;
   }
 
 
-  .future-level-title {
-
-    font-size: 1.1rem;
+  .recent-feedback-panel {
+    padding: 22px 18px;
   }
 
 
-  .band-level-requirement {
+  .recent-feedback-header h2 {
+    font-size: 1.4rem;
+  }
 
+
+  .feedback-header {
     flex-direction: column;
-    align-items: stretch;
-
-    gap: 9px;
-
-    min-height: 0;
-
-    padding: 11px;
-  }
-
-
-  .requirement-action {
-
-    width: 100%;
-
-    justify-content: flex-end;
-  }
-
-
-  .band-level-record-button {
-
-    width: 100%;
-    min-width: 0;
-  }
-
-
-  .requirement-complete-status {
-
-    justify-content: flex-end;
+    gap: 3px;
   }
 
 }
 
-
-/* ==========================================================
-   HERO SIZE / SPACING REFINEMENT
-   ========================================================== */
-
-@media (min-width: 1001px) {
-
-  #bandLevelStudentProfile .current-level-summary {
-    grid-template-columns:
-      minmax(220px, 0.95fr)
-      210px
-      minmax(220px, 0.9fr);
-
-    gap: 24px;
-
-    padding: 26px 30px;
-  }
-
-  .hero-current-label {
-    font-size: 0.82rem;
-  }
-
-  .hero-current-level {
-    font-size: 2.35rem;
-    line-height: 1;
-  }
-
-  .current-progress-heading {
-    font-size: 0.9rem !important;
-  }
-
-  .hero-level-info
-  .current-progress-count {
-    font-size: 0.95rem;
-  }
-
-  .hero-level-info
-  .current-progress-count strong {
-    font-size: 1.55rem;
-  }
-
-  #currentBandLevelNumber {
-    width: 210px;
-  }
-
-  .current-level-badge-display {
-    width: 195px;
-    height: 195px;
-  }
-
-  .current-level-badge-image {
-    width: 78%;
-    height: 78%;
-  }
-
-  .hero-next-message {
-    padding-left: 22px;
-
-    font-size: 0.88rem;
-    line-height: 1.4;
-
-    overflow: visible;
-  }
-
-  .hero-trophy-image {
-    width: 44px;
-    height: 44px;
-
-    margin-bottom: 9px;
-  }
-
-}
-
-@media (max-width: 1000px) {
-
-  .hero-current-level {
-    font-size: 2.15rem;
-  }
-
-  .current-level-badge-display {
-    width: 180px;
-    height: 180px;
-  }
-
-  .hero-next-message {
-    font-size: 0.88rem;
-  }
-
+.feedback-audio-container {
+  margin-top: 16px;
 }
 
 
-/* ==========================================================
-   LEVEL-SPECIFIC BADGE GLOW
-   ========================================================== */
+.feedback-audio-player {
+  display: block;
 
-.current-level-badge-display::before {
-  background:
-    conic-gradient(
-      from 0deg,
+  width: 100%;
+  max-width: 520px;
 
-      transparent 0deg,
-
-      rgba(255,255,255,0.95) 40deg,
-
-      var(--current-level-glow) 75deg,
-
-      transparent 125deg,
-
-      rgba(255,255,255,0.9) 195deg,
-
-      var(--current-level-glow) 245deg,
-
-      transparent 315deg
-    ) !important;
-
-  filter:
-    blur(13px)
-    saturate(2);
-
-  animation:
-    heroGlowClockwise
-    14s linear infinite,
-    heroGlowPulse
-    5.5s ease-in-out infinite;
+  height: 42px;
 }
 
 
-.current-level-badge-display::after {
-  border:
-    3px solid
-    rgba(255,255,255,0.48);
+.feedback-audio-unavailable {
+  font-size: .85rem;
+  color: #806d73;
+  font-style: italic;
+}
+
+.feedback-home-card {
+  position: relative;
+}
+
+
+.recent-feedback-alert {
+  position: absolute;
+
+  top: 14px;
+  right: 14px;
+
+  width: 32px;
+  height: 32px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #c93636;
+  color: #ffffff;
+
+  font-size: 1rem;
 
   box-shadow:
-    0 0 14px rgba(255,255,255,0.95),
-    0 0 28px var(--current-level-glow),
-    0 0 42px var(--current-level-glow),
-    inset 0 0 14px rgba(255,255,255,0.5);
-
-  animation:
-    heroGlowCounter
-    19s linear infinite,
-    heroGlowPulseAlt
-    7s ease-in-out infinite;
+    0 0 10px rgba(201, 54, 54, .45);
 }
-
-
-.current-level-badge-image {
-  filter:
-    drop-shadow(
-      0 0 10px
-      var(--current-level-glow)
-    );
-}
-
-

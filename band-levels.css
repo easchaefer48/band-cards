@@ -1039,3 +1039,286 @@
 .band-level-item.current .band-level-requirement {
   background: #ffffff !important;
 }
+
+/* ==========================================================
+   LEVEL-SPECIFIC BADGE GLOW — FINAL
+   ========================================================== */
+
+.current-level-badge-display::before {
+  background:
+    conic-gradient(
+      from 0deg,
+
+      transparent 0deg,
+
+      rgba(255,255,255,0.95) 40deg,
+
+      var(--current-level-glow) 75deg,
+
+      transparent 125deg,
+
+      rgba(255,255,255,0.9) 195deg,
+
+      var(--current-level-complementary) 225deg,
+
+      var(--current-level-glow) 255deg,
+
+      transparent 315deg
+    ) !important;
+
+  filter:
+    blur(13px)
+    saturate(2);
+
+  animation:
+    heroGlowClockwise
+    14s linear infinite,
+    heroGlowPulse
+    5.5s ease-in-out infinite;
+}
+
+
+.current-level-badge-display::after {
+  border:
+    3px solid
+    rgba(255,255,255,0.48);
+
+  box-shadow:
+    0 0 14px rgba(255,255,255,0.95),
+    0 0 28px var(--current-level-glow),
+    0 0 42px var(--current-level-complementary),
+    inset 0 0 14px rgba(255,255,255,0.5);
+
+  animation:
+    heroGlowCounter
+    19s linear infinite,
+    heroGlowPulseAlt
+    7s ease-in-out infinite;
+}
+
+
+.current-level-badge-image {
+  filter:
+    drop-shadow(
+      0 0 10px
+      var(--current-level-glow)
+    );
+}
+
+@keyframes heroGlowClockwise {
+
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+
+}
+
+
+@keyframes heroGlowCounter {
+
+  from {
+    transform: rotate(360deg);
+  }
+
+  to {
+    transform: rotate(0deg);
+  }
+
+}
+
+
+@keyframes heroGlowPulse {
+
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+}
+
+
+@keyframes heroGlowPulseAlt {
+
+  0%,
+  100% {
+    opacity: 0.9;
+  }
+
+  50% {
+    opacity: 0.4;
+  }
+
+}
+
+/* ==========================================================
+   HERO PROGRESS DETAILS
+   ========================================================== */
+
+.band-level-progress-bar {
+  width: 100%;
+  height: 16px;
+
+  overflow: hidden;
+
+  border-radius: 999px;
+
+  background:
+    rgba(255,255,255,0.28);
+}
+
+.band-level-progress-fill {
+  height: 100%;
+
+  border-radius: inherit;
+
+  background: #ffffff;
+}
+
+.hero-progress-divider {
+  width: 100%;
+  height: 1px;
+
+  margin: 18px 0;
+
+  background:
+    rgba(255,255,255,0.55);
+}
+
+/* ==========================================================
+   BAND LEVEL REQUIREMENT ACTIONS
+   ========================================================== */
+
+.band-level-requirement {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 18px;
+
+  width: 100%;
+  margin: 8px 0;
+}
+
+.requirement-name {
+  flex: 1;
+  min-width: 0;
+}
+
+.requirement-action {
+  flex: 0 0 auto;
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+
+/* Completed requirement */
+
+.requirement-complete-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.requirement-complete-text {
+  color: #278a49;
+
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.requirement-complete-check {
+  width: 34px;
+  height: 34px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #38a85b;
+  color: white;
+
+  font-size: 1.1rem;
+  font-weight: 900;
+
+  box-shadow:
+    0 3px 8px
+    rgba(35, 135, 70, 0.22);
+}
+
+
+/* Song title */
+
+.band-level-requirement
+.requirement-name {
+  color: #161616;
+
+  font-size: 1rem;
+  font-weight: 750;
+
+  line-height: 1.3;
+}
+
+
+/* Submit Recording */
+
+.band-level-record-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 165px;
+
+  padding: 10px 16px;
+
+  border: none;
+  border-radius: 9px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #2976d2,
+      #174f9d
+    );
+
+  color: white;
+
+  font-size: 0.9rem;
+  font-weight: 800;
+
+  box-shadow:
+    0 4px 11px
+    rgba(32, 92, 173, 0.25);
+
+  cursor: pointer;
+
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.band-level-record-button:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 7px 15px
+    rgba(32, 92, 173, 0.32);
+}
+
+.feedback-item.new-feedback {
+  box-shadow:
+    0 0 0 2px rgba(210, 50, 50, .72),
+    0 0 12px rgba(210, 50, 50, .42),
+    0 0 24px rgba(210, 50, 50, .20);
+}

@@ -3,27 +3,75 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Band Achievements</title>
+
+  <title>Band Levels</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link href="https://fonts.googleapis.com/css2?family=Angkor&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Winky+Rough:wght@400;600;700&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="band-levels.css">
 </head>
 <body>
-  <header>
-    <h1>Band Achievements</h1>
-    <div id="controls">
-      <input type="text" id="searchBar" placeholder="Search students…" />
-      <select id="sortSelect">
-        <option value="points">Sort: Achievement Points</option>
-        <option value="name">Sort: Name (A–Z)</option>
-        <option value="cards">Sort: Number of Cards</option>
-      </select>
+  <header class="site-header">
+
+    <div class="site-header-inner">
+
+      <div class="site-brand">
+
+        <img
+          src="images/site-logo.png"
+          alt="Band Levels"
+          class="site-logo"
+        >
+
+        <div class="site-title">
+          Band Levels
+        </div>
+
+      </div>
+
+
+      <div class="site-header-account">
+
+        <button
+          id="header-sign-in-button"
+          class="header-sign-in-button"
+          type="button"
+        >
+          Sign In
+        </button>
+
+
+        <div
+          id="student-account-section"
+          class="header-signed-in hidden"
+        >
+
+          <button
+            id="student-logout-button"
+            class="header-sign-out-button"
+            type="button"
+          >
+            Sign Out
+          </button>
+
+        </div>
+
+      </div>
+
     </div>
+
   </header>
 
   <main>
 
-  <section id="student-login-section">
-
+  <section
+    id="student-login-section"
+    class="hidden"
+  >
   <div class="student-login-panel">
 
     <h2>Student Login</h2>
@@ -74,33 +122,231 @@
 </section> 
 
 <section
-  id="student-account-section"
-  class="hidden"
+  id="student-home-section"
+  class="student-home hidden"
 >
 
-  <div class="student-account-bar">
+  <!-- STUDENT SUMMARY -->
 
-    <div>
-      Signed in as
-      <strong id="logged-in-student-name">
+  <div class="student-home-card student-summary-card">
+
+    <div class="student-summary-text">
+
+      <h2 id="student-home-name">
         Student
-      </strong>
+      </h2>
+
+      <div
+        id="student-home-class"
+        class="student-home-class"
+      >
+        Band
+      </div>
+
+      <button
+        id="view-leaderboard-button"
+        class="student-leaderboard-button"
+        type="button"
+      >
+        View Leaderboard
+      </button>
+
     </div>
 
-    <button
-      id="student-logout-button"
-      type="button"
+
+    <div class="student-summary-level">
+
+      <div class="student-summary-level-text">
+        Current Band Level
+      </div>
+
+      <div
+        id="student-home-level-name"
+        class="student-home-level-name"
+      >
+        Level 1
+      </div>
+
+      <div
+        id="student-home-level-badge"
+        class="student-home-level-badge"
+      >
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- BAND LEVELS -->
+
+  <button
+    id="open-band-levels-button"
+    class="student-home-card student-feature-card band-levels-home-card"
+    type="button"
+  >
+
+    <div class="student-feature-copy">
+
+      <h2>
+        Band Levels
+      </h2>
+
+      <p>
+        Continue your progress! Earn Band Levels by sending in recordings.
+      </p>
+
+    </div>
+
+
+    <img
+      src="images/trophy.png"
+      alt=""
+      class="student-feature-image"
     >
-      Sign Out
-    </button>
+
+  </button>
+
+
+  <!-- RECENT FEEDBACK -->
+
+  <button
+    id="open-recent-feedback-button"
+    class="student-home-card student-feature-card feedback-home-card"
+    type="button"
+  >
+
+    <div class="student-feature-copy">
+
+      <h2>
+        Recent Feedback
+      </h2>
+
+      <p>
+        See feedback about your recordings from your teacher.
+        Audio recordings are automatically deleted after one week.
+      </p>
+
+    </div>
+
+
+    <div class="student-feature-placeholder-icon">
+      🎙
+    </div>
+
+    <div
+      id="recent-feedback-alert"
+      class="recent-feedback-alert hidden"
+      aria-label="New feedback"
+    >
+      ✉
+    </div>
+
+  </button>
+
+
+  <!-- RHYTHM TRAINER -->
+
+  <div
+    class="student-home-card student-feature-card rhythm-home-card coming-soon-card"
+  >
+
+    <div class="student-feature-copy">
+
+      <h2>
+        Rhythm Trainer
+      </h2>
+
+      <p>
+        Train your rhythm reading abilities and see how far you can progress!
+      </p>
+
+    </div>
+
+
+    <div class="student-feature-placeholder-icon">
+      ♫
+    </div>
+
+
+    <div class="coming-soon-label">
+      Coming Soon
+    </div>
+
+  </div>
+
+<div class="student-home-card student-feature-card note-reader-home-card coming-soon-card">
+
+  <div class="student-feature-copy">
+
+    <h2>Note Reader</h2>
+
+    <p>
+      Practice reading and identifying notes for your instrument.
+    </p>
+
+  </div>
+
+
+  <div class="student-feature-placeholder-icon">
+    ♪
+  </div>
+
+
+  <div class="coming-soon-label">
+    Coming Soon
+  </div>
+
+</div>
+
+</section>
+
+<section id="leaderboard-section" class="leaderboard-page hidden">
+
+  <button
+    id="back-from-leaderboard"
+    class="student-back-button leaderboard-back-button"
+    type="button"
+  >
+    ← Back
+  </button>
+
+
+  <div class="leaderboard-panel">
+
+    <div class="leaderboard-header">
+
+      <div>
+        <h2>Band Level Leaderboard</h2>
+        <p>5th Grade Band</p>
+      </div>
+
+    </div>
+
+
+    <div id="leaderboard-list" class="leaderboard-list">
+
+      <div class="leaderboard-empty">
+        No students have earned a Band Level yet.
+      </div>
+
+    </div>
 
   </div>
 
 </section>
-    <section
+
+ <section
   id="band-level-dashboard-section"
   class="hidden"
 >
+  <button
+    id="back-to-student-home"
+    class="student-back-button"
+    type="button"
+  >
+    ← Back
+  </button>
 
   <div class="band-level-dashboard">
 
@@ -249,15 +495,34 @@
 
 </div>
 
-<section id="student-feedback-section">
+<section
+  id="student-feedback-section"
+  class="recent-feedback-page hidden"
+>
 
-  <div class="feedback-panel">
+  <button
+    id="back-from-feedback"
+    class="student-back-button feedback-back-button"
+    type="button"
+  >
+    ← Back
+  </button>
 
-    <h2>My Recent Recordings</h2>
 
-    <p class="feedback-description">
-      Check the status of recordings you have submitted from this device.
-    </p>
+  <div class="recent-feedback-panel">
+
+    <div class="recent-feedback-header">
+
+      <h2>
+        Recent Feedback
+      </h2>
+
+      <p>
+        See feedback about your recordings from your teacher.
+      </p>
+
+    </div>
+
 
     <div id="student-feedback-list">
       <p>No recent recordings yet.</p>
