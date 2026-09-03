@@ -1162,10 +1162,10 @@ body {
 .student-summary-text h2 {
   margin: 0 0 6px;
 
-  font-family: "Winky Rough", cursive;
+  font-family: "Atkinson Hyperlegible", sans-serif;
 
-  font-size: 1.8rem;
-  font-weight: 600;
+  font-size: 2.2rem;
+  font-weight: 700;
 
   color: #ffffff;
 }
@@ -1208,6 +1208,58 @@ body {
   font-weight: 700;
 
   white-space: nowrap;
+}
+
+/* Updated student summary layout */
+
+.student-summary-card {
+  position: relative;
+
+  min-height: 190px;
+
+  padding:
+    28px 32px
+    78px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 28px;
+}
+
+
+.student-summary-text {
+  align-self: center;
+}
+
+
+.student-home-level-name {
+  margin-top: 4px;
+
+  color: #ffffff;
+
+  font-size: 1.35rem;
+  font-weight: 700;
+
+  white-space: nowrap;
+}
+
+
+.student-summary-level {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex: 0 0 auto;
+}
+
+
+.student-leaderboard-button {
+  position: absolute;
+
+  left: 32px;
+  bottom: 26px;
 }
 
 
@@ -1594,27 +1646,43 @@ body {
   }
 
 
-  .student-summary-card {
-  flex-direction: column;
-  align-items: stretch;
+.student-summary-card {
+  flex-direction: row;
+  align-items: center;
+
+  padding:
+    20px 18px
+    70px;
 }
 
 
 .student-summary-text {
-  width: 100%;
+  width: auto;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 
 .student-summary-text h2 {
   width: 100%;
   white-space: nowrap;
+
   font-size: 1.55rem;
 }
 
 
 .student-summary-level {
-  width: 100%;
-  justify-content: space-between;
+  width: auto;
+
+  flex: 0 0 auto;
+
+  justify-content: center;
+}
+
+
+.student-leaderboard-button {
+  left: 18px;
+  bottom: 20px;
 }
 
 }

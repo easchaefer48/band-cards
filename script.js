@@ -1406,13 +1406,30 @@ startRecordingBtn?.addEventListener(
       }
 
 
+      const preferredMimeType =
+        MediaRecorder.isTypeSupported(
+          "audio/webm;codecs=opus"
+        )
+          ? "audio/webm;codecs=opus"
+          : "";
+
+
+      const recorderOptions = {
+        audioBitsPerSecond: 96000
+      };
+
+
+      if (preferredMimeType) {
+        recorderOptions.mimeType =
+          preferredMimeType;
+      }
+
+
       mediaRecorder =
         new MediaRecorder(
-          recordingStream
+          recordingStream,
+          recorderOptions
         );
-
-
-      // Save audio chunks
 
       mediaRecorder.addEventListener(
         "dataavailable",
@@ -2081,7 +2098,7 @@ async function loadStudentFeedback() {
       await supabaseClient
         .from("recording_submissions")
         .select(
-          "id, submitted_at, status, teacher_comment, level_id, requirement_id, requirement_name, storage_path, reviewed_at, student_seen_at, submitter_uid"
+          "id, submitted_at, status, teacher_comment, level_id, requirement_id, requirement_name, storage_path, reviewed_at, student_seen_at, submitter_uid, audio_deleted_at"
         )
         .eq(
           "submitter_uid",
@@ -2308,6 +2325,18 @@ async function loadStudentFeedback() {
 
         if (
           audioContainer &&
+          submission.audio_deleted_at
+        ) {
+
+          audioContainer.innerHTML = `
+            <div class="feedback-audio-unavailable">
+              Audio recording is no longer available.
+            </div>
+          `;
+
+        }
+        else if (
+          audioContainer &&
           submission.storage_path
         ) {
 
@@ -2374,13 +2403,13 @@ async function loadStudentFeedback() {
         }
             else if (audioContainer) {
 
-          audioContainer.innerHTML = `
-            <div class="feedback-audio-unavailable">
-              Recording unavailable.
-            </div>
-          `;
+              audioContainer.innerHTML = `
+                <div class="feedback-audio-unavailable">
+                  Audio recording is no longer available.
+                </div>
+              `;
 
-        }
+            }
 
     }
 
@@ -2579,13 +2608,12 @@ async function renderBandLevelDashboard(
     );
 
 
-  if (
-    !profile ||
-    !nameElement ||
-    !journey
-  ) {
-    return;
-  }
+    if (
+      !profile ||
+      !journey
+    ) {
+      return;
+    }
 
 
   const student =
@@ -2609,10 +2637,6 @@ async function renderBandLevelDashboard(
   profile.classList.remove(
     "hidden"
   );
-
-
-  nameElement.textContent =
-    student.name;
 
 
   const levels =
@@ -2870,17 +2894,11 @@ currentLevelProgress.innerHTML = `
 
   <div class="hero-level-info">
 
-    <div class="hero-current-label">
-      Current Band Level
-    </div>
-
     <div class="hero-current-level">
       Level ${escapeHtml(
         earnedLevelNumber
       )}
     </div>
-
-    <div class="hero-progress-divider"></div>
 
     <div class="current-progress-heading">
       Progress toward Level
@@ -2933,6 +2951,12 @@ currentLevelProgress.innerHTML = `
       to earn your next
       Band Level!
     </div>
+
+    <img
+      src="images/trophy.png"
+      alt=""
+      class="hero-trophy-image"
+    >
 
   </div>
 
