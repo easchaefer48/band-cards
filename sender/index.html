@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Send a Recording | Band Levels</title>
+
+  <link
+    rel="preconnect"
+    href="https://fonts.googleapis.com"
+  >
+
+  <link
+    rel="preconnect"
+    href="https://fonts.gstatic.com"
+    crossorigin
+  >
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Angkor&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap"
+    rel="stylesheet"
+  >
+
+  <link
+    rel="stylesheet"
+    href="../style.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="sender.css"
+  >
+
+</head>
+
+<body>
+
+  <main class="sender-page">
+
+    <header class="sender-header">
+
+      <a
+        class="sender-logo-link"
+        href="../"
+      >
+        <img
+          class="sender-logo"
+          src="../site-logo.png"
+          alt="Band Levels"
+        >
+      </a>
+
+    </header>
+
+
+    <section class="sender-panel">
+
+      <div class="sender-intro">
+
+        <h1>Send a Recording</h1>
+
+        <p>
+          Record yourself and send it directly
+          to your music teacher.
+        </p>
+
+      </div>
+
+
+      <form
+        id="public-recording-form"
+        class="sender-form"
+      >
+
+        <div class="sender-field">
+
+          <label for="sender-name">
+            Your Name
+          </label>
+
+          <input
+            id="sender-name"
+            name="studentName"
+            type="text"
+            maxlength="100"
+            autocomplete="name"
+            required
+          >
+
+        </div>
+
+
+        <div class="sender-field">
+
+          <label for="sender-comment">
+            Comment
+            <span class="optional-label">
+              Optional
+            </span>
+          </label>
+
+          <textarea
+            id="sender-comment"
+            name="comment"
+            maxlength="500"
+            rows="4"
+          ></textarea>
+
+        </div>
+
+
+        <div class="sender-recordings">
+
+          <h2>Recording</h2>
+
+          <p class="sender-help-text">
+            Record your performance below.
+          </p>
+
+          <div
+            id="recording-list"
+            class="recording-list"
+          >
+
+            <div class="recorder-controls">
+
+              <button
+                id="start-recording-button"
+                type="button"
+                class="recorder-button"
+              >
+                Start Recording
+              </button>
+
+              <button
+                id="stop-recording-button"
+                type="button"
+                class="recorder-button"
+                disabled
+              >
+                Stop Recording
+              </button>
+
+            </div>
+
+            <p
+              id="recording-status"
+              class="recording-status"
+            >
+              Ready to record.
+            </p>
+
+            <audio
+              id="recording-playback"
+              controls
+              class="recording-playback"
+              hidden
+            ></audio>
+
+          </div>
+
+        </div>
+
+
+        <button
+          id="send-recordings-button"
+          class="send-recordings-button"
+          type="submit"
+          disabled
+        >
+          Send Recording
+        </button>
+
+      </form>
+
+    </section>
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./sender.js"></script>
+
+</body>
+</html>

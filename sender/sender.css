@@ -1,0 +1,166 @@
+.sender-page {
+  min-height: 100vh;
+  padding: 24px;
+  background: #ffffff;
+}
+
+.sender-header {
+  width: min(760px, 100%);
+  margin: 0 auto 24px;
+}
+
+.sender-logo {
+  display: block;
+  width: 64px;
+  height: auto;
+}
+
+.sender-panel {
+  width: min(760px, 100%);
+  margin: 0 auto;
+  padding: 36px;
+  border-radius: 24px;
+  background: #f5f5f5;
+}
+
+.sender-intro {
+  margin-bottom: 32px;
+}
+
+.sender-intro h1 {
+  margin: 0 0 8px;
+  font-family: "Angkor", serif;
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 400;
+  line-height: 1.1;
+  color: #282828;
+}
+
+.sender-intro p {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #555555;
+}
+
+.sender-form {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.sender-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sender-field label,
+.sender-recordings h2 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #282828;
+}
+
+.optional-label {
+  font-weight: 400;
+  color: #777777;
+}
+
+.sender-field input,
+.sender-field textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 14px 16px;
+  border: 2px solid #d6d6d6;
+  border-radius: 12px;
+  background: #ffffff;
+  font: inherit;
+  color: #282828;
+}
+
+.sender-field input:focus,
+.sender-field textarea:focus {
+  outline: none;
+  border-color: #777777;
+}
+
+.sender-recordings h2 {
+  margin: 0 0 4px;
+}
+
+.sender-help-text {
+  margin: 0 0 16px;
+  color: #666666;
+}
+
+.recording-list {
+  padding: 24px;
+  border: 2px dashed #c8c8c8;
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.recording-list p {
+  margin: 0;
+  color: #777777;
+}
+
+.send-recordings-button {
+  min-height: 52px;
+  padding: 12px 24px;
+  border: 0;
+  border-radius: 14px;
+  font: inherit;
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.send-recordings-button:disabled {
+  cursor: not-allowed;
+  opacity: .45;
+}
+
+@media (max-width: 600px) {
+
+  .sender-page {
+    padding: 16px;
+  }
+
+  .sender-panel {
+    padding: 24px 18px;
+    border-radius: 20px;
+  }
+
+}
+
+.recorder-controls {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.recorder-button {
+  min-height: 46px;
+  padding: 10px 18px;
+  border: 0;
+  border-radius: 12px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.recorder-button:disabled {
+  cursor: not-allowed;
+  opacity: .45;
+}
+
+.recording-status {
+  margin: 16px 0 0;
+  color: #666666;
+}
+
+.recording-playback {
+  width: 100%;
+  margin-top: 16px;
+}
