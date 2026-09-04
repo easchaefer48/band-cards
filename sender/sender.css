@@ -164,3 +164,48 @@
   width: 100%;
   margin-top: 16px;
 }
+
+.saved-recordings {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.saved-recording-card {
+  padding: 16px;
+  border: 1px solid #dddddd;
+  border-radius: 14px;
+  background: #f7f7f7;
+}
+
+.saved-recording-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.saved-recording-header strong {
+  color: #282828;
+}
+
+.saved-recording-audio {
+  width: 100%;
+}
+
+.delete-recording-button {
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: #eeeeee;
+  font: inherit;
+  font-size: .9rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.delete-recording-button:hover {
+  background: #dddddd;
+}

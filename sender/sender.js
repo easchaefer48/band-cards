@@ -4,6 +4,13 @@ const SUPABASE_URL =
 const SUPABASE_PUBLISHABLE_KEY =
   "sb_publishable_Svmi15-_UY2CxEwLfHm-Lw_ZXOGRPAC";
 
+const STUDENT_AUTH_STORAGE_KEY =
+  "band-cards-student-auth";
+
+const MAX_RECORDINGS =
+  3;
+
+
 const supabaseClient =
   supabase.createClient(
     SUPABASE_URL,
@@ -11,46 +18,102 @@ const supabaseClient =
     {
       auth: {
         storageKey:
-          "band-cards-student-auth"
+          STUDENT_AUTH_STORAGE_KEY
       }
     }
   );
 
 
+// ============================================================
+// CHECK FOR EXISTING STUDENT LOGIN
+// ============================================================
+
 async function checkStudentLogin() {
 
-  const {
-    data,
-    error
-  } =
-    await supabaseClient
-      .auth
-      .getSession();
+  try {
 
-  if (error) {
+    const storedSessionText =
+      localStorage.getItem(
+        STUDENT_AUTH_STORAGE_KEY
+      );
+
+
+    if (!storedSessionText) {
+      return;
+    }
+
+
+    const storedSession =
+      JSON.parse(
+        storedSessionText
+      );
+
+
+    if (
+      !storedSession?.access_token ||
+      !storedSession?.refresh_token
+    ) {
+      return;
+    }
+
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.auth
+        .setSession({
+          access_token:
+            storedSession.access_token,
+
+          refresh_token:
+            storedSession.refresh_token
+        });
+
+
+    if (error) {
+
+      console.error(
+        "Could not restore student session:",
+        error
+      );
+
+      return;
+    }
+
+
+    if (!data.session?.user) {
+      return;
+    }
+
+
+    showLoggedInSenderState();
+
+  }
+  catch (error) {
+
     console.error(
       "Could not check student login:",
       error
     );
 
-    return;
   }
 
-  const session =
-    data.session;
+}
 
-  if (!session) {
-    return;
-  }
+
+function showLoggedInSenderState() {
 
   const senderPanel =
     document.querySelector(
       ".sender-panel"
     );
 
+
   if (!senderPanel) {
     return;
   }
+
 
   senderPanel.innerHTML = `
     <div class="sender-intro">
@@ -70,10 +133,22 @@ async function checkStudentLogin() {
 
 checkStudentLogin();
 
-let mediaRecorder = null;
-let recordedChunks = [];
-let recordedBlob = null;
-let recordingStream = null;
+
+// ============================================================
+// RECORDER
+// ============================================================
+
+let mediaRecorder =
+  null;
+
+let recordedChunks =
+  [];
+
+let recordingStream =
+  null;
+
+let savedRecordings =
+  [];
 
 
 const startRecordingButton =
@@ -91,9 +166,19 @@ const recordingStatus =
     "recording-status"
   );
 
-const recordingPlayback =
+const savedRecordingsContainer =
   document.getElementById(
-    "recording-playback"
+    "saved-recordings"
+  );
+
+const publicRecordingForm =
+  document.getElementById(
+    "public-recording-form"
+  );
+
+const sendRecordingsButton =
+  document.getElementById(
+    "send-recordings-button"
   );
 
 
@@ -105,22 +190,40 @@ function getPreferredRecordingMimeType() {
     "audio/mp4"
   ];
 
-  for (const type of preferredTypes) {
+
+  for (
+    const type
+    of preferredTypes
+  ) {
 
     if (
-      MediaRecorder.isTypeSupported(type)
+      MediaRecorder
+        .isTypeSupported(type)
     ) {
       return type;
     }
 
   }
 
+
   return "";
 
 }
 
 
+// ============================================================
+// START RECORDING
+// ============================================================
+
 async function startRecording() {
+
+  if (
+    savedRecordings.length >=
+    MAX_RECORDINGS
+  ) {
+    return;
+  }
+
 
   try {
 
@@ -128,9 +231,14 @@ async function startRecording() {
       await navigator.mediaDevices
         .getUserMedia({
           audio: {
-            echoCancellation: false,
-            noiseSuppression: false,
-            autoGainControl: false
+            echoCancellation:
+              false,
+
+            noiseSuppression:
+              false,
+
+            autoGainControl:
+              false
           }
         });
 
@@ -140,13 +248,16 @@ async function startRecording() {
 
 
     const recorderOptions = {
-      audioBitsPerSecond: 96000
+      audioBitsPerSecond:
+        96000
     };
 
 
     if (mimeType) {
+
       recorderOptions.mimeType =
         mimeType;
+
     }
 
 
@@ -157,8 +268,8 @@ async function startRecording() {
       );
 
 
-    recordedChunks = [];
-    recordedBlob = null;
+    recordedChunks =
+      [];
 
 
     mediaRecorder.addEventListener(
@@ -169,9 +280,11 @@ async function startRecording() {
           event.data &&
           event.data.size > 0
         ) {
+
           recordedChunks.push(
             event.data
           );
+
         }
 
       }
@@ -180,60 +293,7 @@ async function startRecording() {
 
     mediaRecorder.addEventListener(
       "stop",
-      () => {
-
-        const finalMimeType =
-          mediaRecorder.mimeType ||
-          mimeType ||
-          "audio/webm";
-
-
-        recordedBlob =
-          new Blob(
-            recordedChunks,
-            {
-              type: finalMimeType
-            }
-          );
-
-        updateSendButtonState();
-
-
-        const recordingUrl =
-          URL.createObjectURL(
-            recordedBlob
-          );
-
-
-        recordingPlayback.src =
-          recordingUrl;
-
-        recordingPlayback.hidden =
-          false;
-
-
-        recordingStatus.textContent =
-          "Recording complete. You can play it back below.";
-
-
-        startRecordingButton.disabled =
-          false;
-
-        stopRecordingButton.disabled =
-          true;
-
-
-        if (recordingStream) {
-
-          recordingStream
-            .getTracks()
-            .forEach(
-              track => track.stop()
-            );
-
-        }
-
-      }
+      finishRecording
     );
 
 
@@ -249,9 +309,6 @@ async function startRecording() {
 
     stopRecordingButton.disabled =
       false;
-
-    recordingPlayback.hidden =
-      true;
 
   }
   catch (error) {
@@ -269,6 +326,10 @@ async function startRecording() {
 
 }
 
+
+// ============================================================
+// STOP RECORDING
+// ============================================================
 
 function stopRecording() {
 
@@ -290,6 +351,269 @@ function stopRecording() {
 }
 
 
+// ============================================================
+// FINISH / SAVE RECORDING
+// ============================================================
+
+function finishRecording() {
+
+  const finalMimeType =
+    mediaRecorder.mimeType ||
+    "audio/webm";
+
+
+  const blob =
+    new Blob(
+      recordedChunks,
+      {
+        type:
+          finalMimeType
+      }
+    );
+
+
+  const recording = {
+    id:
+      crypto.randomUUID(),
+
+    blob:
+      blob,
+
+    url:
+      URL.createObjectURL(
+        blob
+      )
+  };
+
+
+  savedRecordings.push(
+    recording
+  );
+
+
+  if (recordingStream) {
+
+    recordingStream
+      .getTracks()
+      .forEach(
+        track =>
+          track.stop()
+      );
+
+  }
+
+
+  recordingStream =
+    null;
+
+
+  renderSavedRecordings();
+
+
+  recordingStatus.textContent =
+    savedRecordings.length <
+      MAX_RECORDINGS
+      ? "Recording saved. You can record another or send your recordings."
+      : "Three recordings saved. You're ready to send.";
+
+
+  stopRecordingButton.disabled =
+    true;
+
+
+  updateRecorderButtons();
+
+}
+
+
+// ============================================================
+// DISPLAY SAVED RECORDINGS
+// ============================================================
+
+function renderSavedRecordings() {
+
+  if (
+    !savedRecordingsContainer
+  ) {
+    return;
+  }
+
+
+  savedRecordingsContainer
+    .innerHTML =
+      "";
+
+
+  savedRecordings
+    .forEach(
+      (
+        recording,
+        index
+      ) => {
+
+        const card =
+          document.createElement(
+            "div"
+          );
+
+
+        card.className =
+          "saved-recording-card";
+
+
+        card.innerHTML = `
+          <div class="saved-recording-header">
+
+            <strong>
+              Recording ${index + 1}
+            </strong>
+
+            <button
+              type="button"
+              class="delete-recording-button"
+              data-recording-id="${recording.id}"
+            >
+              Delete
+            </button>
+
+          </div>
+
+          <audio
+            controls
+            src="${recording.url}"
+            class="saved-recording-audio"
+          ></audio>
+        `;
+
+
+        savedRecordingsContainer
+          .appendChild(
+            card
+          );
+
+      }
+    );
+
+
+  const deleteButtons =
+    savedRecordingsContainer
+      .querySelectorAll(
+        ".delete-recording-button"
+      );
+
+
+  deleteButtons
+    .forEach(
+      button => {
+
+        button.addEventListener(
+          "click",
+          () => {
+
+            deleteRecording(
+              button.dataset
+                .recordingId
+            );
+
+          }
+        );
+
+      }
+    );
+
+
+  updateSendButtonState();
+
+}
+
+
+// ============================================================
+// DELETE RECORDING
+// ============================================================
+
+function deleteRecording(
+  recordingId
+) {
+
+  const recording =
+    savedRecordings.find(
+      item =>
+        item.id ===
+        recordingId
+    );
+
+
+  if (recording) {
+
+    URL.revokeObjectURL(
+      recording.url
+    );
+
+  }
+
+
+  savedRecordings =
+    savedRecordings.filter(
+      item =>
+        item.id !==
+        recordingId
+    );
+
+
+  renderSavedRecordings();
+
+
+  recordingStatus.textContent =
+    savedRecordings.length
+      ? "Recording deleted. You can record another or send your recordings."
+      : "Ready to record.";
+
+
+  updateRecorderButtons();
+
+}
+
+
+// ============================================================
+// BUTTON STATES
+// ============================================================
+
+function updateRecorderButtons() {
+
+  if (
+    !startRecordingButton
+  ) {
+    return;
+  }
+
+
+  startRecordingButton.disabled =
+    savedRecordings.length >=
+    MAX_RECORDINGS;
+
+}
+
+
+function updateSendButtonState() {
+
+  if (
+    !sendRecordingsButton
+  ) {
+    return;
+  }
+
+
+  sendRecordingsButton.disabled =
+    savedRecordings.length ===
+    0;
+
+}
+
+
+// ============================================================
+// RECORDER BUTTON EVENTS
+// ============================================================
+
 if (
   startRecordingButton &&
   stopRecordingButton
@@ -310,28 +634,99 @@ if (
 
 }
 
-const publicRecordingForm =
-  document.getElementById(
-    "public-recording-form"
+
+// ============================================================
+// UPLOAD ONE RECORDING
+// ============================================================
+
+async function uploadRecording(
+  recording,
+  studentName,
+  comment
+) {
+
+  const formData =
+    new FormData();
+
+
+  formData.append(
+    "studentName",
+    studentName
   );
 
-const sendRecordingsButton =
-  document.getElementById(
-    "send-recordings-button"
+
+  formData.append(
+    "comment",
+    comment
   );
 
 
-function updateSendButtonState() {
+  const extension =
+    recording.blob.type
+      .includes("mp4")
+      ? "mp4"
+      : "webm";
 
-  if (!sendRecordingsButton) {
-    return;
+
+  const recordingFile =
+    new File(
+      [
+        recording.blob
+      ],
+      `recording.${extension}`,
+      {
+        type:
+          recording.blob.type
+      }
+    );
+
+
+  formData.append(
+    "recording",
+    recordingFile
+  );
+
+
+  const response =
+    await fetch(
+      `${SUPABASE_URL}/functions/v1/submit-public-recording`,
+      {
+        method:
+          "POST",
+
+        headers: {
+          Authorization:
+            `Bearer ${SUPABASE_PUBLISHABLE_KEY}`
+        },
+
+        body:
+          formData
+      }
+    );
+
+
+  const result =
+    await response.json();
+
+
+  if (!response.ok) {
+
+    throw new Error(
+      result.error ||
+      "Could not send recording."
+    );
+
   }
 
-  sendRecordingsButton.disabled =
-    !recordedBlob;
+
+  return result;
 
 }
 
+
+// ============================================================
+// SEND ALL RECORDINGS
+// ============================================================
 
 if (publicRecordingForm) {
 
@@ -343,7 +738,10 @@ if (publicRecordingForm) {
         event.preventDefault();
 
 
-        if (!recordedBlob) {
+        if (
+          savedRecordings.length ===
+          0
+        ) {
           return;
         }
 
@@ -378,109 +776,85 @@ if (publicRecordingForm) {
         sendRecordingsButton.disabled =
           true;
 
+        startRecordingButton.disabled =
+          true;
+
         sendRecordingsButton.textContent =
           "Sending...";
 
 
         try {
 
-          const formData =
-            new FormData();
+          for (
+            let index = 0;
+            index <
+              savedRecordings.length;
+            index++
+          ) {
+
+            recordingStatus.textContent =
+              `Sending recording ${index + 1} of ${savedRecordings.length}...`;
 
 
-          formData.append(
-            "studentName",
-            studentName
-          );
-
-
-          formData.append(
-            "comment",
-            comment
-          );
-
-
-          const extension =
-            recordedBlob.type
-              .includes("mp4")
-              ? "mp4"
-              : "webm";
-
-
-          const recordingFile =
-            new File(
-              [recordedBlob],
-              `recording.${extension}`,
-              {
-                type:
-                  recordedBlob.type
-              }
+            await uploadRecording(
+              savedRecordings[index],
+              studentName,
+              comment
             );
 
-
-          formData.append(
-            "recording",
-            recordingFile
-          );
-
-
-          const response =
-            await fetch(
-              `${SUPABASE_URL}/functions/v1/submit-public-recording`,
-              {
-                method:
-                  "POST",
-
-                headers: {
-                  Authorization:
-                    `Bearer ${SUPABASE_PUBLISHABLE_KEY}`
-                },
-
-                body:
-                  formData
-              }
-            );
-
-
-          const result =
-            await response.json();
-
-
-          if (!response.ok) {
-            throw new Error(
-              result.error ||
-              "Could not send recording."
-            );
           }
 
 
+          savedRecordings
+            .forEach(
+              recording => {
+
+                URL.revokeObjectURL(
+                  recording.url
+                );
+
+              }
+            );
+
+
+          savedRecordings =
+            [];
+
+
+          renderSavedRecordings();
+
+
           recordingStatus.textContent =
-            "Recording sent successfully!";
+            "Your recordings were sent successfully!";
 
 
           sendRecordingsButton.textContent =
             "Sent";
 
 
+          startRecordingButton.disabled =
+            false;
+
         }
         catch (error) {
 
           console.error(
-            "Could not send recording:",
+            "Could not send recordings:",
             error
           );
 
 
           recordingStatus.textContent =
             error.message ||
-            "Could not send recording.";
+            "Could not send recordings.";
 
-
-          sendRecordingsButton.disabled =
-            false;
 
           sendRecordingsButton.textContent =
-            "Send Recording";
+            "Send Recordings";
+
+
+          updateRecorderButtons();
+          updateSendButtonState();
 
         }
 
@@ -488,3 +862,6 @@ if (publicRecordingForm) {
     );
 
 }
+
+
+updateSendButtonState();
