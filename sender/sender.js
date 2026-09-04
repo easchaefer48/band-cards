@@ -196,6 +196,8 @@ async function startRecording() {
             }
           );
 
+        updateSendButtonState();
+
 
         const recordingUrl =
           URL.createObjectURL(
@@ -304,6 +306,185 @@ if (
     .addEventListener(
       "click",
       stopRecording
+    );
+
+}
+
+const publicRecordingForm =
+  document.getElementById(
+    "public-recording-form"
+  );
+
+const sendRecordingsButton =
+  document.getElementById(
+    "send-recordings-button"
+  );
+
+
+function updateSendButtonState() {
+
+  if (!sendRecordingsButton) {
+    return;
+  }
+
+  sendRecordingsButton.disabled =
+    !recordedBlob;
+
+}
+
+
+if (publicRecordingForm) {
+
+  publicRecordingForm
+    .addEventListener(
+      "submit",
+      async (event) => {
+
+        event.preventDefault();
+
+
+        if (!recordedBlob) {
+          return;
+        }
+
+
+        const studentName =
+          document
+            .getElementById(
+              "sender-name"
+            )
+            ?.value
+            .trim() || "";
+
+
+        const comment =
+          document
+            .getElementById(
+              "sender-comment"
+            )
+            ?.value
+            .trim() || "";
+
+
+        if (!studentName) {
+
+          recordingStatus.textContent =
+            "Please enter your name.";
+
+          return;
+        }
+
+
+        sendRecordingsButton.disabled =
+          true;
+
+        sendRecordingsButton.textContent =
+          "Sending...";
+
+
+        try {
+
+          const formData =
+            new FormData();
+
+
+          formData.append(
+            "studentName",
+            studentName
+          );
+
+
+          formData.append(
+            "comment",
+            comment
+          );
+
+
+          const extension =
+            recordedBlob.type
+              .includes("mp4")
+              ? "mp4"
+              : "webm";
+
+
+          const recordingFile =
+            new File(
+              [recordedBlob],
+              `recording.${extension}`,
+              {
+                type:
+                  recordedBlob.type
+              }
+            );
+
+
+          formData.append(
+            "recording",
+            recordingFile
+          );
+
+
+          const response =
+            await fetch(
+              `${SUPABASE_URL}/functions/v1/submit-public-recording`,
+              {
+                method:
+                  "POST",
+
+                headers: {
+                  Authorization:
+                    `Bearer ${SUPABASE_PUBLISHABLE_KEY}`
+                },
+
+                body:
+                  formData
+              }
+            );
+
+
+          const result =
+            await response.json();
+
+
+          if (!response.ok) {
+            throw new Error(
+              result.error ||
+              "Could not send recording."
+            );
+          }
+
+
+          recordingStatus.textContent =
+            "Recording sent successfully!";
+
+
+          sendRecordingsButton.textContent =
+            "Sent";
+
+
+        }
+        catch (error) {
+
+          console.error(
+            "Could not send recording:",
+            error
+          );
+
+
+          recordingStatus.textContent =
+            error.message ||
+            "Could not send recording.";
+
+
+          sendRecordingsButton.disabled =
+            false;
+
+          sendRecordingsButton.textContent =
+            "Send Recording";
+
+        }
+
+      }
     );
 
 }
