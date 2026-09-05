@@ -24,7 +24,7 @@ body {
   -moz-osx-font-smoothing:grayscale;
 }
 
-header {
+.legacy-header {
   background: var(--header);
   border-bottom: 3px solid #2b3b53;
   padding-bottom: 8px;
@@ -974,6 +974,8 @@ body.recorder-open {
   align-items: center;
 
   gap: 12px;
+
+  text-decoration: none;
 }
 
 

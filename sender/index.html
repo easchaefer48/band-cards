@@ -23,8 +23,7 @@
   >
 
   <link
-    href="https://fonts.googleapis.com/css2?family=Angkor&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap"
-    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Angkor&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Mynerve&display=swap"    rel="stylesheet"
   >
 
   <link
@@ -41,36 +40,67 @@
 
 <body>
 
-  <main class="sender-page">
+    <header class="site-header">
 
-    <header class="sender-header">
+      <div class="site-header-inner">
 
-      <a
-        class="sender-logo-link"
-        href="../"
-      >
-        <img
-          class="sender-logo"
-          src="../site-logo.png"
-          alt="Band Levels"
+        <a
+          href="/"
+          class="site-brand"
+          aria-label="Band Levels home"
         >
-      </a>
+          <img
+            src="/images/site-logo.png"
+            alt="Band Levels"
+            class="site-logo"
+          >
+
+          <div class="site-title">
+            Band Levels
+          </div>
+        </a>
+
+
+        <div class="site-header-account">
+
+          <a
+            href="/"
+            class="header-sign-in-button sender-sign-in-link"
+          >
+            Sign In
+          </a>
+
+        </div>
+
+      </div>
 
     </header>
+
+  <main class="sender-page">
 
 
     <section class="sender-panel">
 
-      <div class="sender-intro">
+     <div class="sender-intro">
 
-        <h1>Send a Recording</h1>
+      <div class="sender-title-row">
 
-        <p>
-          Record yourself and send it directly
-          to your music teacher.
-        </p>
+        <h1>Audio Sender</h1>
+
+        <img
+          src="/images/audiosender.png"
+          alt=""
+          class="audio-sender-image"
+        >
 
       </div>
+
+      <p>
+        Record an audio clip of yourself and send it
+        directly to your music teacher.
+      </p>
+
+    </div>
 
 
       <form
@@ -90,7 +120,6 @@
             type="text"
             maxlength="100"
             autocomplete="name"
-            required
           >
 
         </div>
@@ -117,8 +146,6 @@
 
         <div class="sender-recordings">
 
-          <h2>Recording</h2>
-
           <p class="sender-help-text">
             Record your performance below.
           </p>
@@ -128,38 +155,92 @@
             class="recording-list"
           >
 
-            <div class="recorder-controls">
+            <div
+              id="recording-cards"
+              class="recording-cards"
+            >
 
-              <button
-                id="start-recording-button"
-                type="button"
-                class="recorder-button"
+              <div
+                class="recording-card active-recording-card"
+                data-recording-number="1"
               >
-                Start Recording
-              </button>
 
-              <button
-                id="stop-recording-button"
-                type="button"
-                class="recorder-button"
-                disabled
-              >
-                Stop Recording
-              </button>
+                <div class="recording-card-header">
+                  <h3>Recording 1</h3>
+                </div>
+
+                <div class="recording-card-controls">
+
+                  <button
+                    id="start-recording-button"
+                    type="button"
+                    class="recorder-button start-recording-button"
+                  >
+                    Start Recording
+                  </button>
+
+                  <button
+                    id="pause-recording-button"
+                    type="button"
+                    class="recorder-button pause-recording-button"
+                    hidden
+                  >
+                    Pause
+                  </button>
+
+                  <button
+                    id="end-recording-button"
+                    type="button"
+                    class="recorder-button end-recording-button"
+                    hidden
+                  >
+                    End Recording
+                  </button>
+
+                </div>
+
+                <p
+                  id="recording-status"
+                  class="recording-status"
+                >
+                  Ready to record.
+                </p>
+
+                <div
+                  id="recording-playback-area"
+                  class="recording-playback-area"
+                  hidden
+                >
+
+                  <audio
+                    id="recording-playback"
+                    controls
+                    class="recording-playback"
+                  ></audio>
+
+                  <button
+                    id="delete-recording-button"
+                    type="button"
+                    class="delete-recording-button"
+                  >
+                    Delete Recording
+                  </button>
+
+                </div>
+
+              </div>
 
             </div>
 
-            <p
-              id="recording-status"
-              class="recording-status"
-            >
-              Ready to record.
-            </p>
 
-            <div
-              id="saved-recordings"
-              class="saved-recordings"
-            ></div>
+            <button
+              id="add-another-recording-button"
+              type="button"
+              class="add-another-recording-button"
+              hidden
+            >
+              + Add Another Recording
+            </button>
 
           </div>
 
@@ -176,6 +257,89 @@
         </button>
 
       </form>
+
+      <div
+        id="name-required-modal"
+        class="submission-confirmation"
+        hidden
+      >
+
+        <div class="submission-confirmation-card">
+
+          <h2>Name Required</h2>
+
+          <p>
+            Please enter your name to submit recordings.
+          </p>
+
+          <div class="submission-confirmation-actions">
+
+            <button
+              id="name-required-ok-button"
+              type="button"
+            >
+              OK
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+        <div
+          id="submission-confirmation"
+          class="submission-confirmation"
+          hidden
+        >
+
+          <div class="submission-confirmation-card">
+
+            <h2>Submit Recording?</h2>
+
+            <p
+              id="submission-confirmation-message"
+            >
+              Are you sure you want to submit this recording?
+            </p>
+
+            <div class="submission-confirmation-actions">
+
+              <button
+                id="cancel-submission-button"
+                type="button"
+              >
+                Cancel
+              </button>
+
+              <button
+                id="confirm-submission-button"
+                type="button"
+              >
+                Yes, Submit
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+          <div
+          id="submission-success"
+          class="submission-success"
+          hidden
+        >
+
+          <div class="submission-success-card">
+
+            <h2>
+              Your recordings were sent successfully!
+            </h2>
+
+          </div>
+
+        </div>
 
     </section>
 

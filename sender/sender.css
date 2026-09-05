@@ -1,24 +1,44 @@
+body {
+  margin: 0;
+  font-family: "Atkinson Hyperlegible", Arial, sans-serif;
+  color: #282828;
+  background: #ffffff;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+.sender-page {
+  min-height: 100vh;
+  padding: 24px;
+  display: block;
+  background: #ffffff;
+}
+
+button,
+input,
+textarea {
+  font-family: inherit;
+}
+
+.sender-brand-name {
+  font-family: "Angkor", serif;
+}
+
 .sender-page {
   min-height: 100vh;
   padding: 24px;
   background: #ffffff;
 }
 
-.sender-header {
-  width: min(760px, 100%);
-  margin: 0 auto 24px;
-}
-
-.sender-logo {
-  display: block;
-  width: 64px;
-  height: auto;
-}
 
 .sender-panel {
   width: min(760px, 100%);
   margin: 0 auto;
-  padding: 36px;
+  padding: 12px 36px 36px;
   border-radius: 24px;
   background: #f5f5f5;
 }
@@ -27,12 +47,28 @@
   margin-bottom: 32px;
 }
 
+.sender-title-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  white-space: nowrap;
+}
+
+.audio-sender-image {
+  width: 128px;
+  height: 128px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
 .sender-intro h1 {
   margin: 0 0 8px;
-  font-family: "Angkor", serif;
+
+  font-family: "Mynerve", cursive;
   font-size: clamp(2rem, 5vw, 3rem);
-  font-weight: 400;
+  font-weight: 700;
   line-height: 1.1;
+
   color: #282828;
 }
 
@@ -94,10 +130,10 @@
 }
 
 .recording-list {
-  padding: 24px;
-  border: 2px dashed #c8c8c8;
-  border-radius: 16px;
-  background: #ffffff;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
 .recording-list p {
@@ -124,12 +160,35 @@
 @media (max-width: 600px) {
 
   .sender-page {
+    padding: 12px;
+  }
+
+
+  .sender-panel {
+    width: 100%;
+    padding: 12px 16px 22px;
+    border-radius: 18px;
+  }
+
+  .recording-card {
     padding: 16px;
   }
 
-  .sender-panel {
-    padding: 24px 18px;
-    border-radius: 20px;
+  .recording-list {
+    width: 100%;
+  }
+
+  .sender-title-row {
+    gap: 8px;
+  }
+
+  .sender-intro h1 {
+    font-size: 2rem;
+  }
+
+  .audio-sender-image {
+    width: 82px;
+    height: 82px;
   }
 
 }
@@ -208,4 +267,358 @@
 
 .delete-recording-button:hover {
   background: #dddddd;
+}
+
+/* ============================================================
+   RECORDING CARDS
+   ============================================================ */
+
+.recording-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.recording-card {
+  padding: 20px;
+  border: 1px solid #dddddd;
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.recording-card-header {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 14px;
+}
+
+.recording-card-header::before {
+  content: "";
+  display: block;
+
+  width: 34px;
+  height: 34px;
+
+  flex-shrink: 0;
+
+  background-image: url("/images/notes_icon.png");
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.recording-card-header h3 {
+  margin: 0;
+
+  font-family: "Atkinson Hyperlegible", Arial, sans-serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+
+  color: #282828;
+}
+
+.recording-card-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+
+/* ============================================================
+   RECORDER BUTTONS
+   ============================================================ */
+
+.recorder-button {
+  min-height: 46px;
+  padding: 10px 18px;
+  border: 0;
+  border-radius: 12px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background-color .15s ease,
+    color .15s ease,
+    transform .15s ease;
+}
+
+.recorder-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.start-recording-button {
+  min-width: 150px;
+  background: #eeeeee;
+  color: #282828;
+}
+
+.start-recording-button.recording-active {
+  min-width: 150px;
+  background: #c93f3f;
+  color: #ffffff;
+}
+
+.start-recording-button.recording-paused {
+  min-width: 150px;
+  background: #eeeeee;
+  color: #555555;
+}
+
+.pause-recording-button {
+  background: #e8e8e8;
+  color: #282828;
+}
+
+.end-recording-button {
+  background: #343434;
+  color: #ffffff;
+}
+
+
+/* ============================================================
+   RECORDING STATUS
+   ============================================================ */
+
+.recording-status {
+  margin: 14px 0 0;
+  color: #666666;
+  font-size: .95rem;
+}
+
+.active-recording-card {
+  border-color: #cfcfcf;
+}
+
+.finished-recording-card {
+  background: #f8f8f8;
+}
+
+
+/* ============================================================
+   FINISHED RECORDING
+   ============================================================ */
+
+.recording-playback-area {
+  margin-top: 14px;
+}
+
+.recording-playback {
+  width: 100%;
+}
+
+.delete-recording-button {
+  margin-top: 10px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 9px;
+  background: #eeeeee;
+  color: #555555;
+  font: inherit;
+  font-size: .9rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.delete-recording-button:hover {
+  background: #dedede;
+}
+
+
+/* ============================================================
+   ADD ANOTHER RECORDING
+   ============================================================ */
+
+.add-another-recording-button {
+  width: 100%;
+  margin-top: 18px;
+  padding: 16px;
+  border: 2px dashed #bdbdbd;
+  border-radius: 14px;
+  background: #fafafa;
+  color: #444444;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.add-another-recording-button:hover {
+  border-color: #999999;
+  background: #f4f4f4;
+}
+
+
+/* ============================================================
+   SEND BUTTON
+   ============================================================ */
+
+.send-recordings-button {
+  background: #343434;
+  color: #ffffff;
+}
+
+.send-recordings-button:not(:disabled):hover {
+  background: #222222;
+}
+
+
+/* ============================================================
+   CONFIRMATION MODAL
+   ============================================================ */
+
+.submission-confirmation {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, .42);
+}
+
+.submission-confirmation[hidden] {
+  display: none;
+}
+
+.submission-confirmation-card {
+  width: min(420px, 100%);
+  padding: 28px;
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, .18);
+  text-align: center;
+}
+
+.submission-confirmation-card h2 {
+  margin: 0 0 10px;
+  color: #282828;
+}
+
+.submission-confirmation-card p {
+  margin: 0;
+  color: #555555;
+  line-height: 1.5;
+}
+
+.submission-confirmation-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.submission-confirmation-actions button {
+  min-width: 120px;
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 11px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+#cancel-submission-button {
+  background: #eeeeee;
+  color: #333333;
+}
+
+#confirm-submission-button {
+  background: #343434;
+  color: #ffffff;
+}
+
+
+/* ============================================================
+   SUCCESS STATE
+   ============================================================ */
+
+.submission-success {
+  padding: 44px 20px;
+}
+
+.submission-success[hidden] {
+  display: none;
+}
+
+.submission-success-card {
+  text-align: center;
+}
+
+.submission-success-card h2 {
+  margin: 0;
+  font-family: "Angkor", serif;
+  font-size: clamp(1.7rem, 5vw, 2.5rem);
+  font-weight: 400;
+  color: #282828;
+}
+
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+
+@media (max-width: 600px) {
+
+  .sender-brand-name {
+    font-size: 1.25rem;
+  }
+
+  .sender-logo {
+    width: 48px;
+    height: 48px;
+  }
+
+  .recording-card-controls {
+    align-items: stretch;
+  }
+
+  .recorder-button {
+    flex: 1 1 auto;
+  }
+
+  .start-recording-button,
+  .start-recording-button.recording-active,
+  .start-recording-button.recording-paused {
+    min-width: 145px;
+  }
+
+  .submission-confirmation-actions {
+    flex-direction: column;
+  }
+
+  .submission-confirmation-actions button {
+    width: 100%;
+  }
+
+}
+
+.pause-recording-button.resume-active {
+  background: #3f8f55;
+  color: #ffffff;
+}
+
+.start-recording-button.recording-active {
+  text-align: left;
+}
+
+.recording-label {
+  display: inline-block;
+}
+
+.recording-dots {
+  display: inline-block;
+  width: 24px;
+  text-align: left;
+}
+
+.recording-card-controls[hidden] {
+  display: none;
+}
+
+.sender-sign-in-link {
+  text-decoration: none;
+  display: inline-block;
 }

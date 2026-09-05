@@ -150,25 +150,24 @@ let recordingStream =
 let savedRecordings =
   [];
 
+let currentRecordingNumber =
+  1;
 
-const startRecordingButton =
+let recordingDotsInterval =
+  null;
+
+let recordingDotCount =
+  1;
+
+
+const recordingCardsContainer =
   document.getElementById(
-    "start-recording-button"
+    "recording-cards"
   );
 
-const stopRecordingButton =
+const addAnotherRecordingButton =
   document.getElementById(
-    "stop-recording-button"
-  );
-
-const recordingStatus =
-  document.getElementById(
-    "recording-status"
-  );
-
-const savedRecordingsContainer =
-  document.getElementById(
-    "saved-recordings"
+    "add-another-recording-button"
   );
 
 const publicRecordingForm =
@@ -181,6 +180,10 @@ const sendRecordingsButton =
     "send-recordings-button"
   );
 
+
+// ============================================================
+// MIME TYPE
+// ============================================================
 
 function getPreferredRecordingMimeType() {
 
@@ -212,14 +215,226 @@ function getPreferredRecordingMimeType() {
 
 
 // ============================================================
+// CREATE RECORDING CARD
+// ============================================================
+
+function createRecordingCard(
+  recordingNumber
+) {
+
+  const card =
+    document.createElement(
+      "div"
+    );
+
+
+  card.className =
+    "recording-card active-recording-card";
+
+
+  card.dataset
+    .recordingNumber =
+      recordingNumber;
+
+
+  card.innerHTML = `
+    <div class="recording-card-header">
+
+      <h3>
+        Recording ${recordingNumber}
+      </h3>
+
+    </div>
+
+
+    <div class="recording-card-controls">
+
+      <button
+        type="button"
+        class="recorder-button start-recording-button"
+      >
+        ${
+          recordingNumber === 1
+            ? "Start Recording"
+            : "Start Recording"
+        }
+      </button>
+
+
+      <button
+        type="button"
+        class="recorder-button pause-recording-button"
+        hidden
+      >
+        Pause
+      </button>
+
+
+      <button
+        type="button"
+        class="recorder-button end-recording-button"
+        hidden
+      >
+        End Recording
+      </button>
+
+    </div>
+
+
+    <p
+      class="recording-status"
+    >
+      Ready to record.
+    </p>
+
+
+    <div
+      class="recording-playback-area"
+      hidden
+    >
+
+      <audio
+        controls
+        class="recording-playback"
+      ></audio>
+
+
+      <button
+        type="button"
+        class="delete-recording-button"
+      >
+        Delete Recording
+      </button>
+
+    </div>
+  `;
+
+
+  wireRecordingCard(
+    card
+  );
+
+
+  return card;
+
+}
+
+
+// ============================================================
+// WIRE RECORDING CARD
+// ============================================================
+
+function wireRecordingCard(
+  card
+) {
+
+  const startButton =
+    card.querySelector(
+      ".start-recording-button"
+    );
+
+  const pauseButton =
+    card.querySelector(
+      ".pause-recording-button"
+    );
+
+  const endButton =
+    card.querySelector(
+      ".end-recording-button"
+    );
+
+  const deleteButton =
+    card.querySelector(
+      ".delete-recording-button"
+    );
+
+
+  if (startButton) {
+
+    startButton
+      .addEventListener(
+        "click",
+        () => {
+
+          startRecording(
+            card
+          );
+
+        }
+      );
+
+  }
+
+
+  if (pauseButton) {
+
+    pauseButton
+      .addEventListener(
+        "click",
+        () => {
+
+          togglePauseRecording(
+            card
+          );
+
+        }
+      );
+
+  }
+
+
+  if (endButton) {
+
+    endButton
+      .addEventListener(
+        "click",
+        () => {
+
+          endRecording(
+            card
+          );
+
+        }
+      );
+
+  }
+
+
+  if (deleteButton) {
+
+    deleteButton
+      .addEventListener(
+        "click",
+        () => {
+
+          deleteRecordingCard(
+            card
+          );
+
+        }
+      );
+
+  }
+
+}
+
+
+// ============================================================
 // START RECORDING
 // ============================================================
 
-async function startRecording() {
+async function startRecording(
+  card
+) {
 
   if (
-    savedRecordings.length >=
-    MAX_RECORDINGS
+    mediaRecorder &&
+    (
+      mediaRecorder.state ===
+        "recording" ||
+      mediaRecorder.state ===
+        "paused"
+    )
   ) {
     return;
   }
@@ -293,22 +508,79 @@ async function startRecording() {
 
     mediaRecorder.addEventListener(
       "stop",
-      finishRecording
+      () => {
+
+        finishRecording(
+          card
+        );
+
+      }
     );
 
 
     mediaRecorder.start();
 
 
-    recordingStatus.textContent =
-      "Recording...";
+    const startButton =
+      card.querySelector(
+        ".start-recording-button"
+      );
+
+    const pauseButton =
+      card.querySelector(
+        ".pause-recording-button"
+      );
+
+    const endButton =
+      card.querySelector(
+        ".end-recording-button"
+      );
+
+    const status =
+      card.querySelector(
+        ".recording-status"
+      );
 
 
-    startRecordingButton.disabled =
-      true;
+    if (startButton) {
 
-    stopRecordingButton.disabled =
-      false;
+      startButton.classList.add(
+        "recording-active"
+      );
+
+      startButton.disabled =
+        true;
+
+    }
+
+
+    if (pauseButton) {
+
+      pauseButton.hidden =
+        false;
+
+    }
+
+
+    if (endButton) {
+
+      endButton.hidden =
+        false;
+
+    }
+
+
+    if (status) {
+
+      status.textContent =
+        "Recording in progress.";
+
+    }
+
+
+    startRecordingDots(
+      startButton
+    );
 
   }
   catch (error) {
@@ -319,8 +591,18 @@ async function startRecording() {
     );
 
 
-    recordingStatus.textContent =
-      "Microphone access could not be started.";
+    const status =
+      card.querySelector(
+        ".recording-status"
+      );
+
+
+    if (status) {
+
+      status.textContent =
+        "Microphone access could not be started.";
+
+    }
 
   }
 
@@ -328,37 +610,275 @@ async function startRecording() {
 
 
 // ============================================================
-// STOP RECORDING
+// RECORDING DOT ANIMATION
 // ============================================================
 
-function stopRecording() {
+function startRecordingDots(
+  button
+) {
+
+  stopRecordingDots();
+
+
+  recordingDotCount =
+    1;
+
+
+  updateRecordingDots(
+    button
+  );
+
+
+  recordingDotsInterval =
+    setInterval(
+      () => {
+
+        recordingDotCount++;
+
+
+        if (
+          recordingDotCount > 3
+        ) {
+
+          recordingDotCount =
+            1;
+
+        }
+
+
+        updateRecordingDots(
+          button
+        );
+
+      },
+      500
+    );
+
+}
+
+
+function updateRecordingDots(
+  button
+) {
+
+  if (!button) {
+    return;
+  }
+
+
+  button.innerHTML = `
+    <span class="recording-label">
+      Recording
+    </span><span class="recording-dots">${".".repeat(recordingDotCount)}</span>
+  `;
+
+}
+
+
+function stopRecordingDots() {
 
   if (
-    !mediaRecorder ||
-    mediaRecorder.state !==
+    recordingDotsInterval
+  ) {
+
+    clearInterval(
+      recordingDotsInterval
+    );
+
+
+    recordingDotsInterval =
+      null;
+
+  }
+
+}
+
+
+// ============================================================
+// PAUSE / RESUME RECORDING
+// ============================================================
+
+function togglePauseRecording(
+  card
+) {
+
+  if (!mediaRecorder) {
+    return;
+  }
+
+
+  const startButton =
+    card.querySelector(
+      ".start-recording-button"
+    );
+
+  const pauseButton =
+    card.querySelector(
+      ".pause-recording-button"
+    );
+
+  const status =
+    card.querySelector(
+      ".recording-status"
+    );
+
+
+  if (
+    mediaRecorder.state ===
       "recording"
+  ) {
+
+    mediaRecorder.pause();
+
+
+    stopRecordingDots();
+
+
+    if (startButton) {
+
+      startButton.textContent =
+        "Paused";
+
+      startButton.classList.remove(
+        "recording-active"
+      );
+
+      startButton.classList.add(
+        "recording-paused"
+      );
+
+    }
+
+
+    if (pauseButton) {
+
+      pauseButton.textContent =
+        "Resume";
+
+      pauseButton.classList.add(
+        "resume-active"
+      );
+
+    }
+
+
+    if (status) {
+
+      status.textContent =
+        "Recording paused.";
+
+    }
+
+
+    return;
+  }
+
+
+  if (
+    mediaRecorder.state ===
+      "paused"
+  ) {
+
+    mediaRecorder.resume();
+
+
+    if (startButton) {
+
+      startButton.classList.remove(
+        "recording-paused"
+      );
+
+      startButton.classList.add(
+        "recording-active"
+      );
+
+    }
+
+
+    if (pauseButton) {
+
+      pauseButton.textContent =
+        "Pause";
+
+      pauseButton.classList.remove(
+        "resume-active"
+      );
+
+    }
+
+
+    if (status) {
+
+      status.textContent =
+        "Recording in progress.";
+
+    }
+
+
+    startRecordingDots(
+      startButton
+    );
+
+  }
+
+}
+
+
+// ============================================================
+// END RECORDING
+// ============================================================
+
+function endRecording(
+  card
+) {
+
+  if (!mediaRecorder) {
+    return;
+  }
+
+
+  if (
+    mediaRecorder.state !==
+      "recording" &&
+    mediaRecorder.state !==
+      "paused"
   ) {
     return;
   }
 
 
+  stopRecordingDots();
+
+
+  const status =
+    card.querySelector(
+      ".recording-status"
+    );
+
+
+  if (status) {
+
+    status.textContent =
+      "Finishing recording...";
+
+  }
+
+
   mediaRecorder.stop();
-
-
-  recordingStatus.textContent =
-    "Finishing recording...";
 
 }
 
 
 // ============================================================
-// FINISH / SAVE RECORDING
+// FINISH RECORDING
 // ============================================================
 
-function finishRecording() {
+function finishRecording(
+  card
+) {
 
   const finalMimeType =
-    mediaRecorder.mimeType ||
+    mediaRecorder?.mimeType ||
     "audio/webm";
 
 
@@ -382,6 +902,12 @@ function finishRecording() {
     url:
       URL.createObjectURL(
         blob
+      ),
+
+    recordingNumber:
+      Number(
+        card.dataset
+          .recordingNumber
       )
   };
 
@@ -406,140 +932,181 @@ function finishRecording() {
   recordingStream =
     null;
 
+  mediaRecorder =
+    null;
 
-  renderSavedRecordings();
+  recordedChunks =
+    [];
 
 
-  recordingStatus.textContent =
+  finalizeRecordingCard(
+    card,
+    recording
+  );
+
+
+  updateSendButtonState();
+
+
+  if (
     savedRecordings.length <
-      MAX_RECORDINGS
-      ? "Recording saved. You can record another or send your recordings."
-      : "Three recordings saved. You're ready to send.";
+    MAX_RECORDINGS
+  ) {
 
+    addAnotherRecordingButton.hidden =
+      false;
 
-  stopRecordingButton.disabled =
-    true;
+  }
+  else {
 
+    addAnotherRecordingButton.hidden =
+      true;
 
-  updateRecorderButtons();
+  }
 
 }
 
 
 // ============================================================
-// DISPLAY SAVED RECORDINGS
+// FINALIZE CARD
 // ============================================================
 
-function renderSavedRecordings() {
+function finalizeRecordingCard(
+  card,
+  recording
+) {
+
+  const controls =
+    card.querySelector(
+      ".recording-card-controls"
+    );
+
+  const status =
+    card.querySelector(
+      ".recording-status"
+    );
+
+  const playbackArea =
+    card.querySelector(
+      ".recording-playback-area"
+    );
+
+  const audio =
+    card.querySelector(
+      ".recording-playback"
+    );
+
+
+  if (controls) {
+
+    controls.hidden =
+      true;
+
+  }
+
+
+  if (status) {
+
+    status.textContent =
+      "Recording complete.";
+
+  }
+
+
+  if (audio) {
+
+    audio.src =
+      recording.url;
+
+  }
+
+
+  if (playbackArea) {
+
+    playbackArea.hidden =
+      false;
+
+  }
+
+
+  card.classList.remove(
+    "active-recording-card"
+  );
+
+
+  card.classList.add(
+    "finished-recording-card"
+  );
+
+}
+
+
+// ============================================================
+// ADD ANOTHER RECORDING
+// ============================================================
+
+function addAnotherRecording() {
 
   if (
-    !savedRecordingsContainer
+    savedRecordings.length >=
+    MAX_RECORDINGS
   ) {
     return;
   }
 
 
-  savedRecordingsContainer
-    .innerHTML =
-      "";
+  addAnotherRecordingButton.hidden =
+    true;
 
 
-  savedRecordings
-    .forEach(
-      (
-        recording,
-        index
-      ) => {
-
-        const card =
-          document.createElement(
-            "div"
-          );
+  currentRecordingNumber =
+    savedRecordings.length +
+    1;
 
 
-        card.className =
-          "saved-recording-card";
-
-
-        card.innerHTML = `
-          <div class="saved-recording-header">
-
-            <strong>
-              Recording ${index + 1}
-            </strong>
-
-            <button
-              type="button"
-              class="delete-recording-button"
-              data-recording-id="${recording.id}"
-            >
-              Delete
-            </button>
-
-          </div>
-
-          <audio
-            controls
-            src="${recording.url}"
-            class="saved-recording-audio"
-          ></audio>
-        `;
-
-
-        savedRecordingsContainer
-          .appendChild(
-            card
-          );
-
-      }
+  const card =
+    createRecordingCard(
+      currentRecordingNumber
     );
 
 
-  const deleteButtons =
-    savedRecordingsContainer
-      .querySelectorAll(
-        ".delete-recording-button"
-      );
-
-
-  deleteButtons
-    .forEach(
-      button => {
-
-        button.addEventListener(
-          "click",
-          () => {
-
-            deleteRecording(
-              button.dataset
-                .recordingId
-            );
-
-          }
-        );
-
-      }
+  recordingCardsContainer
+    .appendChild(
+      card
     );
 
 
-  updateSendButtonState();
+  card.scrollIntoView({
+    behavior:
+      "smooth",
+
+    block:
+      "nearest"
+  });
 
 }
 
 
 // ============================================================
-// DELETE RECORDING
+// DELETE RECORDING CARD
 // ============================================================
 
-function deleteRecording(
-  recordingId
+function deleteRecordingCard(
+  card
 ) {
+
+  const recordingNumber =
+    Number(
+      card.dataset
+        .recordingNumber
+    );
+
 
   const recording =
     savedRecordings.find(
       item =>
-        item.id ===
-        recordingId
+        item.recordingNumber ===
+        recordingNumber
     );
 
 
@@ -555,44 +1122,143 @@ function deleteRecording(
   savedRecordings =
     savedRecordings.filter(
       item =>
-        item.id !==
-        recordingId
+        item.recordingNumber !==
+        recordingNumber
     );
 
 
-  renderSavedRecordings();
+  card.remove();
 
 
-  recordingStatus.textContent =
-    savedRecordings.length
-      ? "Recording deleted. You can record another or send your recordings."
-      : "Ready to record.";
+  renumberRecordingCards();
 
 
-  updateRecorderButtons();
+  updateSendButtonState();
 
-}
-
-
-// ============================================================
-// BUTTON STATES
-// ============================================================
-
-function updateRecorderButtons() {
 
   if (
-    !startRecordingButton
+    savedRecordings.length <
+    MAX_RECORDINGS &&
+    savedRecordings.length > 0
   ) {
-    return;
+
+    addAnotherRecordingButton.hidden =
+      false;
+
   }
 
 
-  startRecordingButton.disabled =
-    savedRecordings.length >=
-    MAX_RECORDINGS;
+  if (
+    savedRecordings.length ===
+    0
+  ) {
+
+    resetRecorderCards();
+
+  }
 
 }
 
+
+// ============================================================
+// RENUMBER CARDS
+// ============================================================
+
+function renumberRecordingCards() {
+
+  const cards =
+    recordingCardsContainer
+      .querySelectorAll(
+        ".recording-card"
+      );
+
+
+  cards.forEach(
+    (
+      card,
+      index
+    ) => {
+
+      const newNumber =
+        index + 1;
+
+
+      card.dataset
+        .recordingNumber =
+          newNumber;
+
+
+      const heading =
+        card.querySelector(
+          ".recording-card-header h3"
+        );
+
+
+      if (heading) {
+
+        heading.textContent =
+          `Recording ${newNumber}`;
+
+      }
+
+    }
+  );
+
+
+  savedRecordings.forEach(
+    (
+      recording,
+      index
+    ) => {
+
+      recording.recordingNumber =
+        index + 1;
+
+    }
+  );
+
+}
+
+
+// ============================================================
+// RESET RECORDER CARDS
+// ============================================================
+
+function resetRecorderCards() {
+
+  recordingCardsContainer
+    .innerHTML =
+      "";
+
+
+  const firstCard =
+    createRecordingCard(
+      1
+    );
+
+
+  recordingCardsContainer
+    .appendChild(
+      firstCard
+    );
+
+
+  currentRecordingNumber =
+    1;
+
+
+  addAnotherRecordingButton.hidden =
+    true;
+
+
+  updateSendButtonState();
+
+}
+
+
+// ============================================================
+// SEND BUTTON STATE
+// ============================================================
 
 function updateSendButtonState() {
 
@@ -603,37 +1269,75 @@ function updateSendButtonState() {
   }
 
 
+  const count =
+    savedRecordings.length;
+
+
   sendRecordingsButton.disabled =
-    savedRecordings.length ===
-    0;
+    count === 0;
+
+
+  if (count === 1) {
+
+    sendRecordingsButton.textContent =
+      "Send Recording";
+
+  }
+  else if (count > 1) {
+
+    sendRecordingsButton.textContent =
+      `Send ${count} Recordings`;
+
+  }
+  else {
+
+    sendRecordingsButton.textContent =
+      "Send Recording";
+
+  }
 
 }
 
 
 // ============================================================
-// RECORDER BUTTON EVENTS
+// ADD-ANOTHER BUTTON EVENT
 // ============================================================
 
 if (
-  startRecordingButton &&
-  stopRecordingButton
+  addAnotherRecordingButton
 ) {
 
-  startRecordingButton
+  addAnotherRecordingButton
     .addEventListener(
       "click",
-      startRecording
-    );
-
-
-  stopRecordingButton
-    .addEventListener(
-      "click",
-      stopRecording
+      addAnotherRecording
     );
 
 }
 
+
+// ============================================================
+// WIRE FIRST HTML CARD
+// ============================================================
+
+const initialRecordingCard =
+  document.querySelector(
+    ".recording-card"
+  );
+
+
+if (
+  initialRecordingCard
+) {
+
+  wireRecordingCard(
+    initialRecordingCard
+  );
+
+}
+
+
+updateSendButtonState();
 
 // ============================================================
 // UPLOAD ONE RECORDING
@@ -725,7 +1429,128 @@ async function uploadRecording(
 
 
 // ============================================================
-// SEND ALL RECORDINGS
+// SUBMISSION CONFIRMATION
+// ============================================================
+
+const submissionConfirmation =
+  document.getElementById(
+    "submission-confirmation"
+  );
+
+const submissionConfirmationMessage =
+  document.getElementById(
+    "submission-confirmation-message"
+  );
+
+const cancelSubmissionButton =
+  document.getElementById(
+    "cancel-submission-button"
+  );
+
+const confirmSubmissionButton =
+  document.getElementById(
+    "confirm-submission-button"
+  );
+
+const submissionSuccess =
+  document.getElementById(
+    "submission-success"
+  );
+
+
+let pendingSubmissionData =
+  null;
+
+
+// ============================================================
+// SHOW CONFIRMATION
+// ============================================================
+
+function showSubmissionConfirmation(
+  studentName,
+  comment
+) {
+
+  const count =
+    savedRecordings.length;
+
+
+  if (count === 0) {
+    return;
+  }
+
+
+  pendingSubmissionData = {
+    studentName,
+    comment
+  };
+
+
+  if (
+    submissionConfirmationMessage
+  ) {
+
+    if (count === 1) {
+
+      submissionConfirmationMessage
+        .textContent =
+          "Are you sure you want to submit this recording?";
+
+    }
+    else if (count === 2) {
+
+      submissionConfirmationMessage
+        .textContent =
+          "Are you sure you want to submit these two recordings?";
+
+    }
+    else {
+
+      submissionConfirmationMessage
+        .textContent =
+          `Are you sure you want to submit these ${count} recordings?`;
+
+    }
+
+  }
+
+
+  if (
+    submissionConfirmation
+  ) {
+
+    submissionConfirmation.hidden =
+      false;
+
+  }
+
+}
+
+
+// ============================================================
+// HIDE CONFIRMATION
+// ============================================================
+
+function hideSubmissionConfirmation() {
+
+  if (
+    submissionConfirmation
+  ) {
+
+    submissionConfirmation.hidden =
+      true;
+
+  }
+
+
+  pendingSubmissionData =
+    null;
+
+}
+
+
+// ============================================================
+// FORM SUBMIT
 // ============================================================
 
 if (publicRecordingForm) {
@@ -733,7 +1558,7 @@ if (publicRecordingForm) {
   publicRecordingForm
     .addEventListener(
       "submit",
-      async (event) => {
+      (event) => {
 
         event.preventDefault();
 
@@ -754,6 +1579,19 @@ if (publicRecordingForm) {
             ?.value
             .trim() || "";
 
+        if (!studentName) {
+
+          const nameRequiredModal =
+            document.getElementById(
+              "name-required-modal"
+            );
+
+          if (nameRequiredModal) {
+            nameRequiredModal.hidden = false;
+          }
+
+          return;
+        }  
 
         const comment =
           document
@@ -766,74 +1604,157 @@ if (publicRecordingForm) {
 
         if (!studentName) {
 
-          recordingStatus.textContent =
-            "Please enter your name.";
+          const firstStatus =
+            document.querySelector(
+              ".recording-status"
+            );
+
+
+          if (firstStatus) {
+
+            firstStatus.textContent =
+              "Please enter your name.";
+
+          }
+
 
           return;
         }
 
 
+        showSubmissionConfirmation(
+          studentName,
+          comment
+        );
+
+      }
+    );
+
+}
+
+
+// ============================================================
+// CANCEL CONFIRMATION
+// ============================================================
+
+if (
+  cancelSubmissionButton
+) {
+
+  cancelSubmissionButton
+    .addEventListener(
+      "click",
+      hideSubmissionConfirmation
+    );
+
+}
+
+
+// ============================================================
+// CONFIRM SUBMISSION
+// ============================================================
+
+if (
+  confirmSubmissionButton
+) {
+
+  confirmSubmissionButton
+    .addEventListener(
+      "click",
+      async () => {
+
+        if (
+          !pendingSubmissionData ||
+          savedRecordings.length === 0
+        ) {
+          return;
+        }
+
+
+        const {
+          studentName,
+          comment
+        } =
+          pendingSubmissionData;
+
+
+        submissionConfirmation.hidden =
+          true;
+
+
+        confirmSubmissionButton.disabled =
+          true;
+
+        cancelSubmissionButton.disabled =
+          true;
+
         sendRecordingsButton.disabled =
           true;
 
-        startRecordingButton.disabled =
+        addAnotherRecordingButton.disabled =
           true;
-
-        sendRecordingsButton.textContent =
-          "Sending...";
 
 
         try {
 
-          for (
-            let index = 0;
-            index <
-              savedRecordings.length;
-            index++
+          while (
+            savedRecordings.length >
+            0
           ) {
 
-            recordingStatus.textContent =
-              `Sending recording ${index + 1} of ${savedRecordings.length}...`;
+            const recording =
+              savedRecordings[0];
+
+
+            const totalRemaining =
+              savedRecordings.length;
+
+
+            sendRecordingsButton.textContent =
+              totalRemaining === 1
+                ? "Sending Recording..."
+                : `Sending ${totalRemaining} Recordings...`;
 
 
             await uploadRecording(
-              savedRecordings[index],
+              recording,
               studentName,
               comment
             );
 
-          }
 
-
-          savedRecordings
-            .forEach(
-              recording => {
-
-                URL.revokeObjectURL(
-                  recording.url
-                );
-
-              }
+            URL.revokeObjectURL(
+              recording.url
             );
 
 
-          savedRecordings =
-            [];
+            savedRecordings.shift();
 
 
-          renderSavedRecordings();
+            const matchingCard =
+              recordingCardsContainer
+                .querySelector(
+                  `[data-recording-number="${recording.recordingNumber}"]`
+                );
 
 
-          recordingStatus.textContent =
-            "Your recordings were sent successfully!";
+            if (matchingCard) {
+
+              matchingCard.remove();
+
+            }
 
 
-          sendRecordingsButton.textContent =
-            "Sent";
+            renumberRecordingCards();
+
+          }
 
 
-          startRecordingButton.disabled =
-            false;
+          pendingSubmissionData =
+            null;
+
+
+          showSubmissionSuccess();
 
         }
         catch (error) {
@@ -844,16 +1765,22 @@ if (publicRecordingForm) {
           );
 
 
-          recordingStatus.textContent =
+          alert(
             error.message ||
-            "Could not send recordings.";
+            "Could not send recordings."
+          );
 
 
-          sendRecordingsButton.textContent =
-            "Send Recordings";
+          confirmSubmissionButton.disabled =
+            false;
+
+          cancelSubmissionButton.disabled =
+            false;
+
+          addAnotherRecordingButton.disabled =
+            false;
 
 
-          updateRecorderButtons();
           updateSendButtonState();
 
         }
@@ -864,4 +1791,179 @@ if (publicRecordingForm) {
 }
 
 
-updateSendButtonState();
+// ============================================================
+// SUCCESS STATE
+// ============================================================
+
+function showSubmissionSuccess() {
+
+  if (
+    submissionSuccess
+  ) {
+
+    submissionSuccess.hidden =
+      false;
+
+  }
+
+
+  if (
+    publicRecordingForm
+  ) {
+
+    publicRecordingForm.hidden =
+      true;
+
+  }
+
+
+  setTimeout(
+    () => {
+
+      resetPublicSender();
+
+    },
+    1800
+  );
+
+}
+
+const nameRequiredModal =
+  document.getElementById(
+    "name-required-modal"
+  );
+
+const nameRequiredOkButton =
+  document.getElementById(
+    "name-required-ok-button"
+  );
+
+if (nameRequiredOkButton) {
+
+  nameRequiredOkButton.addEventListener(
+    "click",
+    () => {
+
+      if (nameRequiredModal) {
+        nameRequiredModal.hidden = true;
+      }
+
+      const nameInput =
+        document.getElementById(
+          "sender-name"
+        );
+
+      if (nameInput) {
+        nameInput.focus();
+      }
+
+    }
+  );
+
+}
+
+
+// ============================================================
+// RESET FULL SENDER
+// ============================================================
+
+function resetPublicSender() {
+
+  const senderName =
+    document.getElementById(
+      "sender-name"
+    );
+
+  const senderComment =
+    document.getElementById(
+      "sender-comment"
+    );
+
+
+  if (senderName) {
+
+    senderName.value =
+      "";
+
+  }
+
+
+  if (senderComment) {
+
+    senderComment.value =
+      "";
+
+  }
+
+
+  savedRecordings.forEach(
+    recording => {
+
+      URL.revokeObjectURL(
+        recording.url
+      );
+
+    }
+  );
+
+
+  savedRecordings =
+    [];
+
+
+  pendingSubmissionData =
+    null;
+
+
+  if (
+    submissionSuccess
+  ) {
+
+    submissionSuccess.hidden =
+      true;
+
+  }
+
+
+  if (
+    submissionConfirmation
+  ) {
+
+    submissionConfirmation.hidden =
+      true;
+
+  }
+
+
+  if (
+    publicRecordingForm
+  ) {
+
+    publicRecordingForm.hidden =
+      false;
+
+  }
+
+
+  confirmSubmissionButton.disabled =
+    false;
+
+  cancelSubmissionButton.disabled =
+    false;
+
+  addAnotherRecordingButton.disabled =
+    false;
+
+
+  resetRecorderCards();
+
+
+  window.scrollTo({
+    top:
+      0,
+
+    behavior:
+      "smooth"
+  });
+
+}
