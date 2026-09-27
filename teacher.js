@@ -1388,6 +1388,7 @@ async function loadManualBandLevelData() {
         );
 
     populateManualClassSelect();
+    populateClassModulesClassSelect();
 
   }
 
@@ -1867,6 +1868,236 @@ function populateManualClassSelect() {
   );
 
 }
+
+function populateClassModulesClassSelect() {
+
+  const select =
+    document.getElementById(
+      "classModulesClass"
+    );
+
+  if (!select) return;
+
+
+  select.innerHTML = `
+    <option value="">
+      Select a class…
+    </option>
+  `;
+
+
+  manualClasses.forEach(
+    classInfo => {
+
+      const option =
+        document.createElement(
+          "option"
+        );
+
+      option.value =
+        classInfo.id;
+
+      option.textContent =
+        classInfo.name;
+
+      select.appendChild(
+        option
+      );
+
+    }
+  );
+
+}
+
+async function renderClassModules(
+  classId
+) {
+
+  const container =
+    document.getElementById(
+      "classModulesList"
+    );
+
+
+  if (!container) return;
+
+
+  if (!classId) {
+
+    container.innerHTML =
+      "<p>Select a class to manage its modules.</p>";
+
+    return;
+
+  }
+
+
+  container.innerHTML =
+    "<p>Loading modules...</p>";
+
+
+  try {
+
+    const [
+      modulesResult,
+      assignmentsResult
+    ] =
+      await Promise.all([
+
+        supabaseClient
+          .from("modules")
+          .select(
+            "module_id, name, description, active"
+          )
+          .order(
+            "name"
+          ),
+
+        supabaseClient
+          .from("class_modules")
+          .select(
+            "module_id, display_order"
+          )
+          .eq(
+            "class_id",
+            classId
+          )
+
+      ]);
+
+
+    if (modulesResult.error) {
+      throw modulesResult.error;
+    }
+
+
+    if (assignmentsResult.error) {
+      throw assignmentsResult.error;
+    }
+
+
+    const assignedModules =
+      new Set(
+        assignmentsResult.data.map(
+          assignment =>
+            assignment.module_id
+        )
+      );
+
+
+    container.innerHTML = "";
+
+
+    modulesResult.data.forEach(
+      module => {
+
+        const row =
+          document.createElement(
+            "label"
+          );
+
+        row.className =
+          "class-module-option";
+
+
+        const checkbox =
+          document.createElement(
+            "input"
+          );
+
+        checkbox.type =
+          "checkbox";
+
+        checkbox.checked =
+          assignedModules.has(
+            module.module_id
+          );
+
+        // Read-only for tonight.
+        checkbox.disabled =
+          true;
+
+
+        const text =
+          document.createElement(
+            "div"
+          );
+
+
+        const name =
+          document.createElement(
+            "strong"
+          );
+
+        name.textContent =
+          module.name;
+
+
+        const description =
+          document.createElement(
+            "div"
+          );
+
+        description.textContent =
+          module.description || "";
+
+
+        text.appendChild(
+          name
+        );
+
+        text.appendChild(
+          description
+        );
+
+
+        row.appendChild(
+          checkbox
+        );
+
+        row.appendChild(
+          text
+        );
+
+
+        container.appendChild(
+          row
+        );
+
+      }
+    );
+
+  }
+
+  catch (error) {
+
+    console.error(
+      "Could not load class modules:",
+      error
+    );
+
+
+    container.innerHTML =
+      "<p>Could not load modules.</p>";
+
+  }
+
+}
+
+document
+  .getElementById(
+    "classModulesClass"
+  )
+  ?.addEventListener(
+    "change",
+    event => {
+
+      renderClassModules(
+        event.target.value
+      );
+
+    }
+  );
 
 
 function populateManualStudentSelect(
