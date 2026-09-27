@@ -9,7 +9,23 @@
     content="width=device-width, initial-scale=1.0"
   >
 
-  <title>Band Achievements — Teacher Inbox</title>
+  <title>Band Levels — Teacher Portal</title>
+
+  <link
+    rel="preconnect"
+    href="https://fonts.googleapis.com"
+  >
+
+  <link
+    rel="preconnect"
+    href="https://fonts.gstatic.com"
+    crossorigin
+  >
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Angkor&family=Atkinson+Hyperlegible:wght@400;700&display=swap"    
+    rel="stylesheet"
+  >
 
   <link
     rel="stylesheet"
@@ -22,9 +38,22 @@
 
   <header class="teacher-header">
 
-    <div>
-      <h1>Teacher Inbox</h1>
-      <p>Band Achievements</p>
+    <div class="teacher-header-inner">
+
+      <div class="teacher-site-brand">
+
+        <img
+          src="images/site-logo.png"
+          alt="Band Levels"
+          class="teacher-site-logo"
+        >
+
+        <div class="teacher-site-title">
+          Band Levels
+        </div>
+
+      </div>
+
     </div>
 
   </header>
@@ -111,21 +140,18 @@
 
     <div class="teacher-brand">
 
-      <div class="teacher-brand-icon">
-        ♫
-      </div>
+  <div class="teacher-brand-title">
+    Teacher Portal
+  </div>
 
-      <div>
-        <div class="teacher-brand-title">
-          Teacher Portal
-        </div>
+  <div
+    id="teacher-signed-in-name"
+    class="teacher-signed-in-name"
+  >
+    Signed in
+  </div>
 
-        <div class="teacher-brand-subtitle">
-          Band Achievements
-        </div>
-      </div>
-
-    </div>
+</div>
 
 
     <nav class="teacher-nav">
@@ -379,6 +405,88 @@
 
     </section>
 
+    <!-- =========================================
+        BAND LEVEL PROGRESS
+        ========================================= -->
+
+    <section
+      id="manual-band-level-section"
+      class="dashboard-card"
+    >
+
+      <div class="dashboard-section-heading">
+
+        <div>
+
+          <div class="section-eyebrow">
+            Students
+          </div>
+
+          <h2>
+            Band Level Progress
+          </h2>
+
+          <p>
+            Mark Band Level requirements complete for students
+            who perform them in person.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <div class="manual-band-level-selectors">
+
+        <div>
+
+          <label for="manualBandLevelClass">
+            Class
+          </label>
+
+          <select id="manualBandLevelClass">
+
+            <option value="">
+              Select a class…
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <div>
+
+          <label for="manualBandLevelStudent">
+            Student
+          </label>
+
+          <select id="manualBandLevelStudent">
+
+            <option value="">
+              Select a student…
+            </option>
+
+          </select>
+
+        </div>
+
+      </div>
+
+
+      <div
+        id="manualBandLevelProgress"
+        class="manual-band-level-progress"
+      >
+
+        <p>
+          Select a student to view their current Band Level.
+        </p>
+
+      </div>
+
+    </section>
+    
     
   </div>
 

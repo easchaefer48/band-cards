@@ -58,6 +58,11 @@ const logoutButton =
 const loginMessage =
   document.getElementById("login-message");
 
+const teacherSignedInName =
+  document.getElementById(
+    "teacher-signed-in-name"
+  );  
+
 
 // ------------------------------------------------------------
 // SHOW LOGIN SCREEN
@@ -71,16 +76,62 @@ function showLogin() {
 
 }
 
+function getTeacherDisplayName(user) {
+
+  if (!user) {
+    return "Teacher";
+  }
+
+
+  const metadata =
+    user.user_metadata || {};
+
+
+  const name =
+    metadata.full_name ||
+    metadata.name ||
+    metadata.display_name;
+
+
+  if (name) {
+    return name;
+  }
+
+
+  if (user.email) {
+
+    return user.email
+      .split("@")[0];
+
+  }
+
+
+  return "Teacher";
+
+}
+
 
 // ------------------------------------------------------------
 // SHOW TEACHER INBOX
 // ------------------------------------------------------------
 
-function showInbox() {
+function showInbox(user) {
 
   loginSection.classList.add("hidden");
 
   inboxSection.classList.remove("hidden");
+
+
+  if (teacherSignedInName) {
+
+    const teacherName =
+      getTeacherDisplayName(user);
+
+    teacherSignedInName.textContent =
+      `Signed in as ${teacherName}`;
+
+  }
+
 
   loadPendingRecordings();
 
@@ -138,7 +189,7 @@ loginForm?.addEventListener(
 
       passwordInput.value = "";
 
-      showInbox();
+      showInbox(data.user);
 
     }
 
@@ -215,7 +266,9 @@ async function checkTeacherSession() {
 
   if (data.session) {
 
-    showInbox();
+    showInbox(
+      data.session.user
+    );
 
   }
 
@@ -347,7 +400,7 @@ async function loadPendingRecordings() {
               )}
             </p>
 
-                        ${
+            ${
               submission.submission_type === "Band Level"
                 ? `
                   <div class="band-level-submission-info">
@@ -370,7 +423,32 @@ async function loadPendingRecordings() {
 
                   </div>
                 `
-                : ""
+                : (
+                  submission.submission_type === "public_sender" ||
+                  submission.submission_type === "account_sender"
+                )
+                  ? `
+                    <div class="audio-sender-submission-info">
+
+                      <div class="submission-type-label">
+                        Audio Sender
+                      </div>
+
+                      ${
+                        submission.submitter_comment
+                          ? `
+                            <div class="audio-sender-comment">
+                              ${escapeTeacherHtml(
+                                submission.submitter_comment
+                              )}
+                            </div>
+                          `
+                          : ""
+                      }
+
+                    </div>
+                  `
+                  : ""
             }
 
             <p style="font-size:0.75rem; color:#7f8b98;">
@@ -403,31 +481,69 @@ async function loadPendingRecordings() {
         ></audio>
 
 
-        <div class="review-actions">
+        ${
+          submission.submission_type === "public_sender"
+            ? `
+              <div class="public-sender-actions">
 
-          <button
-            class="success-button"
-            type="button"
-            data-submission-id="${submission.id}"
-        >
-            Success
-        </button>
+                <button
+                  class="public-sender-done-button"
+                  type="button"
+                  data-submission-id="${submission.id}"
+                >
+                  ✓ Done
+                </button>
 
-        <button
-            class="retry-button"
-            type="button"
-            data-submission-id="${submission.id}"
-        >
-         Please Try Again
-        </button>
+              </div>
+            `
 
-        </div>
+            : submission.submission_type === "account_sender"
+              ? `
+                <textarea
+                  class="teacher-comment-box"
+                  placeholder="Teacher comment..."
+                ></textarea>
 
+                <div class="public-sender-actions">
 
-        <textarea
-          class="teacher-comment-box"
-          placeholder="Teacher comment..."
-        ></textarea>
+                  <button
+                    class="public-sender-done-button"
+                    type="button"
+                    data-submission-id="${submission.id}"
+                  >
+                    ✓ Done
+                  </button>
+
+                </div>
+              `
+
+              : `
+                <div class="review-actions">
+
+                  <button
+                    class="success-button"
+                    type="button"
+                    data-submission-id="${submission.id}"
+                  >
+                    Success
+                  </button>
+
+                  <button
+                    class="retry-button"
+                    type="button"
+                    data-submission-id="${submission.id}"
+                  >
+                    Please Try Again
+                  </button>
+
+                </div>
+
+                <textarea
+                  class="teacher-comment-box"
+                  placeholder="Teacher comment..."
+                ></textarea>
+              `
+        }
 
       `;
 
@@ -453,6 +569,104 @@ async function loadPendingRecordings() {
     `;
 
   }
+
+}
+
+async function completePublicSenderSubmission(
+  submissionId,
+  cardElement
+) {
+
+  const commentBox =
+    cardElement.querySelector(
+      ".teacher-comment-box"
+    );
+
+
+  const teacherComment =
+    commentBox?.value?.trim() || "";
+
+
+  const updateData = {
+    status: "Completed",
+    reviewed_at:
+      new Date().toISOString()
+  };
+
+
+  if (teacherComment) {
+
+    updateData.teacher_comment =
+      teacherComment;
+
+  }
+
+
+  const {
+    error
+  } =
+    await supabaseClient
+      .from("recording_submissions")
+      .update(
+        updateData
+      )
+      .eq(
+        "id",
+        submissionId
+      )
+      .in(
+        "submission_type",
+        [
+          "public_sender",
+          "account_sender"
+        ]
+      );
+
+
+  if (error) {
+
+    console.error(
+      "Could not complete Audio Sender submission:",
+      error
+    );
+
+    alert(
+      "The recording could not be marked as done."
+    );
+
+    return;
+  }
+
+
+  cardElement.classList.add(
+    "recording-card-removing"
+  );
+
+
+  setTimeout(
+  () => {
+
+    cardElement.remove();
+
+    const recordingList =
+      document.getElementById(
+        "recording-list"
+      );
+
+
+    if (
+      recordingList &&
+      recordingList.children.length === 0
+    ) {
+
+      recordingList.innerHTML =
+        "<p>No pending recordings.</p>";
+
+    }
+
+  },
+  220
+);
 
 }
 
@@ -668,20 +882,26 @@ document.addEventListener(
         ".retry-button"
       );
 
+    const doneButton =
+      event.target.closest(
+        ".public-sender-done-button"
+      );  
 
     if (
       !successButton &&
-      !retryButton
+      !retryButton &&
+      !doneButton
     ) {
 
       return;
 
-    }
+    }   
 
 
     const button =
       successButton ||
-      retryButton;
+      retryButton ||
+      doneButton;
 
 
     const cardElement =
@@ -696,6 +916,15 @@ document.addEventListener(
     const submissionId =
       button.dataset.submissionId;
 
+    if (doneButton) {
+
+      await completePublicSenderSubmission(
+        submissionId,
+        cardElement
+      );
+
+      return;
+    }
 
     const commentBox =
       cardElement.querySelector(
@@ -1147,7 +1376,16 @@ async function loadManualBandLevelData() {
               ) || 0
           })
         );
-
+    
+        console.log(
+          "Manual Band Level data:",
+          {
+            students: manualStudents,
+            classes: manualClasses,
+            levels: manualBandLevels,
+            requirements: manualBandLevelRequirements
+          }
+        );
 
     populateManualClassSelect();
 
@@ -1168,48 +1406,6 @@ async function loadManualBandLevelData() {
 // ------------------------------------------------------------
 // Populate student selector
 // ------------------------------------------------------------
-
-function populateManualStudentSelect() {
-
-  const select =
-    document.getElementById(
-      "manualBandLevelStudent"
-    );
-
-
-  if (!select) return;
-
-
-  select.innerHTML = `
-    <option value="">
-      Select a student…
-    </option>
-  `;
-
-
-  manualStudents.forEach(
-    student => {
-
-      const option =
-        document.createElement(
-          "option"
-        );
-
-      option.value =
-        student.id;
-
-      option.textContent =
-        `${student.name} (${student.classId})`;
-
-
-      select.appendChild(
-        option
-      );
-
-    }
-  );
-
-}
 
 
 // ------------------------------------------------------------
@@ -1633,92 +1829,6 @@ document.addEventListener(
 
 // Start loading manual Band Level data
 loadManualBandLevelData();
-
-function populateManualClassSelect() {
-
-  const select =
-    document.getElementById(
-      "manualBandLevelClass"
-    );
-
-  if (!select) return;
-
-  select.innerHTML = `
-    <option value="">
-      Select a class…
-    </option>
-  `;
-
-  manualClasses.forEach(
-    classInfo => {
-
-      const option =
-        document.createElement(
-          "option"
-        );
-
-      option.value =
-        classInfo.id;
-
-      option.textContent =
-        classInfo.name;
-
-      select.appendChild(
-        option
-      );
-
-    }
-  );
-
-}
-
-
-function populateManualStudentSelect(
-  classId
-) {
-
-  const select =
-    document.getElementById(
-      "manualBandLevelStudent"
-    );
-
-  if (!select) return;
-
-  select.innerHTML = `
-    <option value="">
-      Select a student…
-    </option>
-  `;
-
-  if (!classId) return;
-
-  manualStudents
-    .filter(
-      student =>
-        student.classId === classId
-    )
-    .forEach(
-      student => {
-
-        const option =
-          document.createElement(
-            "option"
-          );
-
-        option.value =
-          student.id;
-
-        option.textContent =
-          student.name;
-
-        select.appendChild(
-          option
-        );
-
-      }
-    );
-
-}
 
 function populateManualClassSelect() {
 

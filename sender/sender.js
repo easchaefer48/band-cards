@@ -32,49 +32,18 @@ async function checkStudentLogin() {
 
   try {
 
-    const storedSessionText =
-      localStorage.getItem(
-        STUDENT_AUTH_STORAGE_KEY
-      );
-
-
-    if (!storedSessionText) {
-      return;
-    }
-
-
-    const storedSession =
-      JSON.parse(
-        storedSessionText
-      );
-
-
-    if (
-      !storedSession?.access_token ||
-      !storedSession?.refresh_token
-    ) {
-      return;
-    }
-
-
     const {
       data,
       error
     } =
       await supabaseClient.auth
-        .setSession({
-          access_token:
-            storedSession.access_token,
-
-          refresh_token:
-            storedSession.refresh_token
-        });
+        .getSession();
 
 
     if (error) {
 
       console.error(
-        "Could not restore student session:",
+        "Could not check student session:",
         error
       );
 
@@ -83,11 +52,24 @@ async function checkStudentLogin() {
 
 
     if (!data.session?.user) {
+
+      console.log(
+        "No signed-in student session found."
+      );
+
       return;
     }
 
 
-    showLoggedInSenderState();
+    console.log(
+      "Signed-in student found:",
+      data.session.user.id
+    );
+
+
+    showLoggedInSenderState(
+      data.session
+    );
 
   }
   catch (error) {
@@ -101,35 +83,48 @@ async function checkStudentLogin() {
 
 }
 
+let signedInStudentUser =
+  null;
 
-function showLoggedInSenderState() {
+  function showLoggedInSenderState(
+    session
+  ) {
 
-  const senderPanel =
+    console.log(
+      "LOGGED-IN SENDER STATE RUNNING"
+    );
+
+    signedInStudentUser =
+      session;
+
+  const nameField =
+    document
+      .getElementById(
+        "sender-name"
+      )
+      ?.closest(
+        ".sender-field"
+      );
+
+  const signInLink =
     document.querySelector(
-      ".sender-panel"
+      ".sender-sign-in-link"
     );
 
 
-  if (!senderPanel) {
-    return;
+  if (nameField) {
+    nameField.style.display =
+      "none";
   }
 
 
-  senderPanel.innerHTML = `
-    <div class="sender-intro">
+  if (signInLink) {
+    signInLink.textContent =
+      "Signed In";
+  }
 
-      <h1>You're Signed In</h1>
-
-      <p>
-        Your account-based recording sender
-        is coming soon.
-      </p>
-
-    </div>
-  `;
 
 }
-
 
 checkStudentLogin();
 
@@ -1353,10 +1348,14 @@ async function uploadRecording(
     new FormData();
 
 
-  formData.append(
-    "studentName",
-    studentName
-  );
+  if (!signedInStudentUser) {
+
+    formData.append(
+      "studentName",
+      studentName
+    );
+
+  }
 
 
   formData.append(
@@ -1391,16 +1390,31 @@ async function uploadRecording(
   );
 
 
+  const functionName =
+    signedInStudentUser
+      ? "submit-account-recording"
+      : "submit-public-recording";
+
+
+  const authToken =
+    signedInStudentUser
+      ?.access_token ||
+    SUPABASE_PUBLISHABLE_KEY;
+
+
   const response =
     await fetch(
-      `${SUPABASE_URL}/functions/v1/submit-public-recording`,
+      `${SUPABASE_URL}/functions/v1/${functionName}`,
       {
         method:
           "POST",
 
         headers: {
           Authorization:
-            `Bearer ${SUPABASE_PUBLISHABLE_KEY}`
+            `Bearer ${authToken}`,
+
+          apikey:
+            SUPABASE_PUBLISHABLE_KEY
         },
 
         body:
@@ -1579,7 +1593,10 @@ if (publicRecordingForm) {
             ?.value
             .trim() || "";
 
-        if (!studentName) {
+        if (
+          !signedInStudentUser &&
+          !studentName
+        ) {
 
           const nameRequiredModal =
             document.getElementById(
@@ -1591,7 +1608,7 @@ if (publicRecordingForm) {
           }
 
           return;
-        }  
+        }
 
         const comment =
           document
@@ -1602,7 +1619,10 @@ if (publicRecordingForm) {
             .trim() || "";
 
 
-        if (!studentName) {
+        if (
+            !signedInStudentUser &&
+            !studentName
+          ) {
 
           const firstStatus =
             document.querySelector(
@@ -1623,7 +1643,9 @@ if (publicRecordingForm) {
 
 
         showSubmissionConfirmation(
-          studentName,
+          signedInStudentUser
+            ? "Signed-in student"
+            : studentName,
           comment
         );
 
