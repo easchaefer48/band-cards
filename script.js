@@ -3745,6 +3745,47 @@ document
 
 }
 
+async function loadModulesForClass(
+  classId
+) {
+
+  if (!classId) {
+    return [];
+  }
+
+
+  const { data, error } =
+    await supabaseClient
+      .from("class_modules")
+      .select(
+        "module_id, display_order"
+      )
+      .eq(
+        "class_id",
+        classId
+      )
+      .order(
+        "display_order",
+        { ascending: true }
+      );
+
+
+  if (error) {
+
+    console.error(
+      "Could not load class modules:",
+      error
+    );
+
+    return [];
+
+  }
+
+
+  return data || [];
+
+}
+
 
 async function renderStudentHome(
   student
@@ -3788,6 +3829,45 @@ async function renderStudentHome(
 
   nameElement.textContent =
     student.name;
+
+  const classModules =
+    await loadModulesForClass(
+      student.classId
+    );
+
+
+  const enabledModuleIds =
+    new Set(
+      classModules.map(
+        module =>
+          module.module_id
+      )
+    );
+
+
+  console.log(
+    "Modules enabled for this student:",
+    Array.from(
+      enabledModuleIds
+    )
+  );  
+
+  const noteReaderCard =
+  document.getElementById(
+    "note-reader-home-card"
+  );
+
+
+if (noteReaderCard) {
+
+  noteReaderCard.classList.toggle(
+    "hidden",
+    !enabledModuleIds.has(
+      "note_reader"
+    )
+  );
+
+}
 
 
   /*
