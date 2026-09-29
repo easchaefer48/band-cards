@@ -2013,9 +2013,14 @@ async function renderClassModules(
             module.module_id
           );
 
-        // Read-only for tonight.
         checkbox.disabled =
-          true;
+          false;
+
+        checkbox.dataset.classId =
+          classId;
+
+        checkbox.dataset.moduleId =
+          module.module_id;
 
 
         const text =
@@ -2083,6 +2088,116 @@ async function renderClassModules(
   }
 
 }
+
+document.addEventListener(
+  "change",
+  async event => {
+
+    const checkbox =
+      event.target.closest(
+        ".class-module-option input[type='checkbox']"
+      );
+
+
+    if (!checkbox) return;
+
+
+    const classId =
+      checkbox.dataset.classId;
+
+    const moduleId =
+      checkbox.dataset.moduleId;
+
+    const shouldBeEnabled =
+      checkbox.checked;
+
+
+    checkbox.disabled =
+      true;
+
+
+    try {
+
+      if (shouldBeEnabled) {
+
+        const {
+          error
+        } =
+          await supabaseClient
+            .from(
+              "class_modules"
+            )
+            .insert({
+              class_id:
+                classId,
+
+              module_id:
+                moduleId,
+
+              display_order:
+                1
+            });
+
+
+        if (error) {
+          throw error;
+        }
+
+      }
+      else {
+
+        const {
+          error
+        } =
+          await supabaseClient
+            .from(
+              "class_modules"
+            )
+            .delete()
+            .eq(
+              "class_id",
+              classId
+            )
+            .eq(
+              "module_id",
+              moduleId
+            );
+
+
+        if (error) {
+          throw error;
+        }
+
+      }
+
+    }
+    catch (error) {
+
+      console.error(
+        "Could not update class module:",
+        error
+      );
+
+
+      // Put the checkbox back the way it was.
+      checkbox.checked =
+        !shouldBeEnabled;
+
+
+      alert(
+        "Could not update this class module."
+      );
+
+    }
+    finally {
+
+      checkbox.disabled =
+        false;
+
+    }
+
+  }
+);
 
 document
   .getElementById(
