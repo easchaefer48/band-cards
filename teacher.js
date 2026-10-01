@@ -1389,6 +1389,7 @@ async function loadManualBandLevelData() {
 
     populateManualClassSelect();
     populateClassModulesClassSelect();
+    await populateManageStudentsClassSelect();
 
   }
 
@@ -1909,6 +1910,298 @@ function populateClassModulesClassSelect() {
 
 }
 
+async function populateManageStudentsClassSelect() {
+
+  const select =
+    document.getElementById(
+      "manageStudentsClass"
+    );
+
+  if (!select) return;
+
+
+  const { data, error } =
+    await supabaseClient
+      .from("classes")
+      .select(
+        "class_id, display_name, grade_level, school_year"
+      )
+      .eq(
+        "active",
+        true
+      )
+      .order(
+        "grade_level",
+        { ascending: true }
+      );
+
+
+  if (error) {
+
+    console.error(
+      "Could not load classes for student management:",
+      error
+    );
+
+    return;
+
+  }
+
+
+  select.innerHTML = `
+    <option value="">
+      Select a class…
+    </option>
+  `;
+
+
+  data.forEach(
+    classInfo => {
+
+      const option =
+        document.createElement(
+          "option"
+        );
+
+      option.value =
+        classInfo.class_id;
+
+      option.textContent =
+        classInfo.display_name;
+
+      select.appendChild(
+        option
+      );
+
+    }
+  );
+
+}
+
+async function renderClassManagementRoster(
+  classId
+) {
+
+  const container =
+    document.getElementById(
+      "classManagementRoster"
+    );
+
+
+  if (!container) return;
+
+
+  if (!classId) {
+
+    container.innerHTML = `
+      <p>
+        Select a class to view its students.
+      </p>
+    `;
+
+    return;
+
+  }
+
+
+  container.innerHTML =
+    "<p>Loading students...</p>";
+
+
+  const { data, error } =
+    await supabaseClient
+      .from("class_enrollments")
+      .select(`
+        student_id,
+        students (
+          student_id,
+          student_name,
+          active
+        )
+      `)
+      .eq(
+        "class_id",
+        classId
+      )
+      .eq(
+        "active",
+        true
+      );
+
+
+  if (error) {
+
+    console.error(
+      "Could not load class roster:",
+      error
+    );
+
+    container.innerHTML =
+      "<p>Could not load this class roster.</p>";
+
+    return;
+
+  }
+
+
+  if (!data || data.length === 0) {
+
+    container.innerHTML = `
+      <p>
+        No students are currently enrolled
+        in this class.
+      </p>
+    `;
+
+    return;
+
+  }
+
+
+  const sortedEnrollments =
+    [...data].sort(
+      (a, b) =>
+        a.students.student_name.localeCompare(
+          b.students.student_name
+        )
+    );
+
+
+  container.innerHTML = "";
+
+
+  sortedEnrollments.forEach(
+    enrollment => {
+
+      const student =
+        enrollment.students;
+
+
+      const row =
+        document.createElement(
+          "div"
+        );
+
+      row.className =
+        "class-management-student";
+
+
+      row.textContent =
+        student.student_name;
+
+
+      container.appendChild(
+        row
+      );
+
+    }
+  );
+
+}
+
+document
+  .getElementById(
+    "manageStudentsClass"
+  )
+  ?.addEventListener(
+    "change",
+    event => {
+
+      renderClassManagementRoster(
+        event.target.value
+      );
+
+    }
+  );
+
+  const showAddStudentButton =
+  document.getElementById(
+    "showAddStudentButton"
+  );
+
+const addStudentForm =
+  document.getElementById(
+    "addStudentForm"
+  );
+
+const cancelAddStudentButton =
+  document.getElementById(
+    "cancelAddStudentButton"
+  );
+
+
+showAddStudentButton
+  ?.addEventListener(
+    "click",
+    () => {
+
+      const classSelect =
+        document.getElementById(
+          "manageStudentsClass"
+        );
+
+      const message =
+        document.getElementById(
+          "addStudentMessage"
+        );
+
+
+      if (!classSelect?.value) {
+
+        alert(
+          "Please select a class first."
+        );
+
+        return;
+
+      }
+
+
+      if (message) {
+        message.textContent = "";
+      }
+
+
+      addStudentForm.hidden =
+        false;
+
+
+      document
+        .getElementById(
+          "newStudentName"
+        )
+        ?.focus();
+
+    }
+  );
+
+
+cancelAddStudentButton
+  ?.addEventListener(
+    "click",
+    () => {
+
+      addStudentForm.hidden =
+        true;
+
+
+      document.getElementById(
+        "newStudentName"
+      ).value = "";
+
+
+      document.getElementById(
+        "newStudentId"
+      ).value = "";
+
+
+      document.getElementById(
+        "addStudentMessage"
+      ).textContent = "";
+
+    }
+  );
+
 async function renderClassModules(
   classId
 ) {
@@ -2121,21 +2414,42 @@ document.addEventListener(
       if (shouldBeEnabled) {
 
         const {
-          error
+          data: existingModules,
+          error: orderError
         } =
           await supabaseClient
-            .from(
-              "class_modules"
+            .from("class_modules")
+            .select("display_order")
+            .eq(
+              "class_id",
+              classId
             )
+            .order(
+              "display_order",
+              { ascending: false }
+            )
+            .limit(1);
+
+
+        if (orderError) {
+          throw orderError;
+        }
+
+
+        const nextDisplayOrder =
+          existingModules.length
+            ? existingModules[0].display_order + 1
+            : 1;
+
+
+        const { error } =
+          await supabaseClient
+            .from("class_modules")
             .insert({
-              class_id:
-                classId,
-
-              module_id:
-                moduleId,
-
+              class_id: classId,
+              module_id: moduleId,
               display_order:
-                1
+                nextDisplayOrder
             });
 
 

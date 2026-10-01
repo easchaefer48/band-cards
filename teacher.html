@@ -487,6 +487,10 @@
 
     </section>
 
+        <!-- =========================================
+         CLASS MODULES
+         ========================================= -->
+
     <section
       id="class-modules-section"
       class="dashboard-card"
@@ -543,12 +547,143 @@
       </div>
 
     </section>
-    
-    
+
+
+    <!-- =========================================
+         CLASS & STUDENT MANAGEMENT
+         ========================================= -->
+
+    <section
+      id="class-student-management-section"
+      class="dashboard-card"
+    >
+
+      <div class="dashboard-section-heading">
+
+        <div>
+
+          <div class="section-eyebrow">
+            Classes
+          </div>
+
+          <h2>
+            Class &amp; Student Management
+          </h2>
+
+          <p>
+            Manage classes, student rosters,
+            and student accounts.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <div class="class-modules-selector">
+
+        <label for="manageStudentsClass">
+          Class
+        </label>
+
+        <select id="manageStudentsClass">
+
+          <option value="">
+            Select a class…
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <div
+  id="addStudentControls"
+  class="add-student-controls"
+>
+
+  <button
+    id="showAddStudentButton"
+    type="button"
+  >
+    + Add Student
+  </button>
+
+
+  <div
+    id="addStudentForm"
+    class="add-student-form"
+    hidden
+  >
+
+    <label for="newStudentName">
+      Student Name
+    </label>
+
+    <input
+      id="newStudentName"
+      type="text"
+      autocomplete="off"
+      placeholder="First and last name"
+    >
+
+
+    <label for="newStudentId">
+      Student ID
+    </label>
+
+    <input
+      id="newStudentId"
+      type="text"
+      autocomplete="off"
+      placeholder="S0001"
+    >
+
+
+    <div class="add-student-form-actions">
+
+      <button
+        id="createStudentButton"
+        type="button"
+      >
+        Add Student
+      </button>
+
+      <button
+        id="cancelAddStudentButton"
+        type="button"
+      >
+        Cancel
+      </button>
+
+    </div>
+
+    <div
+      id="addStudentMessage"
+      class="add-student-message"
+    ></div>
+
+  </div>
+
+</div>
+      
+      <div
+        id="classManagementRoster"
+        class="class-management-roster"
+      >
+
+        <p>
+          Select a class to view its students.
+        </p>
+
+      </div>
+
+    </section>
+
+
   </div>
 
 </section>
-
     
 
   </main>
