@@ -3852,22 +3852,28 @@ async function renderStudentHome(
     )
   );  
 
-  const noteReaderCard =
-  document.getElementById(
-    "note-reader-home-card"
+  const moduleCards =
+  document.querySelectorAll(
+    "[data-module-id]"
   );
 
 
-if (noteReaderCard) {
+moduleCards.forEach(
+  card => {
 
-  noteReaderCard.classList.toggle(
-    "hidden",
-    !enabledModuleIds.has(
-      "note_reader"
-    )
-  );
+    const moduleId =
+      card.dataset.moduleId;
 
-}
+
+    card.classList.toggle(
+      "hidden",
+      !enabledModuleIds.has(
+        moduleId
+      )
+    );
+
+  }
+);
 
 
   /*
