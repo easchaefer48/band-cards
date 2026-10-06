@@ -1159,55 +1159,16 @@ async function loadManualBandLevelData() {
   try {
 
      const [
-      studentsCSV,
-      classesCSV,
       achievementsCSV,
       levelsCSV,
       requirementsCSV
     ] =
       await Promise.all([
-
-        fetchTeacherSheetCSV(
-          SHEET_ID,
-          "7781822"
-        ),
-
-        fetchTeacherSheetCSV(
-          SHEET_ID,
-          "894952475"
-        ),
-
-        fetchTeacherSheetCSV(
-          SHEET_ID,
-          "509720984"
-        ),
-
-        fetchTeacherSheetCSV(
-          SHEET_ID,
-          BAND_LEVELS_GID
-        ),
-
-        fetchTeacherSheetCSV(
-          SHEET_ID,
-          BAND_LEVEL_REQUIREMENTS_GID
-        )
-
+        fetchTeacherSheetCSV(SHEET_ID, "509720984"),
+        fetchTeacherSheetCSV(SHEET_ID, BAND_LEVELS_GID),
+        fetchTeacherSheetCSV(SHEET_ID, BAND_LEVEL_REQUIREMENTS_GID)
       ]);
 
-
-    const studentsData =
-      teacherRowsToObjects(
-        parseTeacherCSV(
-          studentsCSV
-        )
-      );
-
-    const classesData =
-      teacherRowsToObjects(
-        parseTeacherCSV(
-          classesCSV
-        )
-      );
 
     const achievementsData =
       teacherRowsToObjects(
@@ -1233,60 +1194,100 @@ async function loadManualBandLevelData() {
       );
 
 
+    const {
+      data: enrollmentData,
+      error: enrollmentError
+    } =
+      await supabaseClient
+        .from("class_enrollments")
+        .select(`
+          class_id,
+          students (
+            student_id,
+            first_name,
+            last_name
+          )
+        `)
+        .eq("active", true);
+
+    if (enrollmentError) {
+      throw enrollmentError;
+    }
+
     manualStudents =
-      studentsData
+      (enrollmentData || [])
         .filter(
           row =>
-            row["student id"] &&
-            row["student name"]
+            row.students &&
+            row.students.student_id
         )
         .map(
           row => ({
             id:
-              row["student id"],
+              row.students.student_id,
 
             name:
-              row["student name"],
+              [
+                row.students.first_name,
+                row.students.last_name
+              ]
+                .filter(Boolean)
+                .join(" "),
 
             classId:
-              row["class id"]
+              row.class_id
           })
         )
         .sort(
           (a, b) =>
-            a.name.localeCompare(
-              b.name
-            )
+            a.name.localeCompare(b.name)
         );
 
-    manualClasses =
-      classesData
-        .filter(
-          row =>
-            row["class id"] &&
-            row["class name"] &&
-            String(
-              row["active"]
-            ).toLowerCase() !==
-            "false"
+    const {
+      data: supabaseClasses,
+      error: classesError
+    } =
+      await supabaseClient
+        .from("classes")
+        .select(
+          "class_id, class_code, display_name, grade_level, school_year"
         )
+        .eq(
+          "active",
+          true
+        )
+        .order(
+          "grade_level",
+          {
+            ascending: true
+          }
+        );
+
+
+    if (classesError) {
+      throw classesError;
+    }
+
+
+    manualClasses =
+      (supabaseClasses || [])
         .map(
           row => ({
             id:
-              row["class id"],
+              row.class_id,
+
+            code:
+              row.class_code,
 
             name:
-              row["class name"],
+              row.display_name,
 
             grade:
-              row["grade"]
+              row.grade_level,
+
+            schoolYear:
+              row.school_year
           })
-        )
-        .sort(
-          (a, b) =>
-            a.name.localeCompare(
-              b.name
-            )
         );
 
       manualAchievements =
@@ -2168,7 +2169,7 @@ showAddStudentButton
 
       document
         .getElementById(
-          "newStudentName"
+          "newStudentFirstName"
         )
         ?.focus();
 
@@ -2186,7 +2187,12 @@ cancelAddStudentButton
 
 
       document.getElementById(
-        "newStudentName"
+        "newStudentFirstName"
+      ).value = "";
+
+
+      document.getElementById(
+        "newStudentLastName"
       ).value = "";
 
 
@@ -2198,6 +2204,233 @@ cancelAddStudentButton
       document.getElementById(
         "addStudentMessage"
       ).textContent = "";
+
+    }
+  );
+
+  document
+  .getElementById(
+    "createStudentButton"
+  )
+  ?.addEventListener(
+    "click",
+    async () => {
+
+      const classSelect =
+        document.getElementById(
+          "manageStudentsClass"
+        );
+
+      const nameInput =
+        document.getElementById(
+          "newStudentName"
+        );
+
+      const idInput =
+        document.getElementById(
+          "newStudentId"
+        );
+
+      const message =
+        document.getElementById(
+          "addStudentMessage"
+        );
+
+      const button =
+        document.getElementById(
+          "createStudentButton"
+        );
+
+
+      const classId =
+        classSelect?.value || "";
+
+      const studentName =
+        nameInput?.value.trim() || "";
+
+      const studentId =
+        idInput?.value.trim().toUpperCase() || "";
+
+
+      if (!classId) {
+
+        message.textContent =
+          "Please select a class.";
+
+        return;
+
+      }
+
+
+      if (!studentName) {
+
+        message.textContent =
+          "Please enter the student's name.";
+
+        nameInput?.focus();
+
+        return;
+
+      }
+
+
+      if (!studentId) {
+
+        message.textContent =
+          "Please enter a student ID.";
+
+        idInput?.focus();
+
+        return;
+
+      }
+
+
+      button.disabled = true;
+
+      message.textContent =
+        "Adding student...";
+
+
+      try {
+
+        const {
+          data: existingStudent,
+          error: lookupError
+        } =
+          await supabaseClient
+            .from("students")
+            .select(
+              "student_id, student_name"
+            )
+            .eq(
+              "student_id",
+              studentId
+            )
+            .maybeSingle();
+
+
+        if (lookupError) {
+          throw lookupError;
+        }
+
+        if (
+          existingStudent &&
+          existingStudent.student_name
+            .trim()
+            .toLowerCase() !==
+            studentName
+              .trim()
+              .toLowerCase()
+        ) {
+
+          message.textContent =
+            `Student ID ${studentId} is already assigned to ${existingStudent.student_name}.`;
+
+          idInput?.focus();
+
+          return;
+
+        }
+
+
+        if (!existingStudent) {
+
+          const { error: studentError } =
+            await supabaseClient
+              .from("students")
+              .insert({
+                student_id:
+                  studentId,
+                student_name:
+                  studentName,
+                active:
+                  true
+              });
+
+
+          if (studentError) {
+            throw studentError;
+          }
+
+        }
+
+
+        const {
+          data: selectedClass,
+          error: classError
+        } =
+          await supabaseClient
+            .from("classes")
+            .select(
+              "school_year"
+            )
+            .eq(
+              "class_id",
+              classId
+            )
+            .single();
+
+
+        if (classError) {
+          throw classError;
+        }
+
+
+        const {
+          error: enrollmentError
+        } =
+          await supabaseClient
+            .from(
+              "class_enrollments"
+            )
+            .insert({
+              student_id:
+                studentId,
+              class_id:
+                classId,
+              school_year:
+                selectedClass.school_year,
+              active:
+                true
+            });
+
+
+        if (enrollmentError) {
+          throw enrollmentError;
+        }
+
+
+        nameInput.value = "";
+        idInput.value = "";
+
+        addStudentForm.hidden =
+          true;
+
+
+        await renderClassManagementRoster(
+          classId
+        );
+
+      }
+
+      catch (error) {
+
+        console.error(
+          "Could not add student:",
+          error
+        );
+
+        message.textContent =
+          "Could not add this student.";
+
+      }
+
+      finally {
+
+        button.disabled = false;
+
+      }
 
     }
   );
