@@ -2013,10 +2013,12 @@ async function renderClassManagementRoster(
     await supabaseClient
       .from("class_enrollments")
       .select(`
+        enrollment_id,
         student_id,
         students (
           student_id,
-          student_name,
+          first_name,
+          last_name,
           active
         )
       `)
@@ -2061,10 +2063,29 @@ async function renderClassManagementRoster(
 
   const sortedEnrollments =
     [...data].sort(
-      (a, b) =>
-        a.students.student_name.localeCompare(
-          b.students.student_name
-        )
+      (a, b) => {
+
+        const nameA =
+          [
+            a.students.first_name,
+            a.students.last_name
+          ]
+            .filter(Boolean)
+            .join(" ");
+
+        const nameB =
+          [
+            b.students.first_name,
+            b.students.last_name
+          ]
+            .filter(Boolean)
+            .join(" ");
+
+        return nameA.localeCompare(
+          nameB
+        );
+
+      }
     );
 
 
@@ -2078,6 +2099,15 @@ async function renderClassManagementRoster(
         enrollment.students;
 
 
+      const studentName =
+        [
+          student.first_name,
+          student.last_name
+        ]
+          .filter(Boolean)
+          .join(" ");
+
+
       const row =
         document.createElement(
           "div"
@@ -2087,8 +2117,50 @@ async function renderClassManagementRoster(
         "class-management-student";
 
 
-      row.textContent =
-        student.student_name;
+      const name =
+        document.createElement(
+          "span"
+        );
+
+      name.textContent =
+        studentName;
+
+
+      const removeButton =
+        document.createElement(
+          "button"
+        );
+
+      removeButton.type =
+        "button";
+
+      removeButton.className =
+        "remove-student-from-class-button";
+
+      removeButton.textContent =
+        "Remove from Class";
+
+      removeButton.addEventListener(
+        "click",
+        () => {
+
+          removeStudentFromClass(
+            enrollment.enrollment_id,
+            studentName,
+            classId
+          );
+
+        }
+      );
+
+
+      row.appendChild(
+        name
+      );
+
+      row.appendChild(
+        removeButton
+      );
 
 
       container.appendChild(
@@ -2115,6 +2187,62 @@ document
     }
   );
 
+    async function removeStudentFromClass(
+      enrollmentId,
+      studentName,
+      classId
+    ) {
+
+      const confirmed =
+        window.confirm(
+          `Remove ${studentName} from this class?`
+        );
+
+
+      if (!confirmed) {
+        return;
+      }
+
+
+      const {
+        error
+      } =
+        await supabaseClient
+          .from("class_enrollments")
+          .update({
+            active:
+              false,
+            ended_at:
+              new Date().toISOString()
+          })
+          .eq(
+            "enrollment_id",
+            enrollmentId
+          );
+
+
+      if (error) {
+
+        console.error(
+          "Could not remove student from class:",
+          error
+        );
+
+        window.alert(
+          "Could not remove this student from the class."
+        );
+
+        return;
+
+      }
+
+
+      await renderClassManagementRoster(
+        classId
+      );
+
+    }
+
   const showAddStudentButton =
   document.getElementById(
     "showAddStudentButton"
@@ -2136,10 +2264,6 @@ showAddStudentButton
     "click",
     () => {
 
-      const classSelect =
-        document.getElementById(
-          "manageStudentsClass"
-        );
 
       const message =
         document.getElementById(
@@ -2208,7 +2332,7 @@ cancelAddStudentButton
     }
   );
 
-  document
+document
   .getElementById(
     "createStudentButton"
   )
@@ -2221,14 +2345,14 @@ cancelAddStudentButton
           "manageStudentsClass"
         );
 
-      const nameInput =
+      const firstNameInput =
         document.getElementById(
-          "newStudentName"
+          "newStudentFirstName"
         );
 
-      const idInput =
+      const lastNameInput =
         document.getElementById(
-          "newStudentId"
+          "newStudentLastName"
         );
 
       const message =
@@ -2242,44 +2366,32 @@ cancelAddStudentButton
         );
 
 
-      const classId =
-        classSelect?.value || "";
+      const firstName =
+        firstNameInput?.value.trim() || "";
 
-      const studentName =
-        nameInput?.value.trim() || "";
-
-      const studentId =
-        idInput?.value.trim().toUpperCase() || "";
+      const lastName =
+        lastNameInput?.value.trim() || "";
 
 
-      if (!classId) {
+
+      if (!firstName) {
 
         message.textContent =
-          "Please select a class.";
+          "Please enter the student's first name.";
+
+        firstNameInput?.focus();
 
         return;
 
       }
 
 
-      if (!studentName) {
+      if (!lastName) {
 
         message.textContent =
-          "Please enter the student's name.";
+          "Please enter the student's last name.";
 
-        nameInput?.focus();
-
-        return;
-
-      }
-
-
-      if (!studentId) {
-
-        message.textContent =
-          "Please enter a student ID.";
-
-        idInput?.focus();
+        lastNameInput?.focus();
 
         return;
 
@@ -2294,123 +2406,145 @@ cancelAddStudentButton
 
       try {
 
+        // Find the logged-in teacher's active school membership.
+      const {
+        data: {
+          user
+        },
+        error: userError
+      } =
+        await supabaseClient.auth.getUser();
+
+
+      if (userError) {
+        throw userError;
+      }
+
+
+      if (!user) {
+        throw new Error(
+          "No signed-in teacher was found."
+        );
+      }
+
+
+      const {
+        data: teacherAccount,
+        error: teacherError
+      } =
+        await supabaseClient
+          .from("teacher_accounts")
+          .select(
+            "teacher_id"
+          )
+          .eq(
+            "auth_user_id",
+            user.id
+          )
+          .eq(
+            "active",
+            true
+          )
+          .single();
+
+
+      if (teacherError) {
+        throw teacherError;
+      }
+
+
+      const {
+        data: schoolMembership,
+        error: schoolMembershipError
+      } =
+        await supabaseClient
+          .from("school_teacher_memberships")
+          .select(
+            "school_id"
+          )
+          .eq(
+            "teacher_id",
+            teacherAccount.teacher_id
+          )
+          .eq(
+            "active",
+            true
+          )
+          .single();
+
+
+      if (schoolMembershipError) {
+        throw schoolMembershipError;
+      }
+
+
+      const schoolId =
+        schoolMembership.school_id;
+
+
+        // Create the permanent student record.
+        // Supabase generates student_id automatically.
         const {
-          data: existingStudent,
-          error: lookupError
+          data: newStudent,
+          error: studentError
         } =
           await supabaseClient
             .from("students")
+            .insert({
+              first_name:
+                firstName,
+              last_name:
+                lastName,
+              active:
+                true
+            })
             .select(
-              "student_id, student_name"
-            )
-            .eq(
-              "student_id",
-              studentId
-            )
-            .maybeSingle();
-
-
-        if (lookupError) {
-          throw lookupError;
-        }
-
-        if (
-          existingStudent &&
-          existingStudent.student_name
-            .trim()
-            .toLowerCase() !==
-            studentName
-              .trim()
-              .toLowerCase()
-        ) {
-
-          message.textContent =
-            `Student ID ${studentId} is already assigned to ${existingStudent.student_name}.`;
-
-          idInput?.focus();
-
-          return;
-
-        }
-
-
-        if (!existingStudent) {
-
-          const { error: studentError } =
-            await supabaseClient
-              .from("students")
-              .insert({
-                student_id:
-                  studentId,
-                student_name:
-                  studentName,
-                active:
-                  true
-              });
-
-
-          if (studentError) {
-            throw studentError;
-          }
-
-        }
-
-
-        const {
-          data: selectedClass,
-          error: classError
-        } =
-          await supabaseClient
-            .from("classes")
-            .select(
-              "school_year"
-            )
-            .eq(
-              "class_id",
-              classId
+              "student_id"
             )
             .single();
 
 
-        if (classError) {
-          throw classError;
+        if (studentError) {
+          throw studentError;
         }
 
 
+        const studentId =
+          newStudent.student_id;
+
+
+        // Connect the student to the school.
         const {
-          error: enrollmentError
+          error: membershipError
         } =
           await supabaseClient
             .from(
-              "class_enrollments"
+              "school_student_memberships"
             )
             .insert({
+              school_id:
+                schoolId,
               student_id:
                 studentId,
-              class_id:
-                classId,
-              school_year:
-                selectedClass.school_year,
               active:
                 true
             });
 
 
-        if (enrollmentError) {
-          throw enrollmentError;
+        if (membershipError) {
+          throw membershipError;
         }
 
 
-        nameInput.value = "";
-        idInput.value = "";
+
+        firstNameInput.value = "";
+        lastNameInput.value = "";
+
+        message.textContent = "";
 
         addStudentForm.hidden =
           true;
 
-
-        await renderClassManagementRoster(
-          classId
-        );
 
       }
 

@@ -549,149 +549,236 @@
     </section>
 
 
-    <!-- =========================================
-         CLASS & STUDENT MANAGEMENT
-         ========================================= -->
+  <!-- =========================================
+     STUDENT ORGANIZER
+     ========================================= -->
 
-    <section
-      id="class-student-management-section"
-      class="dashboard-card"
-    >
-
-      <div class="dashboard-section-heading">
-
-        <div>
-
-          <div class="section-eyebrow">
-            Classes
-          </div>
-
-          <h2>
-            Class &amp; Student Management
-          </h2>
-
-          <p>
-            Manage classes, student rosters,
-            and student accounts.
-          </p>
-
-        </div>
-
-      </div>
-
-
-      <div class="class-modules-selector">
-
-        <label for="manageStudentsClass">
-          Class
-        </label>
-
-        <select id="manageStudentsClass">
-
-          <option value="">
-            Select a class…
-          </option>
-
-        </select>
-
-      </div>
-
-
-      <div
-  id="addStudentControls"
-  class="add-student-controls"
+<section
+  id="class-student-management-section"
+  class="dashboard-card"
 >
 
-  <button
-    id="showAddStudentButton"
-    type="button"
-  >
-    + Add Student
-  </button>
+  <div class="dashboard-section-heading">
 
+    <div>
 
-  <div
-    id="addStudentForm"
-    class="add-student-form"
-    hidden
-  >
+      <div class="section-eyebrow">
+        Students
+      </div>
 
-    <label for="newStudentFirstName">
-      First Name
-    </label>
+      <h2>
+        Student Organizer
+      </h2>
 
-    <input
-      id="newStudentFirstName"
-      type="text"
-      autocomplete="off"
-      placeholder="First name"
-    >
-
-
-    <label for="newStudentLastName">
-      Last Name
-    </label>
-
-    <input
-      id="newStudentLastName"
-      type="text"
-      autocomplete="off"
-      placeholder="Last name"
-    >
-
-
-    <label for="newStudentId">
-      Student ID
-    </label>
-
-    <input
-      id="newStudentId"
-      type="text"
-      autocomplete="off"
-      placeholder="S0001"
-    >
-
-
-    <div class="add-student-form-actions">
-
-      <button
-        id="createStudentButton"
-        type="button"
-      >
-        Add Student
-      </button>
-
-      <button
-        id="cancelAddStudentButton"
-        type="button"
-      >
-        Cancel
-      </button>
+      <p>
+        Create students, organize class rosters,
+        and manage student accounts.
+      </p>
 
     </div>
 
+  </div>
+
+
+  <div
+    id="addStudentControls"
+    class="add-student-controls"
+  >
+
+    <button
+      id="showAddStudentButton"
+      type="button"
+    >
+      + Create New Student
+    </button>
+
+
     <div
-      id="addStudentMessage"
-      class="add-student-message"
-    ></div>
+      id="addStudentForm"
+      class="add-student-form"
+      hidden
+    >
+
+      <label for="newStudentFirstName">
+        First Name
+      </label>
+
+      <input
+        id="newStudentFirstName"
+        type="text"
+        autocomplete="off"
+        placeholder="First name"
+      >
+
+
+      <label for="newStudentLastName">
+        Last Name
+      </label>
+
+      <input
+        id="newStudentLastName"
+        type="text"
+        autocomplete="off"
+        placeholder="Last name"
+      >
+
+
+      <div class="add-student-form-actions">
+
+        <button
+          id="createStudentButton"
+          type="button"
+        >
+          Create Student
+        </button>
+
+        <button
+          id="cancelAddStudentButton"
+          type="button"
+        >
+          Cancel
+        </button>
+
+      </div>
+
+
+      <div
+        id="addStudentMessage"
+        class="add-student-message"
+      ></div>
+
+    </div>
 
   </div>
 
-</div>
-      
-      <div
-        id="classManagementRoster"
-        class="class-management-roster"
-      >
+
+  <div class="student-organizer-section">
+
+    <div class="student-organizer-table-heading">
+
+      <div>
+
+        <h3>
+          Unsorted Students
+        </h3>
 
         <p>
-          Select a class to view its students.
+          New students who have not yet been
+          assigned to a class.
         </p>
 
       </div>
 
-    </section>
+    </div>
 
+
+    <div
+      id="unsortedStudentsTable"
+      class="student-organizer-table-container"
+    >
+
+      <p>
+        No unsorted students.
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <div
+    id="studentOrganizerClassTables"
+    class="student-organizer-class-tables"
+  >
+  </div>
+
+
+  <div class="student-organizer-section">
+
+    <div class="student-organizer-table-heading">
+
+      <div>
+
+        <h3>
+          Inactive Students
+        </h3>
+
+        <p>
+          Students who are temporarily inactive.
+        </p>
+
+      </div>
+
+    </div>
+
+
+    <div
+      id="inactiveStudentsTable"
+      class="student-organizer-table-container"
+    >
+
+      <p>
+        No inactive students.
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <div class="student-organizer-section">
+
+    <div class="student-organizer-table-heading">
+
+      <div>
+
+        <h3>
+          Archived Students
+        </h3>
+
+        <p>
+          Former students whose records are
+          being kept for historical purposes.
+        </p>
+
+      </div>
+
+    </div>
+
+
+    <div
+      id="archivedStudentsTable"
+      class="student-organizer-table-container"
+    >
+
+      <p>
+        No archived students.
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <!--
+    Temporary compatibility elements.
+    These keep the existing student-management
+    JavaScript from breaking while the new
+    organizer is being built.
+  -->
+
+  <div hidden>
+
+    <select id="manageStudentsClass">
+      <option value="">
+        Select a class…
+      </option>
+    </select>
+
+    <div
+      id="classManagementRoster"
+      class="class-management-roster"
+    ></div>
 
   </div>
 
