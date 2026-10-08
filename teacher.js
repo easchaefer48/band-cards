@@ -1391,6 +1391,9 @@ async function loadManualBandLevelData() {
     populateManualClassSelect();
     populateClassModulesClassSelect();
     await populateManageStudentsClassSelect();
+    await renderUnsortedStudents();
+    await renderStudentOrganizerClassTables();
+    await renderInactiveStudents();
 
   }
 
@@ -2172,6 +2175,980 @@ async function renderClassManagementRoster(
 
 }
 
+async function renderUnsortedStudents() {
+
+  const container =
+    document.getElementById(
+      "unsortedStudentsTable"
+    );
+
+  if (!container) return;
+
+
+  container.innerHTML =
+    "<p>Loading students...</p>";
+
+
+  try {
+
+    // Get the currently signed-in teacher.
+    const {
+      data: {
+        user
+      },
+      error: userError
+    } =
+      await supabaseClient.auth.getUser();
+
+
+    if (userError) {
+      throw userError;
+    }
+
+
+    if (!user) {
+      throw new Error(
+        "No signed-in teacher was found."
+      );
+    }
+
+
+    // Find the teacher account.
+    const {
+      data: teacherAccount,
+      error: teacherError
+    } =
+      await supabaseClient
+        .from("teacher_accounts")
+        .select("teacher_id")
+        .eq(
+          "auth_user_id",
+          user.id
+        )
+        .eq(
+          "active",
+          true
+        )
+        .single();
+
+
+    if (teacherError) {
+      throw teacherError;
+    }
+
+
+    // Find the teacher's active school.
+    const {
+      data: schoolMembership,
+      error: schoolMembershipError
+    } =
+      await supabaseClient
+        .from(
+          "school_teacher_memberships"
+        )
+        .select("school_id")
+        .eq(
+          "teacher_id",
+          teacherAccount.teacher_id
+        )
+        .eq(
+          "active",
+          true
+        )
+        .single();
+
+
+    if (schoolMembershipError) {
+      throw schoolMembershipError;
+    }
+
+
+    // Get all active students at this school.
+    const {
+      data: schoolStudents,
+      error: studentsError
+    } =
+      await supabaseClient
+        .from(
+          "school_student_memberships"
+        )
+        .select(`
+          student_id,
+          students (
+            student_id,
+            first_name,
+            last_name,
+            active
+          )
+        `)
+        .eq(
+          "school_id",
+          schoolMembership.school_id
+        )
+        .eq(
+          "active",
+          true
+        );
+
+
+    if (studentsError) {
+      throw studentsError;
+    }
+
+
+    // Get every currently active class enrollment.
+    const {
+      data: activeEnrollments,
+      error: enrollmentError
+    } =
+      await supabaseClient
+        .from("class_enrollments")
+        .select("student_id")
+        .eq(
+          "active",
+          true
+        );
+
+
+    if (enrollmentError) {
+      throw enrollmentError;
+    }
+
+
+    const enrolledStudentIds =
+      new Set(
+        (activeEnrollments || [])
+          .map(
+            enrollment =>
+              enrollment.student_id
+          )
+      );
+
+
+    // A student is "unsorted" when they belong
+    // to this school but have no active class.
+    const unsortedStudents =
+      (schoolStudents || [])
+        .filter(
+          membership =>
+            membership.students &&
+            membership.students.active !== false &&
+            !enrolledStudentIds.has(
+              membership.student_id
+            )
+        )
+        .map(
+          membership => ({
+            id:
+              membership.students.student_id,
+
+            name:
+              [
+                membership.students.first_name,
+                membership.students.last_name
+              ]
+                .filter(Boolean)
+                .join(" ")
+          })
+        )
+        .sort(
+          (a, b) =>
+            a.name.localeCompare(b.name)
+        );
+
+
+    if (
+      unsortedStudents.length === 0
+    ) {
+
+      container.innerHTML =
+        "<p>No unsorted students.</p>";
+
+      return;
+
+    }
+
+
+    const table =
+      document.createElement("table");
+
+    table.className =
+      "student-organizer-table";
+
+
+    table.innerHTML = `
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Class</th>
+        </tr>
+      </thead>
+
+      <tbody></tbody>
+    `;
+
+
+    const tbody =
+      table.querySelector("tbody");
+
+
+    unsortedStudents.forEach(
+      student => {
+
+        const row =
+          document.createElement("tr");
+
+
+        const nameCell =
+          document.createElement("td");
+
+        nameCell.textContent =
+          student.name;
+
+
+        const classCell =
+          document.createElement("td");
+
+
+        const classSelect =
+          document.createElement("select");
+
+        classSelect.className =
+          "student-class-select";
+
+
+        const placeholderOption =
+          document.createElement("option");
+
+        placeholderOption.value = "";
+        placeholderOption.textContent =
+          "Assign to class…";
+
+        classSelect.appendChild(
+          placeholderOption
+        );
+
+
+        // Use the classes already loaded
+        // for the teacher portal.
+        manualClasses.forEach(
+          classInfo => {
+
+            const option =
+              document.createElement("option");
+
+            option.value =
+              classInfo.id;
+
+            option.textContent =
+              classInfo.name;
+
+            classSelect.appendChild(
+              option
+            );
+
+          }
+        );
+        
+        classSelect.addEventListener(
+          "change",
+          async event => {
+
+            const classId =
+              event.target.value;
+
+            if (!classId) {
+              return;
+            }
+
+
+            const confirmed =
+              window.confirm(
+                `Assign ${student.name} to this class?`
+              );
+
+
+            if (!confirmed) {
+
+              event.target.value = "";
+
+              return;
+
+            }
+
+
+            event.target.disabled =
+              true;
+
+
+            try {
+
+              await assignStudentToClass(
+                student.id,
+                classId
+              );
+
+            }
+
+            catch (error) {
+
+              console.error(
+                "Could not assign student to class:",
+                error
+              );
+
+              window.alert(
+                "Could not assign this student to the class."
+              );
+
+              event.target.value = "";
+              event.target.disabled =
+                false;
+
+            }
+
+          }
+        );
+
+
+        classCell.appendChild(
+          classSelect
+        );
+
+
+        row.appendChild(nameCell);
+        row.appendChild(classCell);
+
+        tbody.appendChild(row);
+
+      }
+    );
+
+
+    container.innerHTML = "";
+    container.appendChild(table);
+
+  }
+
+  catch (error) {
+
+    console.error(
+      "Could not load unsorted students:",
+      error
+    );
+
+    container.innerHTML =
+      "<p>Could not load unsorted students.</p>";
+
+  }
+
+}
+
+async function assignStudentToClass(
+  studentId,
+  classId
+) {
+
+  if (!studentId || !classId) {
+    return;
+  }
+
+
+  const {
+    error
+  } =
+    await supabaseClient
+      .from("class_enrollments")
+      .insert({
+        student_id:
+          studentId,
+
+        class_id:
+          classId,
+
+        active:
+          true
+      });
+
+
+  if (error) {
+    throw error;
+  }
+
+
+  await renderUnsortedStudents();
+
+}
+
+async function renderStudentOrganizerClassTables() {
+
+  const container =
+    document.getElementById(
+      "studentOrganizerClassTables"
+    );
+
+  if (!container) return;
+
+
+  container.innerHTML = "";
+
+
+  try {
+
+    for (
+      const classInfo of manualClasses
+    ) {
+
+      const section =
+        document.createElement("div");
+
+      section.className =
+        "student-organizer-section";
+
+
+      const heading =
+        document.createElement("div");
+
+      heading.className =
+        "student-organizer-table-heading";
+
+
+      const title =
+        document.createElement("h3");
+
+      title.textContent =
+        classInfo.name;
+
+
+      heading.appendChild(title);
+      section.appendChild(heading);
+
+
+      const tableContainer =
+        document.createElement("div");
+
+      tableContainer.className =
+        "student-organizer-table-container";
+
+
+      const {
+        data: enrollments,
+        error
+      } =
+        await supabaseClient
+          .from("class_enrollments")
+          .select(`
+            student_id,
+            students (
+              student_id,
+              first_name,
+              last_name,
+              active,
+              school_student_memberships (
+                status,
+                active
+              )
+            )
+          `)
+          .eq(
+            "class_id",
+            classInfo.id
+          )
+          .eq(
+            "active",
+            true
+          );
+
+
+      if (error) {
+        throw error;
+      }
+
+
+      const students =
+        (enrollments || [])
+          .filter(
+            enrollment =>
+              enrollment.students &&
+              enrollment.students
+                .school_student_memberships
+                ?.some(
+                  membership =>
+                    membership.status === "active" &&
+                    membership.active === true
+                )
+          )
+          .map(
+            enrollment => ({
+              id:
+                enrollment.students.student_id,
+
+              name:
+                [
+                  enrollment.students.first_name,
+                  enrollment.students.last_name
+                ]
+                  .filter(Boolean)
+                  .join(" "),
+
+              status:
+                enrollment.students
+                  .school_student_memberships?.[0]
+                  ?.status || "active"
+            })
+          )
+          .sort(
+            (a, b) =>
+              a.name.localeCompare(b.name)
+          );
+
+
+      if (students.length === 0) {
+
+        tableContainer.innerHTML =
+          "<p>No students in this class.</p>";
+
+      }
+
+      else {
+
+        const table =
+          document.createElement("table");
+
+        table.className =
+          "student-organizer-table";
+
+
+        table.innerHTML = `
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+
+          <tbody></tbody>
+        `;
+
+
+        const tbody =
+          table.querySelector("tbody");
+
+
+        students.forEach(
+          student => {
+
+            const row =
+              document.createElement("tr");
+
+            const nameCell =
+              document.createElement("td");
+
+            nameCell.textContent =
+              student.name;
+
+
+            const statusCell =
+              document.createElement("td");
+
+
+            const statusButton =
+              document.createElement("button");
+
+            statusButton.type =
+              "button";
+
+            statusButton.className =
+              `student-status-button student-status-${student.status}`;
+
+            statusButton.textContent =
+              student.status.charAt(0).toUpperCase() +
+              student.status.slice(1);
+
+            
+            statusButton.addEventListener(
+              "click",
+              async () => {
+
+                if (
+                  student.status !== "active"
+                ) {
+                  return;
+                }
+
+
+                const confirmed =
+                  window.confirm(
+                    `Mark ${student.name} as inactive?`
+                  );
+
+
+                if (!confirmed) {
+                  return;
+                }
+
+
+                statusButton.disabled =
+                  true;
+
+
+                try {
+
+                  await setStudentSchoolStatus(
+                    student.id,
+                    "inactive"
+                  );
+
+                  await renderStudentOrganizerClassTables();
+
+                }
+
+                catch (error) {
+
+                  console.error(
+                    "Could not update student status:",
+                    error
+                  );
+
+                  window.alert(
+                    "Could not update this student's status."
+                  );
+
+                  statusButton.disabled =
+                    false;
+
+                }
+
+              }
+            );  
+
+            statusCell.appendChild(
+              statusButton
+            );
+
+
+            row.appendChild(
+              nameCell
+            );
+
+            row.appendChild(
+              statusCell
+            );
+
+            tbody.appendChild(
+              row
+            );
+
+          }
+        );
+
+
+        tableContainer.appendChild(
+          table
+        );
+
+      }
+
+
+      section.appendChild(
+        tableContainer
+      );
+
+      container.appendChild(
+        section
+      );
+
+    }
+
+  }
+
+  catch (error) {
+
+    console.error(
+      "Could not load student organizer class tables:",
+      error
+    );
+
+    container.innerHTML =
+      "<p>Could not load class rosters.</p>";
+
+  }
+
+}
+
+async function setStudentSchoolStatus(
+  studentId,
+  newStatus
+) {
+
+  const {
+    error
+  } =
+    await supabaseClient
+      .from(
+        "school_student_memberships"
+      )
+      .update({
+        status:
+          newStatus,
+
+        active:
+          newStatus !== "archived",
+
+        ended_at:
+          newStatus === "archived"
+            ? new Date().toISOString()
+            : null
+      })
+      .eq(
+        "student_id",
+        studentId
+      )
+      .eq(
+        "active",
+        true
+      );
+
+
+  if (error) {
+    throw error;
+  }
+
+}
+
+async function renderInactiveStudents() {
+
+  const container =
+    document.getElementById(
+      "inactiveStudentsTable"
+    );
+
+  if (!container) return;
+
+
+  container.innerHTML =
+    "<p>Loading students...</p>";
+
+
+  try {
+
+    const {
+      data: memberships,
+      error
+    } =
+      await supabaseClient
+        .from(
+          "school_student_memberships"
+        )
+        .select(`
+          student_id,
+          status,
+          students (
+            student_id,
+            first_name,
+            last_name
+          )
+        `)
+        .eq(
+          "status",
+          "inactive"
+        )
+        .eq(
+          "active",
+          true
+        );
+
+
+    if (error) {
+      throw error;
+    }
+
+
+    const students =
+      (memberships || [])
+        .filter(
+          membership =>
+            membership.students
+        )
+        .map(
+          membership => ({
+            id:
+              membership.students.student_id,
+
+            name:
+              [
+                membership.students.first_name,
+                membership.students.last_name
+              ]
+                .filter(Boolean)
+                .join(" ")
+          })
+        )
+        .sort(
+          (a, b) =>
+            a.name.localeCompare(b.name)
+        );
+
+
+    if (students.length === 0) {
+
+      container.innerHTML =
+        "<p>No inactive students.</p>";
+
+      return;
+
+    }
+
+
+    const table =
+      document.createElement("table");
+
+    table.className =
+      "student-organizer-table";
+
+
+    table.innerHTML = `
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+
+      <tbody></tbody>
+    `;
+
+
+    const tbody =
+      table.querySelector("tbody");
+
+
+    students.forEach(
+      student => {
+
+        const row =
+          document.createElement("tr");
+
+
+        const nameCell =
+          document.createElement("td");
+
+        nameCell.textContent =
+          student.name;
+
+
+        const statusCell =
+          document.createElement("td");
+
+
+        const statusButton =
+          document.createElement("button");
+
+        statusButton.type =
+          "button";
+
+        statusButton.className =
+          "student-status-button student-status-inactive";
+
+        statusButton.textContent =
+          "Inactive";
+
+        statusButton.addEventListener(
+          "click",
+          async () => {
+
+            const confirmed =
+              window.confirm(
+                `Reactivate ${student.name}?`
+              );
+
+
+            if (!confirmed) {
+              return;
+            }
+
+
+            statusButton.disabled =
+              true;
+
+
+            try {
+
+              await setStudentSchoolStatus(
+                student.id,
+                "active"
+              );
+
+              await renderInactiveStudents();
+
+              await renderStudentOrganizerClassTables();
+
+              await renderUnsortedStudents();
+
+            }
+
+            catch (error) {
+
+              console.error(
+                "Could not reactivate student:",
+                error
+              );
+
+              window.alert(
+                "Could not reactivate this student."
+              );
+
+              statusButton.disabled =
+                false;
+
+            }
+
+          }
+        );
+          
+
+        statusCell.appendChild(
+          statusButton
+        );
+
+        row.appendChild(
+          nameCell
+        );
+
+        row.appendChild(
+          statusCell
+        );
+
+        tbody.appendChild(
+          row
+        );
+
+      }
+    );
+
+
+    container.innerHTML = "";
+
+    container.appendChild(
+      table
+    );
+
+  }
+
+  catch (error) {
+
+    console.error(
+      "Could not load inactive students:",
+      error
+    );
+
+    container.innerHTML =
+      "<p>Could not load inactive students.</p>";
+
+  }
+
+}
+
 document
   .getElementById(
     "manageStudentsClass"
@@ -2514,6 +3491,7 @@ document
 
 
         // Connect the student to the school.
+
         const {
           error: membershipError
         } =
@@ -2527,7 +3505,9 @@ document
               student_id:
                 studentId,
               active:
-                true
+                true,
+              status:
+                "active"
             });
 
 

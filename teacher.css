@@ -1676,3 +1676,32 @@ body {
   font-size: 0.9rem;
   line-height: 1.4;
 }
+
+/* =========================================
+   STUDENT ORGANIZER STATUS
+   ========================================= */
+
+.student-status-button {
+  border: 0;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.student-status-active {
+  background: #e3f3e8;
+  color: #276738;
+}
+
+.student-status-inactive {
+  background: #eeeeee;
+  color: #666666;
+}
+
+.student-status-archived {
+  background: #eeeeee;
+  color: #666666;
+}
