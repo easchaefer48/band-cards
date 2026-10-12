@@ -1394,6 +1394,7 @@ async function loadManualBandLevelData() {
     await renderUnsortedStudents();
     await renderStudentOrganizerClassTables();
     await renderInactiveStudents();
+    await renderArchivedStudents();
 
   }
 
@@ -2577,6 +2578,8 @@ async function assignStudentToClass(
 
 
   await renderUnsortedStudents();
+  
+  await renderStudentOrganizerClassTables();
 
 }
 
@@ -2638,6 +2641,7 @@ async function renderStudentOrganizerClassTables() {
         await supabaseClient
           .from("class_enrollments")
           .select(`
+            enrollment_id,
             student_id,
             students (
               student_id,
@@ -2683,6 +2687,9 @@ async function renderStudentOrganizerClassTables() {
               id:
                 enrollment.students.student_id,
 
+              enrollmentId:
+                enrollment.enrollment_id,
+
               name:
                 [
                   enrollment.students.first_name,
@@ -2724,6 +2731,7 @@ async function renderStudentOrganizerClassTables() {
             <tr>
               <th>Student</th>
               <th>Status</th>
+              <th>Actions</th>
             </tr>
           </thead>
 
@@ -2800,6 +2808,7 @@ async function renderStudentOrganizerClassTables() {
                   );
 
                   await renderStudentOrganizerClassTables();
+                  await renderInactiveStudents();
 
                 }
 
@@ -2827,12 +2836,108 @@ async function renderStudentOrganizerClassTables() {
             );
 
 
+            const actionsCell =
+              document.createElement("td");
+
+
+            const removeButton =
+              document.createElement("button");
+
+            removeButton.type =
+              "button";
+
+            removeButton.className =
+              "remove-student-from-class-button";
+
+            removeButton.textContent =
+              "Remove from Class";
+
+
+            removeButton.addEventListener(
+              "click",
+              async () => {
+
+                const confirmed =
+                  window.confirm(
+                    `Remove ${student.name} from ${classInfo.name}?`
+                  );
+
+
+                if (!confirmed) {
+                  return;
+                }
+
+
+                removeButton.disabled =
+                  true;
+
+
+                try {
+
+                  const {
+                    error
+                  } =
+                    await supabaseClient
+                      .from("class_enrollments")
+                      .update({
+                        active:
+                          false,
+
+                        ended_at:
+                          new Date().toISOString()
+                      })
+                      .eq(
+                        "enrollment_id",
+                        student.enrollmentId
+                      );
+
+
+                  if (error) {
+                    throw error;
+                  }
+
+
+                  await renderStudentOrganizerClassTables();
+
+                  await renderUnsortedStudents();
+
+                }
+
+                catch (error) {
+
+                  console.error(
+                    "Could not remove student from class:",
+                    error
+                  );
+
+                  window.alert(
+                    "Could not remove this student from the class."
+                  );
+
+                  removeButton.disabled =
+                    false;
+
+                }
+
+              }
+            );
+
+
+            actionsCell.appendChild(
+              removeButton
+            );
+
+
             row.appendChild(
               nameCell
             );
 
             row.appendChild(
               statusCell
+            );
+
+            row.appendChild(
+              actionsCell
             );
 
             tbody.appendChild(
@@ -2881,10 +2986,8 @@ async function setStudentSchoolStatus(
   newStatus
 ) {
 
-  const {
-    error
-  } =
-    await supabaseClient
+  let query =
+    supabaseClient
       .from(
         "school_student_memberships"
       )
@@ -2903,11 +3006,42 @@ async function setStudentSchoolStatus(
       .eq(
         "student_id",
         studentId
-      )
-      .eq(
+      );
+
+
+  if (newStatus === "active") {
+
+    // An active student may currently be either
+    // inactive or archived. Target the student's
+    // current non-active-status membership.
+    query =
+      query.in(
+        "status",
+        [
+          "inactive",
+          "archived"
+        ]
+      );
+
+  }
+
+  else {
+
+    // Inactivation and archiving should only
+    // affect the current active school membership.
+    query =
+      query.eq(
         "active",
         true
       );
+
+  }
+
+
+  const {
+    error
+  } =
+    await query;
 
 
   if (error) {
@@ -3012,6 +3146,7 @@ async function renderInactiveStudents() {
         <tr>
           <th>Student</th>
           <th>Status</th>
+          <th>Actions</th>
         </tr>
       </thead>
 
@@ -3111,12 +3246,101 @@ async function renderInactiveStudents() {
           statusButton
         );
 
+
+        const actionsCell =
+          document.createElement("td");
+
+
+        const archiveButton =
+          document.createElement("button");
+
+        archiveButton.type =
+          "button";
+
+        archiveButton.className =
+          "student-archive-button";
+
+        archiveButton.textContent =
+          "Archive";
+
+
+        archiveButton.addEventListener(
+          "click",
+          async () => {
+
+            const confirmed =
+              window.confirm(
+                `Archive ${student.name}? This student will be removed from active school lists, but their history will be preserved.`
+              );
+
+
+            if (!confirmed) {
+              return;
+            }
+
+
+            archiveButton.disabled =
+              true;
+
+            statusButton.disabled =
+              true;
+
+
+            try {
+
+              await setStudentSchoolStatus(
+                student.id,
+                "archived"
+              );
+
+              await renderInactiveStudents();
+
+              await renderStudentOrganizerClassTables();
+
+              await renderUnsortedStudents();
+
+              await renderArchivedStudents();
+
+            }
+
+            catch (error) {
+
+              console.error(
+                "Could not archive student:",
+                error
+              );
+
+              window.alert(
+                "Could not archive this student."
+              );
+
+              archiveButton.disabled =
+                false;
+
+              statusButton.disabled =
+                false;
+
+            }
+
+          }
+        );
+
+
+        actionsCell.appendChild(
+          archiveButton
+        );
+
+
         row.appendChild(
           nameCell
         );
 
         row.appendChild(
           statusCell
+        );
+
+        row.appendChild(
+          actionsCell
         );
 
         tbody.appendChild(
@@ -3144,6 +3368,270 @@ async function renderInactiveStudents() {
 
     container.innerHTML =
       "<p>Could not load inactive students.</p>";
+
+  }
+
+}
+
+async function renderArchivedStudents() {
+
+  const container =
+    document.getElementById(
+      "archivedStudentsTable"
+    );
+
+  if (!container) return;
+
+
+  container.innerHTML =
+    "<p>Loading students...</p>";
+
+
+  try {
+
+    const {
+      data: memberships,
+      error
+    } =
+      await supabaseClient
+        .from(
+          "school_student_memberships"
+        )
+        .select(`
+          student_id,
+          status,
+          ended_at,
+          students (
+            student_id,
+            first_name,
+            last_name
+          )
+        `)
+        .eq(
+          "status",
+          "archived"
+        );
+
+
+    if (error) {
+      throw error;
+    }
+
+
+    const students =
+      (memberships || [])
+        .filter(
+          membership =>
+            membership.students
+        )
+        .map(
+          membership => ({
+            id:
+              membership.students.student_id,
+
+            name:
+              [
+                membership.students.first_name,
+                membership.students.last_name
+              ]
+                .filter(Boolean)
+                .join(" ")
+          })
+        )
+        .sort(
+          (a, b) =>
+            a.name.localeCompare(b.name)
+        );
+
+
+    if (students.length === 0) {
+
+      container.innerHTML =
+        "<p>No archived students.</p>";
+
+      return;
+
+    }
+
+
+    const table =
+      document.createElement("table");
+
+    table.className =
+      "student-organizer-table";
+
+
+    table.innerHTML = `
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+
+      <tbody></tbody>
+    `;
+
+
+    const tbody =
+      table.querySelector("tbody");
+
+
+    students.forEach(
+      student => {
+
+        const row =
+          document.createElement("tr");
+
+
+        const nameCell =
+          document.createElement("td");
+
+        nameCell.textContent =
+          student.name;
+
+
+        const statusCell =
+          document.createElement("td");
+
+
+        const statusButton =
+          document.createElement("button");
+
+        statusButton.type =
+          "button";
+
+        statusButton.className =
+          "student-status-button student-status-archived";
+
+        statusButton.textContent =
+          "Archived";
+
+        statusButton.disabled =
+          true;
+
+
+        statusCell.appendChild(
+          statusButton
+        );
+
+
+        const actionsCell =
+          document.createElement("td");
+
+
+        const restoreButton =
+          document.createElement("button");
+
+        restoreButton.type =
+          "button";
+
+        restoreButton.className =
+          "student-restore-button";
+
+        restoreButton.textContent =
+          "Restore";
+
+
+        restoreButton.addEventListener(
+          "click",
+          async () => {
+
+            const confirmed =
+              window.confirm(
+                `Restore ${student.name} as an active student?`
+              );
+
+
+            if (!confirmed) {
+              return;
+            }
+
+
+            restoreButton.disabled =
+              true;
+
+
+            try {
+
+              await setStudentSchoolStatus(
+                student.id,
+                "active"
+              );
+
+              await renderArchivedStudents();
+
+              await renderStudentOrganizerClassTables();
+
+              await renderUnsortedStudents();
+
+              await renderInactiveStudents();
+
+            }
+
+            catch (error) {
+
+              console.error(
+                "Could not restore student:",
+                error
+              );
+
+              window.alert(
+                "Could not restore this student."
+              );
+
+              restoreButton.disabled =
+                false;
+
+            }
+
+          }
+        );
+
+
+        actionsCell.appendChild(
+          restoreButton
+        );
+
+
+        row.appendChild(
+          nameCell
+        );
+
+        row.appendChild(
+          statusCell
+        );
+
+        row.appendChild(
+          actionsCell
+        );
+
+        tbody.appendChild(
+          row
+        );
+
+      }
+    );
+
+
+    container.innerHTML = "";
+
+    container.appendChild(
+      table
+    );
+
+  }
+
+  catch (error) {
+
+    console.error(
+      "Could not load archived students:",
+      error
+    );
+
+    container.innerHTML =
+      "<p>Could not load archived students.</p>";
 
   }
 

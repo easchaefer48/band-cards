@@ -1705,3 +1705,31 @@ body {
   background: #eeeeee;
   color: #666666;
 }
+
+.student-archive-button {
+  border: 1px solid #cccccc;
+  border-radius: 6px;
+  background: #ffffff;
+  padding: 6px 10px;
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.student-archive-button:hover {
+  background: #f5f5f5;
+}
+
+.student-restore-button {
+  border: 1px solid #cccccc;
+  border-radius: 6px;
+  background: #ffffff;
+  padding: 6px 10px;
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.student-restore-button:hover {
+  background: #f5f5f5;
+}

@@ -3540,7 +3540,7 @@ async function loginStudentAccount(
     await supabaseClient
       .from("student_accounts")
       .select(
-        "student_id, username, active"
+        "student_id, student_uuid, username, active"
       )
       .eq(
         "auth_user_id",
@@ -3745,6 +3745,51 @@ document
 
 }
 
+async function getLoggedInStudentClassId() {
+
+  if (
+    !currentStudentAccount?.student_uuid
+  ) {
+    return null;
+  }
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .from("class_enrollments")
+      .select("class_id")
+      .eq(
+        "student_id",
+        currentStudentAccount.student_uuid
+      )
+      .eq(
+        "active",
+        true
+      )
+      .limit(1)
+      .maybeSingle();
+
+
+  if (error) {
+
+    console.error(
+      "Could not load student class enrollment:",
+      error
+    );
+
+    return null;
+
+  }
+
+
+  return data?.class_id || null;
+
+}
+
+
 async function loadModulesForClass(
   classId
 ) {
@@ -3830,10 +3875,14 @@ async function renderStudentHome(
   nameElement.textContent =
     student.name;
 
-  const classModules =
-    await loadModulesForClass(
-      student.classId
-    );
+    const supabaseClassId =
+      await getLoggedInStudentClassId();
+
+
+    const classModules =
+      await loadModulesForClass(
+        supabaseClassId
+      );
 
 
   const enabledModuleIds =
@@ -4942,7 +4991,7 @@ async function restoreStudentLogin() {
       await supabaseClient
         .from("student_accounts")
         .select(
-          "student_id, username, active"
+          "student_id, student_uuid, username, active"
         )
         .eq(
           "auth_user_id",
