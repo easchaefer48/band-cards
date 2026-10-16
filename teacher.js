@@ -717,7 +717,7 @@ async function reviewSubmission(
         await supabaseClient
           .from("recording_submissions")
           .select(
-            "id, student_id, submission_type, requirement_id, submitter_uid"
+            "id, student_id, student_uuid, submission_type, requirement_id, submitter_uid"
           )
           .eq("id", submissionId)
           .single();
@@ -759,6 +759,9 @@ async function reviewSubmission(
               {
                 student_id:
                   submission.student_id,
+
+                student_uuid:
+                  submission.student_uuid,
 
                 submitter_uid:
                   submission.submitter_uid,  
@@ -3736,16 +3739,6 @@ showAddStudentButton
         );
 
 
-      if (!classSelect?.value) {
-
-        alert(
-          "Please select a class first."
-        );
-
-        return;
-
-      }
-
 
       if (message) {
         message.textContent = "";
@@ -3805,11 +3798,6 @@ document
     "click",
     async () => {
 
-      const classSelect =
-        document.getElementById(
-          "manageStudentsClass"
-        );
-
       const firstNameInput =
         document.getElementById(
           "newStudentFirstName"
@@ -3818,6 +3806,16 @@ document
       const lastNameInput =
         document.getElementById(
           "newStudentLastName"
+        );
+
+      const emailInput =
+        document.getElementById(
+          "newStudentEmail"
+        );
+
+      const passwordInput =
+        document.getElementById(
+          "newStudentTemporaryPassword"
         );
 
       const message =
@@ -3837,6 +3835,11 @@ document
       const lastName =
         lastNameInput?.value.trim() || "";
 
+      const email =
+        emailInput?.value.trim().toLowerCase() || "";
+
+      const temporaryPassword =
+        passwordInput?.value || "";
 
 
       if (!firstName) {
@@ -3863,156 +3866,97 @@ document
       }
 
 
+      if (!email) {
+
+        message.textContent =
+          "Please enter the student's school email.";
+
+        emailInput?.focus();
+
+        return;
+
+      }
+
+
+      if (!emailInput?.checkValidity()) {
+
+        message.textContent =
+          "Please enter a valid school email address.";
+
+        emailInput?.focus();
+
+        return;
+
+      }
+
+
+      if (temporaryPassword.length < 8) {
+
+        message.textContent =
+          "Temporary password must be at least 8 characters.";
+
+        passwordInput?.focus();
+
+        return;
+
+      }
+
+
       button.disabled = true;
 
       message.textContent =
-        "Adding student...";
+        "Creating student account...";
 
 
       try {
 
-        // Find the logged-in teacher's active school membership.
-      const {
-        data: {
-          user
-        },
-        error: userError
-      } =
-        await supabaseClient.auth.getUser();
-
-
-      if (userError) {
-        throw userError;
-      }
-
-
-      if (!user) {
-        throw new Error(
-          "No signed-in teacher was found."
-        );
-      }
-
-
-      const {
-        data: teacherAccount,
-        error: teacherError
-      } =
-        await supabaseClient
-          .from("teacher_accounts")
-          .select(
-            "teacher_id"
-          )
-          .eq(
-            "auth_user_id",
-            user.id
-          )
-          .eq(
-            "active",
-            true
-          )
-          .single();
-
-
-      if (teacherError) {
-        throw teacherError;
-      }
-
-
-      const {
-        data: schoolMembership,
-        error: schoolMembershipError
-      } =
-        await supabaseClient
-          .from("school_teacher_memberships")
-          .select(
-            "school_id"
-          )
-          .eq(
-            "teacher_id",
-            teacherAccount.teacher_id
-          )
-          .eq(
-            "active",
-            true
-          )
-          .single();
-
-
-      if (schoolMembershipError) {
-        throw schoolMembershipError;
-      }
-
-
-      const schoolId =
-        schoolMembership.school_id;
-
-
-        // Create the permanent student record.
-        // Supabase generates student_id automatically.
         const {
-          data: newStudent,
-          error: studentError
+          data,
+          error
         } =
-          await supabaseClient
-            .from("students")
-            .insert({
-              first_name:
+          await supabaseClient.functions.invoke(
+            "manage-student-account",
+            {
+              body: {
                 firstName,
-              last_name:
                 lastName,
-              active:
-                true
-            })
-            .select(
-              "student_id"
-            )
-            .single();
+                email,
+                temporaryPassword
+              }
+            }
+          );
 
 
-        if (studentError) {
-          throw studentError;
+        if (error) {
+          throw error;
         }
 
 
-        const studentId =
-          newStudent.student_id;
+        if (!data?.success) {
 
+          throw new Error(
+            data?.error ||
+            "Could not create student account."
+          );
 
-        // Connect the student to the school.
-
-        const {
-          error: membershipError
-        } =
-          await supabaseClient
-            .from(
-              "school_student_memberships"
-            )
-            .insert({
-              school_id:
-                schoolId,
-              student_id:
-                studentId,
-              active:
-                true,
-              status:
-                "active"
-            });
-
-
-        if (membershipError) {
-          throw membershipError;
         }
-
 
 
         firstNameInput.value = "";
         lastNameInput.value = "";
+        emailInput.value = "";
+        passwordInput.value = "";
 
-        message.textContent = "";
+
+        message.textContent =
+          "Student account created successfully.";
+
 
         addStudentForm.hidden =
           true;
 
+
+        await loadManualBandLevelData();
 
       }
 
@@ -4024,6 +3968,7 @@ document
         );
 
         message.textContent =
+          error?.message ||
           "Could not add this student.";
 
       }

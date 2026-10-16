@@ -1157,6 +1157,7 @@ allBandLevelRequirements =
           b.total - a.total
       );
 
+
       populateRecordingStudentSelect();
       populateBandLevelStudentSelect();
 
@@ -1734,7 +1735,7 @@ const studentName =
   currentLoggedInStudent.name;
 
 const classId =
-  currentLoggedInStudent.classId;
+  await getLoggedInStudentClassId();
 
     // Student must choose their name
 
@@ -1841,6 +1842,9 @@ const classId =
             {
               student_id:
                 studentId,
+
+              student_uuid:
+                currentStudentAccount?.student_uuid,  
 
               student_name:
                 studentName,
@@ -2659,7 +2663,8 @@ async function renderBandLevelDashboard(
 
   currentBandLevelProgress =
     await loadBandLevelProgressForStudent(
-      studentId
+      studentId,
+      currentStudentAccount?.student_uuid
     );
 
 
@@ -3396,7 +3401,10 @@ stopRecordingBtn?.classList.add(
 // LOAD BAND LEVEL PROGRESS FOR SELECTED STUDENT
 // ============================================================
 
-async function loadBandLevelProgressForStudent(studentId) {
+async function loadBandLevelProgressForStudent(
+  studentId,
+  studentUuid = null
+) {
 
   const user =
     studentAuthUser;
@@ -3407,19 +3415,36 @@ async function loadBandLevelProgressForStudent(studentId) {
 
   try {
 
+    let query =
+      supabaseClient
+        .from("band_level_progress")
+        .select(
+          "student_id, student_uuid, requirement_id, completed_at"
+        );
+
+    if (studentUuid) {
+
+      query =
+        query.eq(
+          "student_uuid",
+          studentUuid
+        );
+
+    } else {
+
+      query =
+        query.eq(
+          "student_id",
+          studentId
+        );
+
+    }
+
     const {
       data,
       error
     } =
-      await supabaseClient
-        .from("band_level_progress")
-        .select(
-          "student_id, requirement_id, completed_at"
-        )
-        .eq(
-          "student_id",
-          studentId
-        );
+      await query;
 
     if (error) {
       throw error;
@@ -3510,7 +3535,9 @@ async function loginStudentAccount(
 
 
   const internalEmail =
-    `${normalizedUsername}@bandcards.local`;
+    normalizedUsername.includes("@")
+      ? normalizedUsername
+      : `${normalizedUsername}@bandcards.local`;
 
 
   const {
@@ -3540,7 +3567,7 @@ async function loginStudentAccount(
     await supabaseClient
       .from("student_accounts")
       .select(
-        "student_id, student_uuid, username, active"
+        "student_id, student_uuid, username, student_name, active"
       )
       .eq(
         "auth_user_id",
@@ -3626,12 +3653,64 @@ document
         );
 
 
-        const loggedInStudent =
-          allStudents.find(
-            student =>
-              student.id ===
-              account.student_id
-          );
+        let loggedInStudent = null;
+
+
+        // Legacy students still come from the
+        // Google Sheets student data.
+        if (account.student_id) {
+
+          loggedInStudent =
+            allStudents.find(
+              student =>
+                student.id ===
+                account.student_id
+            );
+
+        }
+
+
+        // UUID-native students do not need
+        // a legacy Google Sheets student record.
+        if (
+          !loggedInStudent &&
+          account.student_uuid
+        ) {
+
+          loggedInStudent = {
+            id:
+              account.student_uuid,
+
+            uuid:
+              account.student_uuid,
+
+            name:
+              account.student_name ||
+              account.username,
+
+            username:
+              account.username,
+
+            classId:
+              "",
+
+            className:
+              "",
+
+            grade:
+              "",
+
+            cards:
+              [],
+
+            total:
+              0,
+
+            categories:
+              createEmptyCategories()
+          };
+
+        }
 
 
         if (!loggedInStudent) {
@@ -3958,7 +4037,8 @@ moduleCards.forEach(
 
   const studentProgress =
     await loadBandLevelProgressForStudent(
-      student.id
+      student.id,
+      currentStudentAccount?.student_uuid
     );
 
 
