@@ -726,50 +726,204 @@ async function loadAndRender() {
     console.log("Loading Band Achievements database...");
 
 
-    // ========================================================
-    // 1. LOAD ALL REQUIRED GOOGLE SHEETS
-    // ========================================================
+  // ========================================================
+  // 1. LOAD REQUIRED DATA
+  // ========================================================
 
-    const [
-  studentsCSV,
-  classesCSV,
-  achievementsCSV,
-  earnedCSV,
-  bandLevelsCSV,
-  bandLevelRequirementsCSV
-] = await Promise.all([
-  fetchSheetCSV(SHEET_ID, STUDENTS_GID),
-  fetchSheetCSV(SHEET_ID, CLASSES_GID),
-  fetchSheetCSV(SHEET_ID, ACHIEVEMENTS_GID),
-  fetchSheetCSV(SHEET_ID, EARNED_CARDS_GID),
-  fetchSheetCSV(SHEET_ID, BAND_LEVELS_GID),
-  fetchSheetCSV(SHEET_ID, BAND_LEVEL_REQUIREMENTS_GID)
-]);
+  // Achievement definitions now come from Supabase.
+  // The remaining legacy data still comes from Google Sheets
+  // until each section is migrated individually.
+
+  const [
+    studentsResult,
+    classesResult,
+    enrollmentsResult,
+    earnedAchievementsResult,
+    bandLevelsCSV,
+    bandLevelRequirementsCSV,
+    achievementsResult
+  ] = await Promise.all([
+
+    supabaseClient
+      .from("students")
+      .select(`
+        student_id,
+        first_name,
+        last_name,
+        active
+      `),
+
+    supabaseClient
+      .from("classes")
+      .select(`
+        class_id,
+        display_name,
+        grade_level,
+        active
+      `),
+
+    supabaseClient
+      .from("class_enrollments")
+      .select(`
+        student_id,
+        class_id,
+        active
+      `)
+      .eq("active", true),
+
+    supabaseClient
+      .from("earned_achievements")
+      .select(`
+        id,
+        student_id,
+        achievement_id,
+        awarded_at,
+        teacher_comment,
+        awarded_by,
+        source
+      `),
+    fetchSheetCSV(SHEET_ID, BAND_LEVELS_GID),
+    fetchSheetCSV(SHEET_ID, BAND_LEVEL_REQUIREMENTS_GID),
+
+    supabaseClient
+      .from("achievements")
+      .select(`
+        achievement_id,
+        card_name,
+        points,
+        category,
+        subcategory,
+        description,
+        image_file,
+        thumbnail_image_file,
+        active,
+        requires_recording
+      `)
+      .order("achievement_id")
+  ]);
+
+  if (studentsResult.error) {
+    throw studentsResult.error;
+  }
+
+  if (classesResult.error) {
+    throw classesResult.error;
+  }
+
+  if (enrollmentsResult.error) {
+    throw enrollmentsResult.error;
+  }
+
+  if (achievementsResult.error) {
+    throw achievementsResult.error;
+  }
+
+  if (earnedAchievementsResult.error) {
+    throw earnedAchievementsResult.error;
+  }
 
 
     // ========================================================
     // 2. CONVERT CSV DATA INTO OBJECTS
     // ========================================================
 
+    const activeEnrollmentByStudent = {};
+
+    (enrollmentsResult.data || []).forEach(enrollment => {
+      activeEnrollmentByStudent[enrollment.student_id] =
+        enrollment.class_id;
+    });
+
+
     const studentsData =
-      rowsToObjects(
-        parseCSV(studentsCSV)
-      );
+      (studentsResult.data || []).map(student => {
+
+        const classId =
+          activeEnrollmentByStudent[student.student_id] || "";
+
+        return {
+          "student id":
+            student.student_id,
+
+          "student name":
+            [student.first_name, student.last_name]
+              .filter(Boolean)
+              .join(" "),
+
+          "class id":
+            classId,
+
+          "username":
+            "",
+
+          "avatar":
+            "",
+
+          "active":
+            student.active
+        };
+
+      });
+
 
     const classesData =
-      rowsToObjects(
-        parseCSV(classesCSV)
-      );
+      (classesResult.data || []).map(classRow => ({
+
+        "class id":
+          classRow.class_id,
+
+        "class name":
+          classRow.display_name || "",
+
+        "grade":
+          classRow.grade_level ?? "",
+
+        "active":
+          classRow.active
+
+      }));
 
     const achievementsData =
-      rowsToObjects(
-        parseCSV(achievementsCSV)
-      );
+      (achievementsResult.data || []).map(row => ({
+        "achievement id": row.achievement_id,
+        "card name": row.card_name,
+        "points": row.points,
+        "category": row.category,
+        "subcategory": row.subcategory || "",
+        "description": row.description || "",
+        "image file": row.image_file || "",
+        "thumbnail image file":
+          row.thumbnail_image_file || "",
+        "active": row.active,
+        "requires recording":
+          row.requires_recording
+      }));
 
     const earnedCardsData =
-      rowsToObjects(
-        parseCSV(earnedCSV)
-      );
+      (earnedAchievementsResult.data || []).map(row => ({
+
+        "earned achievement id":
+          row.id,
+
+        "student id":
+          row.student_id,
+
+        "achievement id":
+          row.achievement_id,
+
+        "date earned":
+          row.awarded_at || "",
+
+        "teacher comment":
+          row.teacher_comment || "",
+
+        "awarded by":
+          row.awarded_by || "",
+
+        "source":
+          row.source || ""
+
+      }));
 
       const bandLevelsData =
   rowsToObjects(
@@ -1775,10 +1929,10 @@ const classId =
           : "webm";
 
 
-      // Put each student's recordings inside their own folder.
+      // Put account recordings inside each student's UUID folder.
 
       const filename =
-        `${studentId}/recording-${timestamp}.${extension}`;
+        `account-recordings/${studentId}/recording-${timestamp}.${extension}`;
 
 
       // ------------------------------------------------------
@@ -2621,13 +2775,13 @@ async function renderBandLevelDashboard(
 
 
   const student =
-    allStudents.find(
-      item =>
-        item.id === studentId
-    );
+    currentLoggedInStudent;
 
 
-  if (!student) {
+  if (
+    !student ||
+    student.id !== studentId
+  ) {
 
     profile.classList.add(
       "hidden"
@@ -2636,6 +2790,10 @@ async function renderBandLevelDashboard(
     return;
 
   }
+
+
+  const studentClassId =
+    await getLoggedInStudentClassId();
 
 
   profile.classList.remove(
@@ -3093,7 +3251,7 @@ levelStates
                       class="band-level-record-button"
                       data-student-id="${escapeHtml(student.id)}"
                       data-student-name="${escapeHtml(student.name)}"
-                      data-class-id="${escapeHtml(student.classId || "")}"
+                      data-class-id="${escapeHtml(studentClassId || "")}"
                       data-level-id="${escapeHtml(level.id)}"
                       data-level-name="${escapeHtml(level.name)}"
                       data-requirement-id="${escapeHtml(requirement.id)}"
@@ -3329,7 +3487,7 @@ document.addEventListener(
         currentLoggedInStudent.name,
 
       classId:
-        currentLoggedInStudent.classId,
+        button.dataset.classId || null,
 
       levelId:
         button.dataset.levelId,
@@ -3653,73 +3811,55 @@ document
         );
 
 
-        let loggedInStudent = null;
+        const {
+          data: studentProfile,
+          error: studentProfileError
+        } =
+          await supabaseClient
+            .from("students")
+            .select(
+              "student_id, first_name, last_name, active"
+            )
+            .eq(
+              "student_id",
+              account.student_uuid
+            )
+            .single();
 
 
-        // Legacy students still come from the
-        // Google Sheets student data.
-        if (account.student_id) {
-
-          loggedInStudent =
-            allStudents.find(
-              student =>
-                student.id ===
-                account.student_id
-            );
-
+        if (studentProfileError) {
+          throw studentProfileError;
         }
 
 
-        // UUID-native students do not need
-        // a legacy Google Sheets student record.
         if (
-          !loggedInStudent &&
-          account.student_uuid
+          !studentProfile ||
+          !studentProfile.active
         ) {
-
-          loggedInStudent = {
-            id:
-              account.student_uuid,
-
-            uuid:
-              account.student_uuid,
-
-            name:
-              account.student_name ||
-              account.username,
-
-            username:
-              account.username,
-
-            classId:
-              "",
-
-            className:
-              "",
-
-            grade:
-              "",
-
-            cards:
-              [],
-
-            total:
-              0,
-
-            categories:
-              createEmptyCategories()
-          };
-
-        }
-
-
-        if (!loggedInStudent) {
 
           throw new Error(
             "Student profile could not be found."
           );
 
         }
+
+
+        const loggedInStudent = {
+          id:
+            studentProfile.student_id,
+
+          uuid:
+            studentProfile.student_id,
+
+          name:
+            `${studentProfile.first_name} ${studentProfile.last_name}`.trim(),
+
+          firstName:
+            studentProfile.first_name,
+
+          lastName:
+            studentProfile.last_name
+        };
 
         currentStudentAccount =
           account;
@@ -4014,7 +4154,9 @@ moduleCards.forEach(
   if (classElement) {
 
     classElement.textContent =
-      "5th Grade Band";
+      supabaseClassId
+        ? "Band Student"
+        : "No Class Assigned";
 
   }
 
@@ -4742,6 +4884,2117 @@ async function showLeaderboardView(
 
 }
 
+async function loadViewClassData() {
+
+  if (!currentLoggedInStudent) {
+    return [];
+  }
+
+  const classNameElement =
+    document.getElementById(
+      "view-class-name"
+    );
+
+  const {
+    data: enrollmentData,
+    error: enrollmentError
+  } =
+    await supabaseClient
+      .from("class_enrollments")
+      .select(`
+        class_id,
+        classes (
+          display_name
+        )
+      `)
+      .eq(
+        "student_id",
+        currentLoggedInStudent.id
+      )
+      .eq("active", true)
+      .limit(1)
+      .maybeSingle();
+
+  if (enrollmentError) {
+    console.error(
+      "Could not load class name:",
+      enrollmentError
+    );
+  }
+
+  if (classNameElement) {
+
+    classNameElement.textContent =
+      enrollmentData?.classes?.display_name ||
+      "Band Class";
+
+  }
+
+
+  /*
+    RLS limits these queries to students who
+    share an active class with the logged-in student.
+  */
+
+  const [
+    studentsResult,
+    earnedResult,
+    achievementsResult
+  ] = await Promise.all([
+
+    supabaseClient
+      .from("students")
+      .select(
+        "student_id, first_name, last_name, active"
+      )
+      .eq("active", true)
+      .order("last_name")
+      .order("first_name"),
+
+    supabaseClient
+      .from("earned_achievements")
+      .select(
+        "student_id, achievement_id, awarded_at"
+      ),
+
+    supabaseClient
+      .from("achievements")
+      .select(
+        `
+          achievement_id,
+          card_name,
+          points,
+          category,
+          subcategory,
+          description,
+          image_file,
+          thumbnail_image_file,
+          active
+        `
+      )
+      .eq("active", true)
+
+  ]);
+
+
+  if (studentsResult.error) {
+    throw studentsResult.error;
+  }
+
+  if (earnedResult.error) {
+    throw earnedResult.error;
+  }
+
+  if (achievementsResult.error) {
+    throw achievementsResult.error;
+  }
+
+
+  const students =
+    studentsResult.data || [];
+
+  const earnedAchievements =
+    earnedResult.data || [];
+
+  const achievements =
+    achievementsResult.data || [];
+
+
+  const achievementLookup =
+    new Map(
+      achievements.map(
+        achievement => [
+          achievement.achievement_id,
+          achievement
+        ]
+      )
+    );
+
+
+  const earnedByStudent =
+    new Map();
+
+
+  earnedAchievements.forEach(
+    earned => {
+
+      if (
+        !earnedByStudent.has(
+          earned.student_id
+        )
+      ) {
+
+        earnedByStudent.set(
+          earned.student_id,
+          []
+        );
+
+      }
+
+
+      const achievement =
+        achievementLookup.get(
+          earned.achievement_id
+        );
+
+
+      if (!achievement) {
+        return;
+      }
+
+
+      earnedByStudent
+        .get(earned.student_id)
+        .push({
+          ...achievement,
+          awarded_at:
+            earned.awarded_at
+        });
+
+    }
+  );
+
+
+  const classStudents =
+    students.map(
+      student => {
+
+        const cards =
+          earnedByStudent.get(
+            student.student_id
+          ) || [];
+
+
+        return {
+          id: student.student_id,
+
+          name:
+          `${student.first_name} ${
+            student.last_name
+              ? student.last_name.charAt(0) + "."
+              : ""
+          }`,
+
+          cards,
+
+          total:
+            cards.reduce(
+              (sum, card) =>
+                sum +
+                Number(card.points || 0),
+              0
+            )
+        };
+
+      }
+    );
+
+
+  classStudents.sort(
+    (a, b) =>
+      b.total - a.total ||
+      a.name.localeCompare(b.name)
+  );
+
+  console.log(
+    "View Class students:",
+    classStudents
+  );
+
+  return classStudents;
+
+}
+
+let achievementViewerStudent = null;
+let achievementViewerCards = [];
+let achievementViewerIndex = 0;
+
+function formatAchievementEarnedDate(
+  awardedAt
+) {
+
+  if (!awardedAt) {
+    return "";
+  }
+
+
+  const date =
+    new Date(awardedAt);
+
+
+  if (
+    Number.isNaN(
+      date.getTime()
+    )
+  ) {
+    return "";
+  }
+
+
+  const day =
+    date.getDate();
+
+
+  let suffix = "th";
+
+  if (
+    day % 10 === 1 &&
+    day % 100 !== 11
+  ) {
+    suffix = "st";
+  } else if (
+    day % 10 === 2 &&
+    day % 100 !== 12
+  ) {
+    suffix = "nd";
+  } else if (
+    day % 10 === 3 &&
+    day % 100 !== 13
+  ) {
+    suffix = "rd";
+  }
+
+
+  const month =
+    date.toLocaleString(
+      "en-US",
+      {
+        month: "long"
+      }
+    );
+
+
+  const year =
+    date.getFullYear();
+
+
+  return (
+    `Earned on ${month} ` +
+    `${day}${suffix}, ${year}`
+  );
+}
+
+function displayAchievementViewerCard() {
+
+  const card =
+    achievementViewerCards[
+      achievementViewerIndex
+    ];
+
+  if (!card) {
+    return;
+  }
+
+
+  const image =
+    document.getElementById(
+      "achievement-viewer-image"
+    );
+
+  const cardName =
+    document.getElementById(
+      "achievement-viewer-card-name"
+    );
+
+  const dateElement =
+    document.getElementById(
+      "achievement-viewer-date"
+    );
+
+  const previousButton =
+    document.getElementById(
+      "achievement-viewer-previous"
+    );
+
+  const nextButton =
+    document.getElementById(
+      "achievement-viewer-next"
+    );
+
+
+  if (image) {
+    const viewerCard =
+      document.getElementById(
+        "achievement-viewer-card"
+      );
+
+    if (viewerCard) {
+      viewerCard.classList.remove(
+        "viewer-card-loaded"
+      );
+    }
+
+    image.onload = () => {
+      if (viewerCard) {
+        viewerCard.classList.add(
+          "viewer-card-loaded"
+        );
+      }
+    };
+
+    image.src =
+      `images/achievement_cards/${card.image_file}`;
+
+    image.alt =
+      card.card_name ||
+      "Achievement card";
+
+    if (image.complete) {
+      viewerCard?.classList.add(
+        "viewer-card-loaded"
+      );
+    }
+  }
+
+
+  if (cardName) {
+
+    cardName.textContent =
+      card.card_name || "";
+
+  }
+
+
+  if (dateElement) {
+
+    const formattedDate =
+      formatAchievementEarnedDate(
+        card.awarded_at
+      );
+
+    dateElement.textContent =
+      formattedDate;
+
+    dateElement.style.display =
+      formattedDate
+        ? ""
+        : "none";
+
+  }
+
+
+  /*
+    Collection navigation wraps around.
+
+    First card -> Previous goes to last.
+    Last card -> Next goes to first.
+  */
+
+  if (previousButton) {
+    previousButton.disabled =
+      achievementViewerCards.length <= 1;
+  }
+
+  if (nextButton) {
+    nextButton.disabled =
+      achievementViewerCards.length <= 1;
+  }
+
+
+  resetAchievementViewerTilt();
+}
+
+function openAchievementCardViewer(
+  student,
+  achievementId
+) {
+
+  if (
+    !student ||
+    !student.cards?.length
+  ) {
+    return;
+  }
+
+
+  achievementViewerStudent =
+    student;
+
+  achievementViewerCards =
+    [...student.cards];
+
+
+  const foundIndex =
+    achievementViewerCards
+      .findIndex(
+        card =>
+          card.achievement_id ===
+          achievementId
+      );
+
+
+  achievementViewerIndex =
+    foundIndex >= 0
+      ? foundIndex
+      : 0;
+
+
+  const viewer =
+    document.getElementById(
+      "achievement-card-viewer"
+    );
+
+  const collectionHeading =
+    document.getElementById(
+      "achievement-viewer-collection"
+    );
+
+
+  if (
+    !viewer ||
+    !collectionHeading
+  ) {
+    return;
+  }
+
+
+  const firstName =
+    student.name
+      ?.trim()
+      .split(/\s+/)[0] ||
+    "Student";
+
+
+  const possessiveName =
+    firstName
+      .toLowerCase()
+      .endsWith("s")
+      ? `${firstName}' Collection`
+      : `${firstName}'s Collection`;
+
+
+  collectionHeading.textContent =
+    possessiveName;
+
+
+  displayAchievementViewerCard();
+
+
+  viewer.classList.remove(
+    "hidden"
+  );
+
+  viewer.setAttribute(
+    "aria-hidden",
+    "false"
+  );
+
+
+  document.body.style.overflow =
+    "hidden";
+}
+
+
+function closeAchievementCardViewer() {
+
+  const viewer =
+    document.getElementById(
+      "achievement-card-viewer"
+    );
+
+  if (!viewer) {
+    return;
+  }
+
+
+  viewer.classList.add(
+    "hidden"
+  );
+
+  viewer.setAttribute(
+    "aria-hidden",
+    "true"
+  );
+
+
+  document.body.style.overflow =
+    "";
+
+
+  resetAchievementViewerTilt();
+
+
+  achievementViewerStudent =
+    null;
+
+  achievementViewerCards = [];
+
+  achievementViewerIndex = 0;
+}
+
+function showPreviousAchievementCard() {
+
+  if (
+    achievementViewerCards.length <= 1
+  ) {
+    return;
+  }
+
+
+  achievementViewerIndex =
+    (
+      achievementViewerIndex -
+      1 +
+      achievementViewerCards.length
+    ) %
+    achievementViewerCards.length;
+
+
+  displayAchievementViewerCard();
+}
+
+
+function showNextAchievementCard() {
+
+  if (
+    achievementViewerCards.length <= 1
+  ) {
+    return;
+  }
+
+
+  achievementViewerIndex =
+    (
+      achievementViewerIndex + 1
+    ) %
+    achievementViewerCards.length;
+
+
+  displayAchievementViewerCard();
+}
+
+function resetAchievementViewerTilt() {
+
+  const card =
+    document.getElementById(
+      "achievement-viewer-card"
+    );
+
+  if (!card) {
+    return;
+  }
+
+
+  card.style.transform =
+    "rotateX(0deg) rotateY(0deg)";
+
+  card.style.setProperty(
+    "--viewer-x",
+    "50%"
+  );
+
+  card.style.setProperty(
+    "--viewer-y",
+    "50%"
+  );
+}
+
+
+function handleAchievementViewerTilt(
+  event
+) {
+
+  const card =
+    document.getElementById(
+      "achievement-viewer-card"
+    );
+
+  if (!card) {
+    return;
+  }
+
+
+  const rect =
+    card.getBoundingClientRect();
+
+
+  const x =
+    event.clientX -
+    rect.left;
+
+  const y =
+    event.clientY -
+    rect.top;
+
+
+  const percentX =
+    Math.max(
+      0,
+      Math.min(
+        100,
+        (x / rect.width) * 100
+      )
+    );
+
+  const percentY =
+    Math.max(
+      0,
+      Math.min(
+        100,
+        (y / rect.height) * 100
+      )
+    );
+
+
+  const rotateY =
+    (
+      percentX - 50
+    ) / 5;
+
+  const rotateX =
+    -(
+      percentY - 50
+    ) / 6;
+
+
+  card.style.transform =
+    `rotateX(${rotateX}deg) ` +
+    `rotateY(${rotateY}deg) ` +
+    `scale(1.015)`;
+
+
+  card.style.setProperty(
+    "--viewer-x",
+    `${percentX}%`
+  );
+
+  card.style.setProperty(
+    "--viewer-y",
+    `${percentY}%`
+  );
+}
+
+document
+  .getElementById(
+    "achievement-viewer-close"
+  )
+  ?.addEventListener(
+    "click",
+    closeAchievementCardViewer
+  );
+
+
+document
+  .getElementById(
+    "achievement-viewer-previous"
+  )
+  ?.addEventListener(
+    "click",
+    showPreviousAchievementCard
+  );
+
+
+document
+  .getElementById(
+    "achievement-viewer-next"
+  )
+  ?.addEventListener(
+    "click",
+    showNextAchievementCard
+  );
+
+
+const achievementViewerCard =
+  document.getElementById(
+    "achievement-viewer-card"
+  );
+
+
+achievementViewerCard
+  ?.addEventListener(
+    "mousemove",
+    handleAchievementViewerTilt
+  );
+
+
+achievementViewerCard
+  ?.addEventListener(
+    "mouseleave",
+    resetAchievementViewerTilt
+  );
+
+
+document.addEventListener(
+  "keydown",
+  event => {
+
+    const viewer =
+      document.getElementById(
+        "achievement-card-viewer"
+      );
+
+    if (
+      !viewer ||
+      viewer.classList.contains(
+        "hidden"
+      )
+    ) {
+      return;
+    }
+
+
+    if (event.key === "Escape") {
+
+      closeAchievementCardViewer();
+
+    } else if (
+      event.key === "ArrowLeft"
+    ) {
+
+      showPreviousAchievementCard();
+
+    } else if (
+      event.key === "ArrowRight"
+    ) {
+
+      showNextAchievementCard();
+
+    }
+
+  }
+);
+
+document
+  .getElementById(
+    "achievement-card-viewer"
+  )
+  ?.addEventListener(
+    "click",
+    event => {
+
+      if (
+        event.target.id ===
+        "achievement-card-viewer"
+      ) {
+
+        closeAchievementCardViewer();
+
+      }
+
+    }
+  );
+
+function buildViewClassCardStacks(cards) {
+
+  const shuffledNullCards = [...cards];
+
+  /*
+    Give cards without an awarded date a random
+    order for this page load.
+  */
+  for (
+    let i = shuffledNullCards.length - 1;
+    i > 0;
+    i--
+  ) {
+
+    const j =
+      Math.floor(
+        Math.random() * (i + 1)
+      );
+
+    [
+      shuffledNullCards[i],
+      shuffledNullCards[j]
+    ] = [
+      shuffledNullCards[j],
+      shuffledNullCards[i]
+    ];
+  }
+
+
+  /*
+    Dated cards come first, newest to oldest.
+    Null-date cards keep their shuffled order.
+  */
+  shuffledNullCards.sort(
+    (a, b) => {
+
+      const aHasDate =
+        Boolean(a.awarded_at);
+
+      const bHasDate =
+        Boolean(b.awarded_at);
+
+      if (
+        aHasDate &&
+        bHasDate
+      ) {
+
+        return (
+          new Date(b.awarded_at) -
+          new Date(a.awarded_at)
+        );
+
+      }
+
+      if (aHasDate) {
+        return -1;
+      }
+
+      if (bHasDate) {
+        return 1;
+      }
+
+      return 0;
+    }
+  );
+
+
+  const bandLevel = [];
+  const practice = [];
+  const scales = [];
+  const achievement = [];
+  const bandMusic = [];
+
+
+  shuffledNullCards.forEach(
+    card => {
+
+      switch (card.category) {
+
+        case "Band Level":
+          bandLevel.push(card);
+          break;
+
+        case "Practice":
+          practice.push(card);
+          break;
+
+        case "Scales":
+          scales.push(card);
+          break;
+
+        case "Achievement":
+          achievement.push(card);
+          break;
+
+        case "Band Music":
+          bandMusic.push(card);
+          break;
+
+      }
+
+    }
+  );
+
+
+  /*
+    Split generic Achievement cards between
+    two piles while preserving their order.
+
+    Card 1 -> pile A
+    Card 2 -> pile B
+    Card 3 -> pile A
+    Card 4 -> pile B
+    etc.
+  */
+  const achievementA = [];
+  const achievementB = [];
+
+  achievement.forEach(
+    (card, index) => {
+
+      if (index % 2 === 0) {
+        achievementA.push(card);
+      } else {
+        achievementB.push(card);
+      }
+
+    }
+  );
+
+
+  return [
+    bandLevel,
+    practice,
+    scales,
+    achievementA,
+    achievementB,
+    bandMusic
+  ].filter(
+    stack => stack.length > 0
+  );
+}
+
+function createViewClassCardImage(card) {
+
+  const image =
+    document.createElement("img");
+
+  image.className =
+    "achievement-card";
+
+  image.src =
+    card.thumbnail_image_file
+      ? `images/achievement_thumbs/${card.thumbnail_image_file}`
+      : `images/achievement_cards/${card.image_file}`;
+
+  image.alt =
+    card.card_name ||
+    "Achievement card";
+
+  image.dataset.fullImage =
+    card.image_file || "";
+
+  image.dataset.achievementId =
+    card.achievement_id;
+
+  image.dataset.cardName =
+    card.card_name || "";
+
+  image.dataset.awardedAt =
+    card.awarded_at || "";
+
+  return image;
+}
+
+function animateViewClassCards(
+  cardsContainer,
+  oldPositions
+) {
+
+  const cards =
+    cardsContainer.querySelectorAll(
+      ".achievement-card"
+    );
+
+
+  cards.forEach(
+    card => {
+
+      const achievementId =
+        card.dataset.achievementId;
+
+      const oldPosition =
+        oldPositions.get(
+          achievementId
+        );
+
+      if (!oldPosition) {
+        return;
+      }
+
+
+      const newPosition =
+        card.getBoundingClientRect();
+
+      const deltaX =
+        oldPosition.left -
+        newPosition.left;
+
+      const deltaY =
+        oldPosition.top -
+        newPosition.top;
+
+
+      card.animate(
+        [
+          {
+            transform:
+              `translate(${deltaX}px, ${deltaY}px)`,
+            opacity: 0.88
+          },
+          {
+            transform:
+              "translate(0, 0)",
+            opacity: 1
+          }
+        ],
+        {
+          duration: 220,
+          easing:
+            "cubic-bezier(0.22, 1, 0.36, 1)"
+        }
+      );
+
+    }
+  );
+}
+
+
+function renderExpandedViewClassCards(
+  studentCard
+) {
+
+  const student =
+    studentCard._viewClassStudent;
+
+  const cardsContainer =
+    studentCard.querySelector(
+      ".cards-container"
+    );
+
+  const oldPositions =
+    new Map();
+
+
+  cardsContainer
+    ?.querySelectorAll(
+      ".achievement-card"
+    )
+    .forEach(
+      card => {
+
+        oldPositions.set(
+          card.dataset.achievementId,
+          card.getBoundingClientRect()
+        );
+
+      }
+    );  
+
+  if (
+    !student ||
+    !cardsContainer
+  ) {
+    return;
+  }
+
+  cardsContainer.innerHTML = "";
+
+  cardsContainer.classList.remove(
+    "view-class-stacked-cards"
+  );
+
+  cardsContainer.classList.add(
+    "view-class-expanded-cards"
+  );
+
+
+  student.cards.forEach(
+    card => {
+
+      const image =
+        createViewClassCardImage(card);
+
+      cardsContainer.appendChild(
+        image
+      );
+
+    }
+  );
+
+
+  studentCard.classList.add(
+    "view-class-student-expanded"
+  );
+
+  requestAnimationFrame(
+    () => {
+
+      animateViewClassCards(
+        cardsContainer,
+        oldPositions
+      );
+
+    }
+  );
+
+}
+
+function animateViewClassGridReflow(
+  container,
+  oldPositions,
+  ignoredCard = null
+) {
+
+  const studentCards =
+    container.querySelectorAll(
+      ".student-card"
+    );
+
+
+  studentCards.forEach(
+    studentCard => {
+
+      if (
+        studentCard === ignoredCard
+      ) {
+        return;
+      }
+
+
+      const oldPosition =
+        oldPositions.get(
+          studentCard
+        );
+
+      if (!oldPosition) {
+        return;
+      }
+
+
+      const newPosition =
+        studentCard.getBoundingClientRect();
+
+      const deltaX =
+        oldPosition.left -
+        newPosition.left;
+
+      const deltaY =
+        oldPosition.top -
+        newPosition.top;
+
+
+      /*
+        If the card didn't move,
+        don't animate it.
+      */
+      if (
+        Math.abs(deltaX) < 1 &&
+        Math.abs(deltaY) < 1
+      ) {
+        return;
+      }
+
+
+      studentCard.animate(
+        [
+          {
+            transform:
+              `translate(${deltaX}px, ${deltaY}px)`
+          },
+          {
+            transform:
+              "translate(0, 0)"
+          }
+        ],
+        {
+          duration: 190,
+          easing:
+            "cubic-bezier(0.22, 1, 0.36, 1)"
+        }
+      );
+
+    }
+  );
+}
+
+
+function animateCollapseViewClassStudent(
+  studentCard
+) {
+
+  const student =
+    studentCard._viewClassStudent;
+
+  const cardsContainer =
+    studentCard.querySelector(
+      ".cards-container"
+    );
+
+  if (
+    !student ||
+    !cardsContainer
+  ) {
+    return;
+  }
+
+
+  /*
+    Record where every expanded card
+    currently sits.
+  */
+  const expandedPositions =
+    new Map();
+
+  cardsContainer
+    .querySelectorAll(
+      ".achievement-card"
+    )
+    .forEach(
+      card => {
+
+        expandedPositions.set(
+          card.dataset.achievementId,
+          card.getBoundingClientRect()
+        );
+
+      }
+    );
+
+
+  /*
+    Create a temporary copy of the
+    collapsed layout so we can discover
+    where each card needs to return.
+  */
+  const measuringCard =
+    studentCard.cloneNode(false);
+
+  measuringCard.className =
+    studentCard.className;
+
+  measuringCard.classList.remove(
+    "view-class-student-expanded"
+  );
+
+  measuringCard.style.position =
+    "absolute";
+
+  measuringCard.style.visibility =
+    "hidden";
+
+  measuringCard.style.pointerEvents =
+    "none";
+
+  measuringCard.style.width =
+    `${studentCard.offsetWidth}px`;
+
+
+  const measuringContainer =
+    document.createElement("div");
+
+  measuringContainer.className =
+    "cards-container";
+
+
+  if (student.cards.length > 6) {
+
+    measuringContainer.classList.add(
+      "view-class-stacked-cards"
+    );
+
+    const stacks =
+      buildViewClassCardStacks(
+        student.cards
+      );
+
+    stacks.forEach(
+      stack => {
+
+        const stackElement =
+          document.createElement("div");
+
+        stackElement.className =
+          "view-class-card-stack";
+
+
+        [...stack]
+          .reverse()
+          .forEach(
+            (card, index) => {
+
+              const image =
+                createViewClassCardImage(
+                  card
+                );
+
+              image.classList.add(
+                "view-class-stacked-card"
+              );
+
+              image.style.setProperty(
+                "--stack-offset",
+                `${index * 4}px`
+              );
+
+              stackElement.appendChild(
+                image
+              );
+
+            }
+          );
+
+
+        measuringContainer.appendChild(
+          stackElement
+        );
+
+      }
+    );
+
+  } else {
+
+    student.cards.forEach(
+      card => {
+
+        measuringContainer.appendChild(
+          createViewClassCardImage(card)
+        );
+
+      }
+    );
+
+  }
+
+
+  measuringCard.appendChild(
+    measuringContainer
+  );
+
+  document.body.appendChild(
+    measuringCard
+  );
+
+
+  /*
+    Position the invisible measuring
+    layout over the real student card.
+  */
+  const studentRect =
+    studentCard.getBoundingClientRect();
+
+  measuringCard.style.left =
+    `${studentRect.left + window.scrollX}px`;
+
+  measuringCard.style.top =
+    `${studentRect.top + window.scrollY}px`;
+
+
+  const collapsedPositions =
+    new Map();
+
+  measuringContainer
+    .querySelectorAll(
+      ".achievement-card"
+    )
+    .forEach(
+      card => {
+
+        collapsedPositions.set(
+          card.dataset.achievementId,
+          card.getBoundingClientRect()
+        );
+
+      }
+    );
+
+
+  measuringCard.remove();
+
+
+  /*
+    Animate each real card from its
+    expanded location back into its pile.
+  */
+  const realCards =
+    cardsContainer.querySelectorAll(
+      ".achievement-card"
+    );
+
+  const animations = [];
+
+
+  realCards.forEach(
+    card => {
+
+      const achievementId =
+        card.dataset.achievementId;
+
+      const start =
+        expandedPositions.get(
+          achievementId
+        );
+
+      const end =
+        collapsedPositions.get(
+          achievementId
+        );
+
+      if (
+        !start ||
+        !end
+      ) {
+        return;
+      }
+
+
+      const deltaX =
+        end.left - start.left;
+
+      const deltaY =
+        end.top - start.top;
+
+
+      const animation =
+        card.animate(
+          [
+            {
+              transform:
+                "translate(0, 0)",
+              opacity: 1
+            },
+            {
+              transform:
+                `translate(${deltaX}px, ${deltaY}px)`,
+              opacity: 0.9
+            }
+          ],
+          {
+            duration: 200,
+            easing:
+              "cubic-bezier(0.4, 0, 0.2, 1)",
+            fill: "forwards"
+          }
+        );
+
+
+      animations.push(
+        animation.finished
+      );
+
+    }
+  );
+
+
+  /*
+    After the cards reach their piles,
+    rebuild the real collapsed layout.
+  */
+  Promise.allSettled(
+    animations
+  ).then(
+    () => {
+
+      const container =
+        document.getElementById(
+          "view-class-student-container"
+        );
+
+
+      if (!container) {
+
+        collapseViewClassStudent(
+          studentCard
+        );
+
+        return;
+      }
+
+
+      /*
+        Record every student's position
+        while this card is still expanded.
+      */
+      const oldPositions =
+        new Map();
+
+
+      container
+        .querySelectorAll(
+          ".student-card"
+        )
+        .forEach(
+          card => {
+
+            oldPositions.set(
+              card,
+              card.getBoundingClientRect()
+            );
+
+          }
+        );
+
+
+      /*
+        Now actually collapse the student.
+        The CSS grid immediately calculates
+        its new layout.
+      */
+      collapseViewClassStudent(
+        studentCard
+      );
+
+
+      /*
+        On the next frame, animate all the
+        surrounding students from their old
+        positions into the new positions.
+      */
+      requestAnimationFrame(
+        () => {
+
+          animateViewClassGridReflow(
+            container,
+            oldPositions,
+            studentCard
+          );
+
+        }
+      );
+
+    }
+  );
+}
+
+
+function collapseViewClassStudent(
+  studentCard
+) {
+
+  const student =
+    studentCard._viewClassStudent;
+
+  const cardsContainer =
+    studentCard.querySelector(
+      ".cards-container"
+    );
+
+  if (
+    !student ||
+    !cardsContainer
+  ) {
+    return;
+  }
+
+  studentCard.classList.remove(
+    "view-class-student-expanded"
+  );
+
+  cardsContainer.classList.remove(
+    "view-class-expanded-cards",
+    "view-class-stacked-cards"
+  );
+
+  cardsContainer.innerHTML = "";
+
+
+  if (!student.cards.length) {
+
+    const emptyMessage =
+      document.createElement("p");
+
+    emptyMessage.className =
+      "view-class-no-achievements";
+
+    emptyMessage.textContent =
+      "No achievements yet.";
+
+    cardsContainer.appendChild(
+      emptyMessage
+    );
+
+    return;
+  }
+
+
+  if (student.cards.length <= 6) {
+
+    student.cards.forEach(
+      card => {
+
+        cardsContainer.appendChild(
+          createViewClassCardImage(card)
+        );
+
+      }
+    );
+
+    return;
+  }
+
+
+  cardsContainer.classList.add(
+    "view-class-stacked-cards"
+  );
+
+  const stacks =
+    buildViewClassCardStacks(
+      student.cards
+    );
+
+
+  stacks.forEach(
+    stack => {
+
+      const stackElement =
+        document.createElement("div");
+
+      stackElement.className =
+        "view-class-card-stack";
+
+
+      [...stack]
+        .reverse()
+        .forEach(
+          (card, index) => {
+
+            const image =
+              createViewClassCardImage(
+                card
+              );
+
+            image.classList.add(
+              "view-class-stacked-card"
+            );
+
+            image.style.setProperty(
+              "--stack-offset",
+              `${index * 4}px`
+            );
+
+            stackElement.appendChild(
+              image
+            );
+
+          }
+        );
+
+
+      cardsContainer.appendChild(
+        stackElement
+      );
+
+    }
+  );
+}
+
+function renderViewClassStudents(
+  classStudents
+) {
+
+  const container =
+    document.getElementById(
+      "view-class-student-container"
+    );
+
+
+  if (!container) {
+    return;
+  }
+
+
+  container.innerHTML = "";
+
+
+  if (!classStudents.length) {
+
+    container.innerHTML = `
+      <div class="leaderboard-empty">
+        No students found in your class.
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  classStudents.forEach(
+    student => {
+
+      const studentCard =
+        document.createElement("div");
+
+      studentCard.className =
+        "student-card";
+
+      studentCard._viewClassStudent =
+        student;  
+
+      studentCard.dataset.studentId =
+        student.id;  
+
+
+      const heading =
+        document.createElement("div");
+
+      heading.className =
+        "student-header";
+
+
+      heading.innerHTML = `
+        <h2>${student.name}</h2>
+
+        <div class="achievement-points">
+          <div class="achievement-points-label">
+            Achievement Points
+          </div>
+
+          <div class="achievement-points-total">
+            ${student.total}
+            <span class="achievement-points-star">★</span>
+          </div>
+        </div>
+      `;
+
+
+      studentCard.appendChild(
+        heading
+      );
+
+
+      const cardsContainer =
+        document.createElement("div");
+
+      cardsContainer.className =
+        "cards-container";
+
+
+      if (!student.cards.length) {
+
+        const emptyMessage =
+          document.createElement("p");
+
+        emptyMessage.className =
+          "view-class-no-achievements";
+
+        emptyMessage.textContent =
+          "No achievements yet.";
+
+        cardsContainer.appendChild(
+          emptyMessage
+        );
+
+      } else if (
+        student.cards.length <= 6
+      ) {
+
+        /*
+          Six cards or fewer:
+          show them individually.
+        */
+
+        student.cards.forEach(
+          card => {
+
+            const image =
+              document.createElement("img");
+
+            image.className =
+              "achievement-card";
+
+            image.src =
+              card.thumbnail_image_file
+                ? `images/achievement_thumbs/${card.thumbnail_image_file}`
+                : `images/achievement_cards/${card.image_file}`;
+
+            image.alt =
+              card.card_name ||
+              "Achievement card";
+
+            image.dataset.fullImage =
+              card.image_file || "";
+
+            image.dataset.achievementId =
+              card.achievement_id;
+
+            cardsContainer.appendChild(
+              image
+            );
+          }
+        );
+
+      } else {
+
+        /*
+          More than six cards:
+          group them into category stacks.
+        */
+
+        const stacks =
+          buildViewClassCardStacks(
+            student.cards
+          );
+
+        cardsContainer.classList.add(
+          "view-class-stacked-cards"
+        );
+
+
+        stacks.forEach(
+          stack => {
+
+            const stackElement =
+              document.createElement("div");
+
+            stackElement.className =
+              "view-class-card-stack";
+
+
+            /*
+              Render oldest/deepest card first,
+              newest/top card last.
+            */
+            [...stack]
+              .reverse()
+              .forEach(
+                (card, index) => {
+
+                  const image =
+                    document.createElement("img");
+
+                  image.className =
+                    "achievement-card view-class-stacked-card";
+
+                  image.src =
+                    card.thumbnail_image_file
+                      ? `images/achievement_thumbs/${card.thumbnail_image_file}`
+                      : `images/achievement_cards/${card.image_file}`;
+
+                  image.alt =
+                    card.card_name ||
+                    "Achievement card";
+
+                  image.dataset.fullImage =
+                    card.image_file || "";
+
+                  image.dataset.achievementId =
+                    card.achievement_id;
+
+                  image.style.setProperty(
+                    "--stack-offset",
+                    `${index * 4}px`
+                  );
+
+                  stackElement.appendChild(
+                    image
+                  );
+                }
+              );
+
+
+            cardsContainer.appendChild(
+              stackElement
+            );
+
+          }
+        );
+      }
+
+
+            studentCard.appendChild(
+              cardsContainer
+            );
+
+
+            studentCard.addEventListener(
+              "click",
+              event => {
+
+                /*
+                  Achievement cards are reserved for
+                  the future card examiner.
+
+                  Clicking one should NOT collapse or
+                  expand the student.
+                */
+                const clickedAchievementCard =
+                  event.target.closest(
+                    ".achievement-card"
+                  );
+
+
+                if (clickedAchievementCard) {
+
+                  const achievementId =
+                    clickedAchievementCard
+                      .dataset
+                      .achievementId;
+
+
+                  openAchievementCardViewer(
+                    student,
+                    achievementId
+                  );
+
+                  return;
+                }
+
+
+                const isExpanded =
+                  studentCard.classList.contains(
+                    "view-class-student-expanded"
+                  );
+
+
+                /*
+                  If this student is already expanded,
+                  clicking the background collapses it.
+                */
+                if (isExpanded) {
+
+                  animateCollapseViewClassStudent(
+                    studentCard
+                  );
+
+                  return;
+                }
+
+
+                /*
+                  Only one student expanded at a time.
+                */
+                container
+                  .querySelectorAll(
+                    ".view-class-student-expanded"
+                  )
+                  .forEach(
+                    otherStudentCard => {
+
+                      collapseViewClassStudent(
+                        otherStudentCard
+                      );
+
+                    }
+                  );
+
+
+                renderExpandedViewClassCards(
+                  studentCard
+                );
+
+              }
+            );
+
+
+            container.appendChild(
+              studentCard
+            );
+
+          }
+        );
+
+      }
+
+document
+  .getElementById(
+    "view-class-sort-select"
+  )
+  ?.addEventListener(
+    "change",
+    async event => {
+
+      const classStudents =
+        await loadViewClassData();
+
+      const sortBy =
+        event.target.value;
+
+      if (sortBy === "name") {
+
+        classStudents.sort(
+          (a, b) =>
+            a.name.localeCompare(
+              b.name
+            )
+        );
+
+      } else if (
+        sortBy === "cards"
+      ) {
+
+        classStudents.sort(
+          (a, b) =>
+            b.cards.length -
+              a.cards.length ||
+            a.name.localeCompare(
+              b.name
+            )
+        );
+
+      } else {
+
+        classStudents.sort(
+          (a, b) =>
+            b.total - a.total ||
+            a.name.localeCompare(
+              b.name
+            )
+        );
+
+      }
+
+      renderViewClassStudents(
+        classStudents
+      );
+
+    }
+  );
+
+
+async function showViewClassView(
+  addToHistory = true
+) {
+
+  if (!currentLoggedInStudent) {
+    return;
+  }
+
+
+  document
+    .getElementById(
+      "student-home-section"
+    )
+    ?.classList
+    .add("hidden");
+
+
+  document
+    .getElementById(
+      "band-level-dashboard-section"
+    )
+    ?.classList
+    .add("hidden");
+
+
+  document
+    .getElementById(
+      "student-feedback-section"
+    )
+    ?.classList
+    .add("hidden");
+
+
+  document
+    .getElementById(
+      "view-class-section"
+    )
+    ?.classList
+    .remove("hidden");
+  
+  try {
+
+    const classStudents =
+      await loadViewClassData();
+
+
+    renderViewClassStudents(
+      classStudents
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "Could not load View Class:",
+      error
+    );
+
+
+    const container =
+      document.getElementById(
+        "view-class-student-container"
+      );
+
+
+    if (container) {
+
+      container.innerHTML = `
+        <div class="leaderboard-empty">
+          Could not load your class.
+        </div>
+      `;
+
+        }
+
+  }
+
+  if (addToHistory) {
+
+    history.pushState(
+      { studentView: "view-class" },
+      "",
+      window.location.href
+    );
+
+  }
+
+}
+
+
 async function showRecentFeedbackView(
   addToHistory = true
 ) {
@@ -4823,6 +7076,12 @@ async function showStudentHomeView() {
     ?.classList
     .add("hidden");
 
+  document
+    .getElementById(
+      "view-class-section"
+    )
+    ?.classList
+    .add("hidden");  
 
   document
     .getElementById(
@@ -4850,17 +7109,17 @@ document
   );
 
   document
-  .getElementById(
-    "view-leaderboard-button"
-  )
-  ?.addEventListener(
-    "click",
-    async () => {
+    .getElementById(
+      "view-class-button"
+    )
+    ?.addEventListener(
+      "click",
+      async () => {
 
-      await showLeaderboardView(true);
+        await showViewClassView(true);
 
-    }
-  );
+      }
+    );
 
   document
   .getElementById(
@@ -4906,28 +7165,28 @@ document
   );
 
   document
-  .getElementById(
-    "back-from-leaderboard"
-  )
-  ?.addEventListener(
-    "click",
-    () => {
+    .getElementById(
+      "back-from-view-class"
+    )
+    ?.addEventListener(
+      "click",
+      () => {
 
-      if (
-        history.state?.studentView ===
-        "leaderboard"
-      ) {
+        if (
+          history.state?.studentView ===
+          "view-class"
+        ) {
 
-        history.back();
+          history.back();
 
-      } else {
+        } else {
 
-        showStudentHomeView();
+          showStudentHomeView();
+
+        }
 
       }
-
-    }
-  );
+    );
 
   document
   .getElementById(
@@ -4972,10 +7231,10 @@ window.addEventListener(
 
     } else if (
       event.state?.studentView ===
-      "leaderboard"
+      "view-class"
     ) {
 
-      await showLeaderboardView(false);
+      await showViewClassView(false);
 
     } else if (
       event.state?.studentView ===
@@ -5094,24 +7353,51 @@ async function restoreStudentLogin() {
     }
 
 
-    const student =
-      allStudents.find(
-        item =>
-          item.id ===
-          account.student_id
-      );
+    const {
+      data: studentProfile,
+      error: studentProfileError
+    } =
+      await supabaseClient
+        .from("students")
+        .select(
+          "student_id, first_name, last_name, active"
+        )
+        .eq(
+          "student_id",
+          account.student_uuid
+        )
+        .single();
 
-
-    if (!student) {
-
+    if (
+      studentProfileError ||
+      !studentProfile ||
+      !studentProfile.active
+    ) {
       console.error(
-        "Logged-in student was not found in Students data."
+        "Logged-in student profile could not be restored.",
+        studentProfileError
       );
 
       showLoggedOutStudentView();
-
       return;
     }
+
+    const student = {
+      id:
+        studentProfile.student_id,
+
+      uuid:
+        studentProfile.student_id,
+
+      name:
+        `${studentProfile.first_name} ${studentProfile.last_name}`.trim(),
+
+      firstName:
+        studentProfile.first_name,
+
+      lastName:
+        studentProfile.last_name
+    };
 
 
     currentStudentAccount =

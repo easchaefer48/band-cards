@@ -165,11 +165,11 @@
 
 
   <button
-    id="view-leaderboard-button"
+    id="view-class-button"
     class="student-leaderboard-button"
     type="button"
   >
-    View Leaderboard
+    View Class
   </button>
 
 
@@ -304,10 +304,13 @@
 
 </section>
 
-<section id="leaderboard-section" class="leaderboard-page hidden">
+<section
+  id="view-class-section"
+  class="leaderboard-page hidden"
+>
 
   <button
-    id="back-from-leaderboard"
+    id="back-from-view-class"
     class="student-back-button leaderboard-back-button"
     type="button"
   >
@@ -318,28 +321,57 @@
   <div class="leaderboard-panel">
 
     <div class="leaderboard-header">
-
       <div>
-        <h2>Band Level Leaderboard</h2>
-        <p>5th Grade Band</p>
+        <h2>Class Achievements</h2>
+
+        <div
+          id="view-class-name"
+          class="view-class-name"
+        >
+          Band Class
+        </div>
+
+        <p>
+          See your classmates and the achievement cards they've earned!
+        </p>
       </div>
 
+      <div class="view-class-sort">
+        <label for="view-class-sort-select">
+          Sort by
+        </label>
+
+        <select id="view-class-sort-select">
+          <option value="points">
+            Achievement Points
+          </option>
+
+          <option value="name">
+            Name
+          </option>
+
+          <option value="cards">
+            Number of Cards
+          </option>
+        </select>
+      </div>
     </div>
 
 
-    <div id="leaderboard-list" class="leaderboard-list">
-
+    <div
+      id="view-class-student-container"
+      class="student-grid"
+    >
       <div class="leaderboard-empty">
-        No students have earned a Band Level yet.
+        Loading your class...
       </div>
-
     </div>
 
   </div>
 
 </section>
 
- <section
+<section
   id="band-level-dashboard-section"
   class="hidden"
 >
@@ -515,13 +547,119 @@
 
 </section>
     
-    <div id="student-container" class="student-grid">
-      <!-- Student cards will load here from Google Sheets -->
-    </div>
   </main>
 
   <!-- overlay for spotlight zoom (created in DOM by JS if not present) -->
   <div id="card-overlay" aria-hidden="true"></div>
+
+<!-- ======================================================
+     ACHIEVEMENT CARD VIEWER
+     ====================================================== -->
+
+<div
+  id="achievement-card-viewer"
+  class="achievement-card-viewer hidden"
+  aria-hidden="true"
+>
+
+  <button
+    id="achievement-viewer-close"
+    class="achievement-viewer-close"
+    type="button"
+    aria-label="Close card viewer"
+  >
+    ×
+  </button>
+
+
+  <div class="achievement-viewer-content">
+
+    <div class="achievement-viewer-heading">
+
+      <h2 id="achievement-viewer-collection">
+        Collection
+      </h2>
+
+      <div
+        id="achievement-viewer-card-name"
+        class="achievement-viewer-card-name"
+      ></div>
+
+      <div
+        id="achievement-viewer-date"
+        class="achievement-viewer-date"
+      ></div>
+
+    </div>
+
+
+    <div class="achievement-viewer-stage">
+
+      <button
+        id="achievement-viewer-previous"
+        class="achievement-viewer-navigation achievement-viewer-previous"
+        type="button"
+      >
+        <span class="achievement-viewer-arrow">
+          ←
+        </span>
+
+        <span>Previous Card</span>
+      </button>
+
+
+      <div class="achievement-viewer-card-area">
+
+        <div
+          id="achievement-viewer-card"
+          class="achievement-viewer-card"
+        >
+
+          <div class="achievement-viewer-front">
+            <img
+              id="achievement-viewer-image"
+              src=""
+              alt=""
+            >
+          </div>
+
+          <div class="achievement-viewer-back">
+            <img
+              src="images/achievement_cards/card_back.png"
+              alt="Achievement card back"
+            >
+          </div>
+
+          <div
+            class="achievement-viewer-foil"
+          ></div>
+
+          <div
+            class="achievement-viewer-glare"
+          ></div>
+
+        </div>
+
+      </div>
+
+
+      <button
+        id="achievement-viewer-next"
+        class="achievement-viewer-navigation achievement-viewer-next"
+        type="button"
+      >
+        <span class="achievement-viewer-arrow">
+          →
+        </span>
+
+        <span>Next Card</span>
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="script.js"></script>

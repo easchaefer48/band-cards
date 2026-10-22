@@ -2109,3 +2109,887 @@ body {
   box-shadow:
     0 0 10px rgba(201, 54, 54, .45);
 }
+
+/* ==========================================================
+   VIEW CLASS
+   ========================================================== */
+
+#view-class-section {
+  width: min(1400px, calc(100% - 40px));
+  margin: 28px auto 60px;
+}
+
+
+/* Main View Class panel */
+
+#view-class-section .leaderboard-panel {
+  background: #5a5a5a;
+  color: #ffffff;
+
+  border-radius: 18px;
+  padding: 30px 32px;
+}
+
+
+/* Student grid */
+
+#view-class-student-container {
+  display: grid;
+
+  grid-template-columns:
+    repeat(auto-fill, minmax(260px, 1fr));
+
+  gap: 18px;
+
+  margin-top: 24px;
+}
+
+
+/* Individual student */
+
+#view-class-student-container .student-card {
+  position: relative;
+
+  min-width: 0;
+  min-height: 140px;
+
+  padding: 16px;
+
+  background: #000000;
+  color: #ffffff;
+
+  border-radius: 12px;
+
+  box-shadow:
+    0 4px 10px
+    rgba(0,0,0,0.35);
+}
+
+
+/* Student name + points */
+
+#view-class-student-container .student-header {
+  min-height: 42px;
+
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 14px;
+}
+
+
+#view-class-student-container
+.student-header h2 {
+  margin: 0;
+
+  color: #ffffff;
+
+  font-family:
+    "Atkinson Hyperlegible",
+    Arial,
+    sans-serif;
+
+  font-size: 1.18rem;
+  font-weight: 700;
+}
+
+
+/* Achievement points */
+
+#view-class-student-container
+.achievement-points {
+  flex: 0 0 auto;
+
+  color: #d9e0e8;
+
+  text-align: right;
+}
+
+
+#view-class-student-container
+.achievement-points-label {
+  font-size: 0.78rem;
+  font-weight: 400;
+
+  color: #d9e0e8;
+}
+
+
+#view-class-student-container
+.achievement-points-total {
+  margin-top: 2px;
+
+  font-size: 1.25rem;
+  font-weight: 800;
+
+  color: #ffffff;
+}
+
+
+#view-class-student-container
+.achievement-points-star {
+  margin-left: 3px;
+
+  color: #ffd54a;
+
+  font-size: 0.95rem;
+}
+
+
+/* Achievement cards */
+
+#view-class-student-container
+.cards-container {
+  margin-top: 12px;
+
+  display: flex;
+  flex-wrap: wrap;
+
+  justify-content: flex-start;
+
+  gap: 10px;
+}
+
+
+#view-class-student-container
+.cards-container img {
+  width: 78px;
+  height: 100px;
+
+  display: block;
+
+  object-fit: contain;
+
+  background: transparent;
+
+  border: none;
+  border-radius: 0;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.18s ease;
+}
+
+
+#view-class-student-container
+.cards-container img:hover {
+  transform:
+    translateY(-3px)
+    scale(1.04);
+}
+
+
+/* Students with no cards */
+
+.view-class-no-achievements {
+  margin: 4px 0 2px;
+
+  color: rgba(255,255,255,0.55);
+
+  font-size: 0.88rem;
+  font-style: italic;
+}
+
+
+/* Mobile */
+
+@media (max-width: 700px) {
+
+  #view-class-section {
+    width: calc(100% - 16px);
+
+    margin:
+      16px auto
+      40px;
+  }
+
+
+  #view-class-section
+  .leaderboard-panel {
+    padding: 22px 18px;
+  }
+
+
+  #view-class-student-container {
+    grid-template-columns: 1fr;
+
+    gap: 14px;
+  }
+
+
+  #view-class-student-container
+  .cards-container img {
+    width: 84px;
+    height: 106px;
+  }
+
+}
+
+#view-class-section
+.leaderboard-header h2 {
+  font-family:
+    "Atkinson Hyperlegible",
+    Arial,
+    sans-serif;
+
+  font-weight: 700;
+}
+
+#view-class-section
+.leaderboard-header {
+  display: flex;
+
+  align-items: flex-end;
+  justify-content: space-between;
+
+  gap: 24px;
+}
+
+
+#view-class-section
+.view-class-name {
+  margin-bottom: 6px;
+
+  color: #ffffff;
+
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+
+.view-class-sort {
+  display: flex;
+  flex-direction: column;
+
+  gap: 5px;
+
+  flex: 0 0 auto;
+}
+
+
+.view-class-sort label {
+  color: rgba(255,255,255,0.72);
+
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+
+.view-class-sort select {
+  padding: 8px 10px;
+
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 8px;
+
+  background: #ffffff;
+  color: #252525;
+
+  font-family:
+    "Atkinson Hyperlegible",
+    Arial,
+    sans-serif;
+
+  font-size: 0.9rem;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+
+@media (max-width: 700px) {
+
+  #view-class-section
+  .leaderboard-header {
+    align-items: stretch;
+    flex-direction: column;
+
+    gap: 16px;
+  }
+
+
+  .view-class-sort {
+    width: 100%;
+  }
+
+
+  .view-class-sort select {
+    width: 100%;
+  }
+
+}
+
+/* ==========================================================
+   VIEW CLASS CARD STACKS
+   ========================================================== */
+
+#view-class-student-container
+.view-class-stacked-cards {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, 78px);
+
+  gap: 18px 10px;
+
+  align-items: start;
+}
+
+
+/* One pile of cards */
+
+#view-class-student-container
+.view-class-card-stack {
+  position: relative;
+
+  width: 78px;
+  height: 112px;
+}
+
+
+/* Cards inside a pile */
+
+#view-class-student-container
+.view-class-card-stack
+.view-class-stacked-card {
+  position: absolute;
+
+  top: var(--stack-offset);
+  left: 0;
+
+  width: 78px;
+  height: 100px;
+
+  margin: 0;
+
+  object-fit: contain;
+
+  transition:
+    transform 0.18s ease;
+}
+
+
+/*
+  The last image in the DOM is the
+  top card in the pile.
+*/
+
+#view-class-student-container
+.view-class-card-stack
+.view-class-stacked-card:last-child {
+  z-index: 10;
+}
+
+
+/* Slight lift when hovering over a pile */
+
+#view-class-student-container
+.view-class-card-stack:hover
+.view-class-stacked-card:last-child {
+  transform:
+    translateY(-3px)
+    scale(1.04);
+}
+
+/* ==========================================================
+   VIEW CLASS STUDENT INTERACTION
+   ========================================================== */
+
+#view-class-student-container
+.student-card {
+  cursor: pointer;
+
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+
+#view-class-student-container
+.student-card:hover {
+  transform:
+    translateY(-3px);
+
+  box-shadow:
+    0 5px 14px rgba(0,0,0,0.38),
+    0 0 8px rgba(255,255,255,0.55),
+    0 0 16px rgba(255,255,255,0.28);
+}
+
+#view-class-student-container
+.student-card.view-class-student-expanded {
+  transform:
+    translateY(-3px);
+
+  box-shadow:
+    0 6px 16px rgba(0,0,0,0.42),
+    0 0 8px rgba(255,255,255,0.90),
+    0 0 20px rgba(255,255,255,0.65),
+    0 0 32px rgba(255,255,255,0.35);
+}
+
+
+#view-class-student-container
+.student-card.view-class-student-expanded:hover {
+  box-shadow:
+    0 6px 16px rgba(0,0,0,0.42),
+    0 0 9px rgba(255,255,255,1),
+    0 0 22px rgba(255,255,255,0.72),
+    0 0 36px rgba(255,255,255,0.42);
+}
+
+#view-class-student-container
+.view-class-expanded-cards {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, 78px);
+
+  gap: 10px;
+
+  align-items: start;
+  justify-content: start;
+
+  margin-top: 12px;
+}
+
+
+#view-class-student-container
+.view-class-expanded-cards
+.achievement-card {
+  position: static;
+
+  width: 78px;
+  height: 100px;
+
+  margin: 0;
+
+  transform: none;
+}
+
+/* ==========================================================
+   ACHIEVEMENT CARD VIEWER
+   ========================================================== */
+
+.achievement-card-viewer {
+  position: fixed;
+  inset: 0;
+
+  z-index: 10000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 24px;
+
+  background:
+    rgba(5, 5, 8, 0.92);
+
+  backdrop-filter:
+    blur(10px);
+
+  opacity: 1;
+
+  transition:
+    opacity 0.18s ease;
+}
+
+
+.achievement-card-viewer.hidden {
+  display: none;
+}
+
+
+.achievement-viewer-content {
+  width: min(100%, 1100px);
+  height: 100%;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+}
+
+
+/* ----------------------------------------------------------
+   Heading
+   ---------------------------------------------------------- */
+
+.achievement-viewer-heading {
+  flex: 0 0 auto;
+
+  margin-bottom: 18px;
+
+  text-align: center;
+
+  color: #ffffff;
+}
+
+
+.achievement-viewer-heading h2 {
+  margin: 0;
+
+  font-family:
+    "Atkinson Hyperlegible",
+    Arial,
+    sans-serif;
+
+  font-size: 1.65rem;
+  font-weight: 800;
+}
+
+
+.achievement-viewer-card-name {
+  margin-top: 6px;
+
+  font-size: 1.05rem;
+  font-weight: 700;
+
+  color: #ffffff;
+}
+
+
+.achievement-viewer-date {
+  min-height: 18px;
+
+  margin-top: 3px;
+
+  font-size: 0.82rem;
+  font-weight: 400;
+
+  color:
+    rgba(255,255,255,0.68);
+}
+
+
+/* ----------------------------------------------------------
+   Stage
+   ---------------------------------------------------------- */
+
+.achievement-viewer-stage {
+  width: 100%;
+  min-height: 0;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(120px, 1fr)
+    minmax(260px, 440px)
+    minmax(120px, 1fr);
+
+  align-items: center;
+
+  gap: 28px;
+}
+
+
+/* ----------------------------------------------------------
+   Card
+   ---------------------------------------------------------- */
+
+.achievement-viewer-card-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  perspective: 1100px;
+}
+
+
+.achievement-viewer-card {
+  --viewer-x: 50%;
+  --viewer-y: 50%;
+
+  position: relative;
+
+  width: min(
+    100%,
+    390px
+  );
+
+  aspect-ratio: 0.70;
+
+  transform-style:
+    preserve-3d;
+
+  border-radius: 18px;
+
+  box-shadow:
+    0 22px 55px rgba(0,0,0,0.70),
+    0 0 24px rgba(255,255,255,0.12);
+
+  transition:
+    transform 0.10s ease-out,
+    box-shadow 0.18s ease;
+
+  overflow: hidden;
+
+  will-change:
+    transform;
+
+  opacity: 0;  
+}
+
+.achievement-viewer-card.viewer-card-loaded {
+  opacity: 1;
+}
+
+
+.achievement-viewer-front,
+.achievement-viewer-back {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform-style: preserve-3d;
+}
+
+.achievement-viewer-front {
+  z-index: 2;
+  transform: rotateY(0deg) translateZ(1px);
+}
+
+.achievement-viewer-back {
+  z-index: 1;
+  transform: rotateY(180deg) translateZ(1px);
+}
+
+.achievement-viewer-front img,
+.achievement-viewer-back img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 111%;
+  height: 111%;
+  display: block;
+  object-fit: contain;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+
+
+/* ----------------------------------------------------------
+   Foil
+   ---------------------------------------------------------- */
+
+.achievement-viewer-foil {
+  position: absolute;
+  inset: 0;
+
+  z-index: 4;
+
+  pointer-events: none;
+
+  background:
+    linear-gradient(
+      115deg,
+      transparent 15%,
+      rgba(255,80,180,0.14) 30%,
+      rgba(100,210,255,0.18) 42%,
+      rgba(255,240,120,0.16) 54%,
+      rgba(150,100,255,0.15) 67%,
+      transparent 82%
+    );
+
+  background-size:
+    220% 220%;
+
+  background-position:
+    var(--viewer-x)
+    var(--viewer-y);
+
+  mix-blend-mode:
+    screen;
+
+  opacity: 0.75;
+
+  transform:
+    translateZ(2px);
+}
+
+
+/* ----------------------------------------------------------
+   Moving glare
+   ---------------------------------------------------------- */
+
+.achievement-viewer-glare {
+  position: absolute;
+  inset: 0;
+
+  z-index: 5;
+
+  pointer-events: none;
+
+  background:
+    radial-gradient(
+      circle at
+      var(--viewer-x)
+      var(--viewer-y),
+
+      rgba(255,255,255,0.52) 0%,
+      rgba(255,255,255,0.22) 14%,
+      rgba(255,255,255,0.07) 30%,
+      transparent 52%
+    );
+
+  mix-blend-mode:
+    screen;
+
+  opacity: 0.85;
+
+  transform:
+    translateZ(3px);
+}
+
+
+/* ----------------------------------------------------------
+   Navigation
+   ---------------------------------------------------------- */
+
+.achievement-viewer-navigation {
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 5px;
+
+  border: none;
+
+  background: transparent;
+
+  color:
+    rgba(255,255,255,0.72);
+
+  font-family:
+    "Atkinson Hyperlegible",
+    Arial,
+    sans-serif;
+
+  font-size: 0.9rem;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    color 0.15s ease,
+    transform 0.15s ease;
+}
+
+
+.achievement-viewer-navigation:hover {
+  color: #ffffff;
+
+  transform:
+    scale(1.06);
+}
+
+
+.achievement-viewer-arrow {
+  font-size: 2.3rem;
+  line-height: 1;
+}
+
+
+.achievement-viewer-navigation:disabled {
+  opacity: 0.2;
+  cursor: default;
+
+  transform: none;
+}
+
+
+/* ----------------------------------------------------------
+   Close
+   ---------------------------------------------------------- */
+
+.achievement-viewer-close {
+  position: absolute;
+
+  top: 18px;
+  right: 24px;
+
+  z-index: 5;
+
+  width: 44px;
+  height: 44px;
+
+  border: none;
+  border-radius: 50%;
+
+  background:
+    rgba(255,255,255,0.10);
+
+  color: #ffffff;
+
+  font-size: 2rem;
+  line-height: 1;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    transform 0.15s ease;
+}
+
+
+.achievement-viewer-close:hover {
+  background:
+    rgba(255,255,255,0.20);
+
+  transform:
+    scale(1.07);
+}
+
+
+/* ----------------------------------------------------------
+   Mobile
+   ---------------------------------------------------------- */
+
+@media (max-width: 700px) {
+
+  .achievement-card-viewer {
+    padding:
+      18px 12px;
+  }
+
+
+  .achievement-viewer-stage {
+    grid-template-columns:
+      48px
+      minmax(0, 1fr)
+      48px;
+
+    gap: 8px;
+  }
+
+
+  .achievement-viewer-card {
+    width:
+      min(100%, 340px);
+  }
+
+
+  .achievement-viewer-navigation span:not(
+    .achievement-viewer-arrow
+  ) {
+    display: none;
+  }
+
+
+  .achievement-viewer-heading h2 {
+    font-size: 1.35rem;
+  }
+
+
+  .achievement-viewer-arrow {
+    font-size: 1.9rem;
+  }
+
+}
