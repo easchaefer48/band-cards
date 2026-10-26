@@ -2691,11 +2691,142 @@ body {
    ---------------------------------------------------------- */
 
 .achievement-viewer-card-area {
+  position: relative;
+
   display: flex;
   align-items: center;
   justify-content: center;
 
   perspective: 1100px;
+
+  isolation: isolate;
+}
+
+.achievement-viewer-card-area::before {
+  content: "";
+
+  position: absolute;
+
+  left: 50%;
+  top: 50%;
+
+  width: 520px;
+  height: 680px;
+
+  transform:
+    translate(-50%, -50%)
+    scale(0.92);
+
+  background:
+      radial-gradient(
+        ellipse at center,
+        rgba(255,255,255,0.42) 0%,
+        rgba(255,255,255,0.24) 30%,
+        rgba(255,255,255,0.10) 55%,
+        rgba(255,255,255,0) 78%
+      );
+
+    filter: blur(14px);
+
+    opacity: 0.95;
+
+  pointer-events: none;
+
+  z-index: -2;
+
+  animation:
+    achievementViewerGlowPulse
+    5s ease-in-out infinite;
+}
+
+.achievement-viewer-card-area::before {
+  content: "";
+
+  position: absolute;
+
+  left: 50%;
+  top: 50%;
+
+  width: 520px;
+  height: 680px;
+
+  transform:
+    translate(-50%, -50%)
+    scale(0.92);
+
+  background:
+    radial-gradient(
+      ellipse at center,
+      rgba(255,255,255,0.24) 0%,
+      rgba(255,255,255,0.13) 28%,
+      rgba(255,255,255,0.05) 52%,
+      rgba(255,255,255,0) 75%
+    );
+
+  -area::after {
+    content: "";
+
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    width: 720px;
+    height: 820px;
+
+    transform:
+      translate(-50%, -50%)
+      rotate(0deg);
+
+    background:
+      repeating-conic-gradient(
+        from 0deg,
+        rgba(255,255,255,0.075) 0deg,
+        rgba(255,255,255,0.025) 5deg,
+        transparent 11deg,
+        transparent 25deg
+      );
+
+    -webkit-mask-image:
+      radial-gradient(
+        ellipse at center,
+        rgba(0,0,0,1) 5%,
+        rgba(0,0,0,0.75) 32%,
+        rgba(0,0,0,0) 72.achievement-viewer-card%
+      );
+
+    mask-image:
+      radial-gradient(
+        ellipse at center,
+        rgba(0,0,0,1) 5%,
+        rgba(0,0,0,0.75) 32%,
+        rgba(0,0,0,0) 72%
+      );
+
+    filter: blur(4px);
+
+    opacity: 0.45;
+
+    pointer-events: none;
+
+    z-index: -1;
+
+    animation:
+      achievementViewerRays
+      18s linear infinite;
+  }  
+
+  filter: blur(18px);
+
+  opacity: 0.75;
+
+  pointer-events: none;
+
+  z-index: -2;
+
+  animation:
+    achievementViewerGlowPulse
+    5s ease-in-out infinite;
 }
 
 
@@ -2704,6 +2835,7 @@ body {
   --viewer-y: 50%;
 
   position: relative;
+  z-index: 1;
 
   width: min(
     100%,
@@ -2722,10 +2854,10 @@ body {
     0 0 24px rgba(255,255,255,0.12);
 
   transition:
-    transform 0.10s ease-out,
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
     box-shadow 0.18s ease;
 
-  overflow: hidden;
+  overflow: visible;
 
   will-change:
     transform;
@@ -2747,6 +2879,9 @@ body {
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   transform-style: preserve-3d;
+
+  border-radius: 18px;
+  overflow: hidden;
 }
 
 .achievement-viewer-front {
@@ -2779,6 +2914,7 @@ body {
 
 .achievement-viewer-foil {
   position: absolute;
+  border-radius: 18px;
   inset: 0;
 
   z-index: 4;
@@ -2819,6 +2955,7 @@ body {
 
 .achievement-viewer-glare {
   position: absolute;
+  border-radius: 18px;
   inset: 0;
 
   z-index: 5;
@@ -2990,6 +3127,497 @@ body {
 
   .achievement-viewer-arrow {
     font-size: 1.9rem;
+  }
+
+}
+
+@keyframes achievementViewerGlowPulse {
+  0%,
+  100% {
+    opacity: 0.60;
+
+    transform:
+      translate(-50%, -50%)
+      scale(0.92);
+  }
+
+  50% {
+    opacity: 0.88;
+
+    transform:
+      translate(-50%, -50%)
+      scale(1.03);
+  }
+}
+
+
+@keyframes achievementViewerRays {
+  from {
+    transform:
+      translate(-50%, -50%)
+      rotate(0deg);
+  }
+
+  to {
+    transform:
+      translate(-50%, -50%)
+      rotate(360deg);
+  }
+}
+
+/* =========================================
+   ACHIEVEMENT VIEWER - BACKLIGHT OVERRIDE
+   ========================================= */
+
+.achievement-viewer-card-area::before {
+  background:
+    radial-gradient(
+      ellipse at center,
+      rgba(255,255,255,0.55) 0%,
+      rgba(255,255,255,0.34) 28%,
+      rgba(255,255,255,0.16) 52%,
+      rgba(255,255,255,0.05) 68%,
+      rgba(255,255,255,0) 82%
+    );
+
+  filter: blur(12px);
+  opacity: 1;
+
+  animation:
+    achievementViewerGlowPulseBright
+    5s ease-in-out infinite;
+}
+
+
+.achievement-viewer-card-area::after {
+  background:
+    repeating-conic-gradient(
+      from 0deg,
+      rgba(255,255,255,0.20) 0deg,
+      rgba(255,255,255,0.09) 5deg,
+      rgba(255,255,255,0.025) 10deg,
+      transparent 16deg,
+      transparent 28deg
+    );
+
+  opacity: 0.85;
+
+  animation:
+    achievementViewerRays
+    18s linear infinite;
+}
+
+
+@keyframes achievementViewerGlowPulseBright {
+  0%,
+  100% {
+    opacity: 0.78;
+
+    transform:
+      translate(-50%, -50%)
+      scale(0.94);
+  }
+
+  50% {
+    opacity: 1;
+
+    transform:
+      translate(-50%, -50%)
+      scale(1.05);
+  }
+}
+
+/* =========================================
+   ACHIEVEMENT VIEWER - BACKLIGHT OVERRIDE
+   ========================================= */
+
+.achievement-viewer-card-area::before {
+  background:
+    radial-gradient(
+      ellipse at center,
+      rgba(255,255,255,0.55) 0%,
+      rgba(255,255,255,0.34) 28%,
+      rgba(255,255,255,0.16) 52%,
+      rgba(255,255,255,0.05) 68%,
+      rgba(255,255,255,0) 82%
+    );
+
+  filter: blur(12px);
+  opacity: 1;
+
+  animation:
+    achievementViewerGlowPulseBright
+    5s ease-in-out infinite;
+}
+
+
+.achievement-viewer-card-area::after {
+  background:
+    repeating-conic-gradient(
+      from 0deg,
+      rgba(255,255,255,0.20) 0deg,
+      rgba(255,255,255,0.09) 5deg,
+      rgba(255,255,255,0.025) 10deg,
+      transparent 16deg,
+      transparent 28deg
+    );
+
+  opacity: 0.85;
+
+  animation:
+    achievementViewerRays
+    18s linear infinite;
+}
+
+
+@keyframes achievementViewerGlowPulseBright {
+  0%,
+  100% {
+    opacity: 0.78;
+
+    transform:
+      translate(-50%, -50%)
+      scale(0.94);
+  }
+
+  50% {
+    opacity: 1;
+
+    transform:
+      translate(-50%, -50%)
+      scale(1.05);
+  }
+}
+
+/* =========================================
+   ACHIEVEMENT VIEWER - BACKLIGHT LAYER FIX
+   ========================================= */
+
+.achievement-viewer-card-area {
+  position: relative;
+  isolation: isolate;
+}
+
+.achievement-viewer-card-area::before {
+  z-index: 0 !important;
+}
+
+.achievement-viewer-card-area::after {
+  z-index: 1 !important;
+}
+
+.achievement-viewer-card {
+  position: relative;
+  z-index: 2 !important;
+}
+
+/* =========================================
+   ACHIEVEMENT VIEWER - VISIBLE BACKLIGHT
+   ========================================= */
+
+.achievement-viewer-card-area {
+  position: relative !important;
+  isolation: isolate !important;
+}
+
+
+/* Soft light behind card */
+.achievement-viewer-card-area::before {
+  content: "" !important;
+
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+
+  width: 650px !important;
+  height: 760px !important;
+
+  transform:
+    translate(-50%, -50%)
+    scale(0.95) !important;
+
+  background:
+    radial-gradient(
+      ellipse at center,
+      rgba(255,255,255,0.75) 0%,
+      rgba(255,255,255,0.42) 25%,
+      rgba(255,255,255,0.20) 48%,
+      rgba(255,255,255,0.07) 65%,
+      rgba(255,255,255,0) 82%
+    ) !important;
+
+  filter: blur(16px) !important;
+
+  opacity: 0.90 !important;
+
+  z-index: 1 !important;
+
+  animation:
+    achievementBacklightBreath
+    5s ease-in-out infinite !important;
+
+  pointer-events: none !important;
+}
+
+
+/* Soft rotating rays */
+.achievement-viewer-card-area::after {
+  content: "" !important;
+
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+
+  width: 820px !important;
+  height: 900px !important;
+
+  transform:
+    translate(-50%, -50%)
+    rotate(0deg) !important;
+
+  background:
+    repeating-conic-gradient(
+      from 0deg,
+      rgba(255,255,255,0.16) 0deg,
+      rgba(255,255,255,0.07) 5deg,
+      rgba(255,255,255,0.02) 10deg,
+      transparent 15deg,
+      transparent 28deg
+    ) !important;
+
+  -webkit-mask-image:
+    radial-gradient(
+      ellipse at center,
+      black 5%,
+      rgba(0,0,0,0.85) 38%,
+      transparent 76%
+    ) !important;
+
+  mask-image:
+    radial-gradient(
+      ellipse at center,
+      black 5%,
+      rgba(0,0,0,0.85) 38%,
+      transparent 76%
+    ) !important;
+
+  filter: blur(3px) !important;
+
+  opacity: 0.65 !important;
+
+  z-index: 2 !important;
+
+  animation:
+    achievementGodRays
+    24s linear infinite !important;
+
+  pointer-events: none !important;
+}
+
+
+/* Card stays crisp and above everything */
+.achievement-viewer-card {
+  position: relative !important;
+  z-index: 5 !important;
+}
+
+
+@keyframes achievementBacklightBreath {
+  0%,
+  100% {
+    opacity: 0.72;
+
+    transform:
+      translate(-50%, -50%)
+      scale(0.94);
+  }
+
+  50% {
+    opacity: 1;
+
+    transform:
+      translate(-50%, -50%)
+      scale(1.04);
+  }
+}
+
+
+@keyframes achievementGodRays {
+  from {
+    transform:
+      translate(-50%, -50%)
+      rotate(0deg);
+  }
+
+  to {
+    transform:
+      translate(-50%, -50%)
+      rotate(360deg);
+  }
+}
+
+/* =========================================
+   ACHIEVEMENT VIEWER - BRIGHTER / SHARPER
+   ========================================= */
+
+/* Brighter atmospheric glow */
+.achievement-viewer-card-area::before {
+  background:
+    radial-gradient(
+      ellipse at 42% 46%,
+      rgba(205, 225, 255, 0.72) 0%,
+      rgba(165, 195, 255, 0.46) 22%,
+      rgba(140, 125, 235, 0.25) 43%,
+      rgba(100, 80, 185, 0.11) 62%,
+      transparent 80%
+    ),
+    radial-gradient(
+      ellipse at 62% 57%,
+      rgba(225, 205, 255, 0.40) 0%,
+      rgba(155, 125, 230, 0.17) 38%,
+      transparent 68%
+    ) !important;
+
+  filter:
+    blur(20px) !important;
+}
+
+
+/* More defined beams through the haze */
+.achievement-viewer-card-area::after {
+  background:
+    repeating-conic-gradient(
+      from -8deg,
+
+      rgba(220, 232, 255, 0.25) 0deg,
+      rgba(205, 220, 255, 0.18) 3deg,
+      rgba(180, 200, 255, 0.07) 7deg,
+      transparent 11deg,
+
+      transparent 20deg,
+
+      rgba(220, 205, 255, 0.15) 24deg,
+      rgba(195, 180, 245, 0.08) 28deg,
+      transparent 33deg,
+
+      transparent 45deg
+    ) !important;
+
+  filter:
+    blur(4px) !important;
+}
+
+/* =========================================
+   ACHIEVEMENT VIEWER - MOBILE LAYOUT
+   ========================================= */
+
+@media (max-width: 600px) {
+
+  .achievement-viewer-content {
+    width: 100%;
+    min-height: 100dvh;
+
+    padding:
+      52px 10px
+      18px;
+
+    box-sizing: border-box;
+  }
+
+
+  .achievement-viewer-card-area {
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+
+  .achievement-viewer-card {
+    width: min(
+      92vw,
+      calc(78dvh * 0.70)
+    );
+
+    max-width: none;
+
+    aspect-ratio: 0.70;
+  }
+
+
+  /* Keep the atmospheric light from
+     becoming enormous on a phone */
+
+  .achievement-viewer-card-area::before {
+    width: 115vw !important;
+    height: 82vh !important;
+  }
+
+
+  .achievement-viewer-card-area::after {
+    width: 125vw !important;
+    height: 88vh !important;
+  }
+
+}
+
+/* =========================================
+   ACHIEVEMENT VIEWER - MOBILE CARD SIZE
+   ========================================= */
+
+@media (max-width: 600px) {
+
+  .achievement-viewer-card {
+    width: 86vw !important;
+    max-width: 86vw !important;
+    min-width: 86vw !important;
+
+    aspect-ratio: 0.70 !important;
+  }
+
+}
+
+/* =========================================
+   ACHIEVEMENT VIEWER - MOTION CONTROL
+   ========================================= */
+
+.achievement-viewer-motion-button {
+  display: none;
+}
+
+
+@media (max-width: 600px) {
+
+  .achievement-viewer-motion-button {
+    margin:
+      8px auto 0;
+
+    padding:
+      7px 14px;
+
+    display: none;
+
+    border:
+      1px solid
+      rgba(255,255,255,0.35);
+
+    border-radius: 999px;
+
+    background:
+      rgba(0,0,0,0.25);
+
+    color: white;
+
+    font: inherit;
+    font-size: 12px;
+
+    cursor: pointer;
+  }
+
+
+  .achievement-viewer-motion-button.motion-available {
+    display: block;
   }
 
 }

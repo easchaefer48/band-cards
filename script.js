@@ -5108,6 +5108,17 @@ async function loadViewClassData() {
 let achievementViewerStudent = null;
 let achievementViewerCards = [];
 let achievementViewerIndex = 0;
+let achievementViewerFlipped = false;
+
+let achievementViewerRockFrame = null;
+let achievementViewerRockStart = null;
+let achievementViewerIsInteracting = false;
+
+let achievementViewerMotionEnabled = false;
+let achievementViewerMotionListening = false;
+
+let achievementViewerMotionCenterBeta = null;
+let achievementViewerMotionCenterGamma = null;
 
 function formatAchievementEarnedDate(
   awardedAt
@@ -5185,7 +5196,11 @@ function displayAchievementViewerCard() {
     return;
   }
 
-
+  const viewerCard =
+    document.getElementById(
+      "achievement-viewer-card"
+    );
+  
   const image =
     document.getElementById(
       "achievement-viewer-image"
@@ -5213,10 +5228,6 @@ function displayAchievementViewerCard() {
 
 
   if (image) {
-    const viewerCard =
-      document.getElementById(
-        "achievement-viewer-card"
-      );
 
     if (viewerCard) {
       viewerCard.classList.remove(
@@ -5366,6 +5377,7 @@ function openAchievementCardViewer(
   collectionHeading.textContent =
     possessiveName;
 
+  achievementViewerFlipped = false;    
 
   displayAchievementViewerCard();
 
@@ -5382,6 +5394,32 @@ function openAchievementCardViewer(
 
   document.body.style.overflow =
     "hidden";
+
+  const motionButton =
+    document.getElementById(
+      "achievement-viewer-motion-button"
+    );
+
+  if (
+    motionButton &&
+    typeof DeviceOrientationEvent !==
+      "undefined"
+  ) {
+    motionButton.classList.add(
+      "motion-available"
+    );
+
+    motionButton.disabled = false;
+
+    motionButton.textContent =
+      "Enable Motion";
+  }
+
+  achievementViewerIsInteracting = false;
+
+  requestAnimationFrame(() => {
+    startAchievementViewerRock();
+  });  
 }
 
 
@@ -5410,6 +5448,12 @@ function closeAchievementCardViewer() {
   document.body.style.overflow =
     "";
 
+  stopAchievementViewerRock();
+  stopAchievementViewerMotion();
+  
+  achievementViewerIsInteracting = false;
+
+  achievementViewerFlipped = false;
 
   resetAchievementViewerTilt();
 
@@ -5439,6 +5483,7 @@ function showPreviousAchievementCard() {
     ) %
     achievementViewerCards.length;
 
+  achievementViewerFlipped = false;
 
   displayAchievementViewerCard();
 }
@@ -5459,8 +5504,341 @@ function showNextAchievementCard() {
     ) %
     achievementViewerCards.length;
 
+  achievementViewerFlipped = false;  
 
   displayAchievementViewerCard();
+}
+
+function flipAchievementViewerCard() {
+  achievementViewerFlipped =
+    !achievementViewerFlipped;
+
+  resetAchievementViewerTilt();
+}
+
+function handleAchievementViewerMotion(
+  event
+) {
+  if (
+    !achievementViewerMotionEnabled ||
+    event.beta === null ||
+    event.gamma === null
+  ) {
+    return;
+  }
+
+  const card =
+    document.getElementById(
+      "achievement-viewer-card"
+    );
+
+  const viewer =
+    document.getElementById(
+      "achievement-card-viewer"
+    );
+
+  if (
+    !card ||
+    !viewer ||
+    viewer.classList.contains("hidden")
+  ) {
+    return;
+  }
+
+
+  /*
+   * Save the phone position when motion
+   * first begins. That becomes neutral.
+   */
+
+  if (
+    achievementViewerMotionCenterBeta ===
+    null
+  ) {
+    achievementViewerMotionCenterBeta =
+      event.beta;
+  }
+
+  if (
+    achievementViewerMotionCenterGamma ===
+    null
+  ) {
+    achievementViewerMotionCenterGamma =
+      event.gamma;
+  }
+
+
+  let beta =
+    event.beta -
+    achievementViewerMotionCenterBeta;
+
+  let gamma =
+    event.gamma -
+    achievementViewerMotionCenterGamma;
+
+
+  /*
+   * Clamp the physical movement so the
+   * card never tilts excessively.
+   */
+
+  beta =
+    Math.max(
+      -18,
+      Math.min(18, beta)
+    );
+
+  gamma =
+    Math.max(
+      -18,
+      Math.min(18, gamma)
+    );
+
+
+  /*
+   * Convert phone movement into card
+   * rotation.
+   */
+
+  const rotateX =
+    -beta * 0.55;
+
+  const tiltY =
+    gamma * 0.55;
+
+  const flipRotation =
+    achievementViewerFlipped
+      ? 180
+      : 0;
+
+  const rotateY =
+    flipRotation + tiltY;
+
+
+  /*
+   * Convert the same movement into
+   * glare position.
+   */
+
+  let percentX =
+    50 + gamma * 2;
+
+  let percentY =
+    50 + beta * 2;
+
+  percentX =
+    Math.max(
+      10,
+      Math.min(90, percentX)
+    );
+
+  percentY =
+    Math.max(
+      10,
+      Math.min(90, percentY)
+    );
+
+
+  const glareX =
+    achievementViewerFlipped
+      ? 100 - percentX
+      : percentX;
+
+
+  card.style.setProperty(
+    "--viewer-x",
+    `${glareX}%`
+  );
+
+  card.style.setProperty(
+    "--viewer-y",
+    `${percentY}%`
+  );
+
+
+  card.style.transform =
+    `rotateX(${rotateX}deg) ` +
+    `rotateY(${rotateY}deg) ` +
+    `scale(1.015)`;
+}
+
+
+function startAchievementViewerMotion() {
+
+  if (
+    achievementViewerMotionListening
+  ) {
+    return;
+  }
+
+  achievementViewerMotionEnabled = true;
+  achievementViewerMotionListening = true;
+
+  achievementViewerMotionCenterBeta = null;
+  achievementViewerMotionCenterGamma = null;
+
+  achievementViewerIsInteracting = true;
+
+  stopAchievementViewerRock();
+
+  window.addEventListener(
+    "deviceorientation",
+    handleAchievementViewerMotion,
+    true
+  );
+}
+
+
+function stopAchievementViewerMotion() {
+
+  achievementViewerMotionEnabled = false;
+
+  achievementViewerMotionCenterBeta = null;
+  achievementViewerMotionCenterGamma = null;
+
+  if (
+    achievementViewerMotionListening
+  ) {
+    window.removeEventListener(
+      "deviceorientation",
+      handleAchievementViewerMotion,
+      true
+    );
+
+    achievementViewerMotionListening =
+      false;
+  }
+}
+
+async function enableAchievementViewerMotion() {
+
+  try {
+
+    /*
+     * iPhone / iPad Safari requires
+     * permission from a button press.
+     */
+
+    if (
+      typeof DeviceOrientationEvent !==
+        "undefined" &&
+      typeof DeviceOrientationEvent
+        .requestPermission ===
+        "function"
+    ) {
+
+      const permission =
+        await DeviceOrientationEvent
+          .requestPermission();
+
+      if (
+        permission !== "granted"
+      ) {
+        return;
+      }
+    }
+
+
+    startAchievementViewerMotion();
+
+
+    const button =
+      document.getElementById(
+        "achievement-viewer-motion-button"
+      );
+
+    if (button) {
+      button.textContent =
+        "Motion Enabled";
+
+      button.disabled = true;
+    }
+
+  } catch (error) {
+
+    console.error(
+      "Could not enable achievement viewer motion:",
+      error
+    );
+  }
+}
+
+function stopAchievementViewerRock() {
+  if (
+    achievementViewerRockFrame !== null
+  ) {
+    cancelAnimationFrame(
+      achievementViewerRockFrame
+    );
+
+    achievementViewerRockFrame = null;
+  }
+
+  achievementViewerRockStart = null;
+}
+
+
+function startAchievementViewerRock() {
+  stopAchievementViewerRock();
+
+  achievementViewerRockStart = null;
+
+  function rock(timestamp) {
+    const card =
+      document.getElementById(
+        "achievement-viewer-card"
+      );
+
+    const viewer =
+      document.getElementById(
+        "achievement-card-viewer"
+      );
+
+    if (
+      !card ||
+      !viewer ||
+      viewer.classList.contains("hidden") ||
+      achievementViewerIsInteracting
+    ) {
+      achievementViewerRockFrame = null;
+      return;
+    }
+
+    if (
+      achievementViewerRockStart === null
+    ) {
+      achievementViewerRockStart =
+        timestamp;
+    }
+
+    const elapsed =
+      timestamp -
+      achievementViewerRockStart;
+
+    const rockX =
+      Math.sin(elapsed / 1700) * 3.5;
+
+    const rockY =
+      Math.sin(elapsed / 2200) * 5;
+
+    const flipRotation =
+      achievementViewerFlipped
+        ? 180
+        : 0;
+
+    const rotateY =
+      flipRotation + rockY;
+
+    card.style.transform =
+      `rotateX(${rockX}deg) ` +
+      `rotateY(${rotateY}deg)`;
+
+    achievementViewerRockFrame =
+      requestAnimationFrame(rock);
+  }
+
+  achievementViewerRockFrame =
+    requestAnimationFrame(rock);
 }
 
 function resetAchievementViewerTilt() {
@@ -5475,8 +5853,13 @@ function resetAchievementViewerTilt() {
   }
 
 
+  const flipRotation =
+    achievementViewerFlipped
+      ? 180
+      : 0;
+
   card.style.transform =
-    "rotateX(0deg) rotateY(0deg)";
+    `rotateX(0deg) rotateY(${flipRotation}deg)`;
 
   card.style.setProperty(
     "--viewer-x",
@@ -5536,7 +5919,7 @@ function handleAchievementViewerTilt(
     );
 
 
-  const rotateY =
+  const tiltY =
     (
       percentX - 50
     ) / 5;
@@ -5546,6 +5929,13 @@ function handleAchievementViewerTilt(
       percentY - 50
     ) / 6;
 
+  const flipRotation =
+    achievementViewerFlipped
+      ? 180
+      : 0;
+
+  const rotateY =
+    flipRotation + tiltY;
 
   card.style.transform =
     `rotateX(${rotateX}deg) ` +
@@ -5553,9 +5943,14 @@ function handleAchievementViewerTilt(
     `scale(1.015)`;
 
 
+  const glareX =
+    achievementViewerFlipped
+      ? 100 - percentX
+      : percentX;
+
   card.style.setProperty(
     "--viewer-x",
-    `${percentX}%`
+    `${glareX}%`
   );
 
   card.style.setProperty(
@@ -5603,16 +5998,201 @@ const achievementViewerCard =
 achievementViewerCard
   ?.addEventListener(
     "mousemove",
-    handleAchievementViewerTilt
+    event => {
+      if (
+        !achievementViewerIsInteracting
+      ) {
+        achievementViewerIsInteracting =
+          true;
+
+        stopAchievementViewerRock();
+      }
+
+      handleAchievementViewerTilt(
+        event
+      );
+    }
   );
 
 
 achievementViewerCard
   ?.addEventListener(
     "mouseleave",
-    resetAchievementViewerTilt
+    () => {
+      achievementViewerIsInteracting =
+        false;
+
+      resetAchievementViewerTilt();
+
+      setTimeout(() => {
+        if (
+          !achievementViewerIsInteracting
+        ) {
+          startAchievementViewerRock();
+        }
+      }, 500);
+    }
   );
 
+achievementViewerCard
+  ?.addEventListener(
+    "touchstart",
+    event => {
+      if (
+        event.touches.length !== 1
+      ) {
+        return;
+      }
+
+      achievementViewerIsInteracting = true;
+
+      stopAchievementViewerRock();
+    },
+    {
+      passive: true
+    }
+  );
+
+
+achievementViewerCard
+  ?.addEventListener(
+    "touchmove",
+    event => {
+      if (
+        event.touches.length !== 1
+      ) {
+        return;
+      }
+
+      const touch =
+        event.touches[0];
+
+      const card =
+        document.getElementById(
+          "achievement-viewer-card"
+        );
+
+      if (!card) {
+        return;
+      }
+
+      const rect =
+        card.getBoundingClientRect();
+
+      const x =
+        Math.max(
+          0,
+          Math.min(
+            touch.clientX -
+              rect.left,
+            rect.width
+          )
+        );
+
+      const y =
+        Math.max(
+          0,
+          Math.min(
+            touch.clientY -
+              rect.top,
+            rect.height
+          )
+        );
+
+      const percentX =
+        (x / rect.width) * 100;
+
+      const percentY =
+        (y / rect.height) * 100;
+
+      const tiltY =
+        (
+          percentX - 50
+        ) / 5;
+
+      const rotateX =
+        -(
+          percentY - 50
+        ) / 6;
+
+      const flipRotation =
+        achievementViewerFlipped
+          ? 180
+          : 0;
+
+      const rotateY =
+        flipRotation + tiltY;
+
+      const glareX =
+        achievementViewerFlipped
+          ? 100 - percentX
+          : percentX;
+
+      card.style.setProperty(
+        "--viewer-x",
+        `${glareX}%`
+      );
+
+      card.style.setProperty(
+        "--viewer-y",
+        `${percentY}%`
+      );
+
+      card.style.transform =
+        `rotateX(${rotateX}deg) ` +
+        `rotateY(${rotateY}deg) ` +
+        `scale(1.015)`;
+    },
+    {
+      passive: true
+    }
+  );
+
+
+achievementViewerCard
+  ?.addEventListener(
+    "touchend",
+    () => {
+      achievementViewerIsInteracting =
+        false;
+
+      resetAchievementViewerTilt();
+
+      setTimeout(() => {
+        if (
+          !achievementViewerIsInteracting
+        ) {
+          startAchievementViewerRock();
+        }
+      }, 500);
+    },
+    {
+      passive: true
+    }
+  );  
+
+
+achievementViewerCard
+  ?.addEventListener(
+    "click",
+    event => {
+      event.stopPropagation();
+      flipAchievementViewerCard();
+    }
+  );  
+
+document
+  .getElementById(
+    "achievement-viewer-motion-button"
+  )
+  ?.addEventListener(
+    "click",
+    event => {
+      event.stopPropagation();
+
+      enableAchievementViewerMotion();
+    }
+  );  
 
 document.addEventListener(
   "keydown",
