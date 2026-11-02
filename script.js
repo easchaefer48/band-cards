@@ -3870,13 +3870,8 @@ document
         studentAuthUser =
           authUser;
 
-        showLoggedInStudentView(
+        await showLoggedInStudentView(
           loggedInStudent
-        );
-
-
-        renderBandLevelDashboard(
-          loggedInStudent.id
         );
 
               }
@@ -4358,8 +4353,130 @@ moduleCards.forEach(
 // STUDENT AUTH VIEW STATE
 // ============================================================
 
+function openStudentAccountDrawer() {
+
+  document
+    .getElementById(
+      "student-account-drawer"
+    )
+    ?.classList
+    .add("open");
+
+
+  document
+    .getElementById(
+      "student-account-drawer-overlay"
+    )
+    ?.classList
+    .add("open");
+
+
+  document
+    .getElementById(
+      "student-account-drawer"
+    )
+    ?.setAttribute(
+      "aria-hidden",
+      "false"
+    );
+
+
+  document
+    .getElementById(
+      "student-account-menu-button"
+    )
+    ?.setAttribute(
+      "aria-expanded",
+      "true"
+    );
+}
+
+
+function closeStudentAccountDrawer() {
+
+  document
+    .getElementById(
+      "student-account-drawer"
+    )
+    ?.classList
+    .remove("open");
+
+
+  document
+    .getElementById(
+      "student-account-drawer-overlay"
+    )
+    ?.classList
+    .remove("open");
+
+
+  document
+    .getElementById(
+      "student-account-drawer"
+    )
+    ?.setAttribute(
+      "aria-hidden",
+      "true"
+    );
+
+
+  document
+    .getElementById(
+      "student-account-menu-button"
+    )
+    ?.setAttribute(
+      "aria-expanded",
+      "false"
+    );
+}
+
 function showLoggedOutStudentView() {
 
+  /*
+   * Close the account drawer in case
+   * logout happened while it was open.
+   */
+  closeStudentAccountDrawer();
+
+  document
+    .getElementById(
+      "logged-out-landing"
+    )
+    ?.classList
+    .remove("hidden");
+
+
+  /*
+   * Hide every signed-in student view.
+   */
+  const signedInStudentSections = [
+    "student-account-section",
+    "student-home-section",
+    "view-class-section",
+    "band-level-dashboard-section",
+    "student-feedback-section",
+    "recent-recordings-section",
+    "leaderboard-section",
+    "achievement-section"
+  ];
+
+
+  signedInStudentSections.forEach(
+    sectionId => {
+
+      document
+        .getElementById(sectionId)
+        ?.classList
+        .add("hidden");
+
+    }
+  );
+
+
+  /*
+   * Make sure the student login form
+   * itself is closed.
+   */
   document
     .getElementById(
       "student-login-section"
@@ -4368,30 +4485,23 @@ function showLoggedOutStudentView() {
     .add("hidden");
 
 
-  document
-    .getElementById(
-      "student-account-section"
-    )
-    ?.classList
-    .add("hidden");
+  /*
+   * Clear the student's name from the
+   * account drawer.
+   */
+  const accountDrawerName =
+    document.getElementById(
+      "student-account-drawer-name"
+    );
+
+  if (accountDrawerName) {
+    accountDrawerName.textContent = "";
+  }
 
 
-  document
-    .getElementById(
-      "student-home-section"
-    )
-    ?.classList
-    .add("hidden");
-
-
-  document
-    .getElementById(
-      "band-level-dashboard-section"
-    )
-    ?.classList
-    .add("hidden");
-
-
+  /*
+   * Restore the public header.
+   */
   document
     .getElementById(
       "header-sign-in-button"
@@ -4408,6 +4518,32 @@ async function showLoggedInStudentView(
 
   document
     .getElementById(
+      "logged-out-landing"
+    )
+    ?.classList
+    .add("hidden");
+
+  const accountDrawerName =
+    document.getElementById(
+      "student-account-drawer-name"
+    );
+
+  if (accountDrawerName) {
+
+    const fullName =
+      [
+        student.firstName,
+        student.lastName
+      ]
+        .filter(Boolean)
+        .join(" ");
+
+    accountDrawerName.textContent =
+      fullName;
+  }
+
+  document
+    .getElementById(
       "student-login-section"
     )
     ?.classList
@@ -4428,14 +4564,6 @@ async function showLoggedInStudentView(
     )
     ?.classList
     .add("hidden");
-
-
-  document
-    .getElementById(
-      "student-home-section"
-    )
-    ?.classList
-    .remove("hidden");
 
 
   document
@@ -4488,6 +4616,13 @@ async function showLoggedInStudentView(
     await renderStudentHome(
       student
     );
+
+    document
+      .getElementById(
+        "student-home-section"
+      )
+      ?.classList
+      .remove("hidden");
 
 
     // Tell the browser that this history entry
@@ -5226,6 +5361,29 @@ function displayAchievementViewerCard() {
       "achievement-viewer-next"
     );
 
+  const mobilePreviousButton =
+    document.getElementById(
+      "achievement-viewer-mobile-previous"
+    );
+
+  const mobileNextButton =
+    document.getElementById(
+      "achievement-viewer-mobile-next"
+    );
+
+  const onlyOneCard =
+    achievementViewerCards.length <= 1;
+
+  if (mobilePreviousButton) {
+    mobilePreviousButton.disabled =
+      onlyOneCard;
+  }
+
+  if (mobileNextButton) {
+    mobileNextButton.disabled =
+      onlyOneCard;
+  }  
+
 
   if (image) {
 
@@ -5601,10 +5759,10 @@ function handleAchievementViewerMotion(
    */
 
   const rotateX =
-    -beta * 0.55;
+    -beta * 0.75;
 
   const tiltY =
-    gamma * 0.55;
+    gamma * 0.75;
 
   const flipRotation =
     achievementViewerFlipped
@@ -5621,10 +5779,10 @@ function handleAchievementViewerMotion(
    */
 
   let percentX =
-    50 + gamma * 2;
+    50 + gamma * 2.6;
 
   let percentY =
-    50 + beta * 2;
+    50 + beta * 2.6;
 
   percentX =
     Math.max(
@@ -6253,6 +6411,34 @@ document
 
     }
   );
+
+document
+  .getElementById(
+    "achievement-viewer-mobile-previous"
+  )
+  ?.addEventListener(
+    "click",
+    event => {
+      event.stopPropagation();
+
+      showPreviousAchievementCard();
+    }
+  );
+
+
+document
+  .getElementById(
+    "achievement-viewer-mobile-next"
+  )
+  ?.addEventListener(
+    "click",
+    event => {
+      event.stopPropagation();
+
+      showNextAchievementCard();
+    }
+  );
+  
 
 function buildViewClassCardStacks(cards) {
 
@@ -7832,6 +8018,53 @@ window.addEventListener(
   }
 );
 
+document
+  .getElementById(
+    "student-account-menu-button"
+  )
+  ?.addEventListener(
+    "click",
+    () => {
+      openStudentAccountDrawer();
+    }
+  );
+
+
+document
+  .getElementById(
+    "student-account-drawer-close"
+  )
+  ?.addEventListener(
+    "click",
+    () => {
+      closeStudentAccountDrawer();
+    }
+  );
+
+
+document
+  .getElementById(
+    "student-account-drawer-overlay"
+  )
+  ?.addEventListener(
+    "click",
+    () => {
+      closeStudentAccountDrawer();
+    }
+  );
+
+
+document.addEventListener(
+  "keydown",
+  event => {
+
+    if (
+      event.key === "Escape"
+    ) {
+      closeStudentAccountDrawer();
+    }
+  }
+);
 
 document
   .getElementById(
@@ -7841,6 +8074,8 @@ document
     "click",
     async () => {
 
+      closeStudentAccountDrawer();
+      
       await supabaseClient.auth
         .signOut();
 
@@ -8042,3 +8277,2051 @@ headerSignInButton?.addEventListener(
 
   }
 );
+
+/* =========================================
+   LOGGED-OUT WATERCOLOR SIMULATION
+   ========================================= */
+
+const watercolorCanvas =
+  document.getElementById(
+    "watercolor-canvas"
+  );
+
+const watercolorContext =
+  watercolorCanvas?.getContext(
+    "2d"
+  );
+
+
+/* =========================================
+   SETTINGS
+   ========================================= */
+
+const WATERCOLOR_SIM_WIDTH = 300;
+
+let watercolorSimWidth = 0;
+let watercolorSimHeight = 0;
+let watercolorCellCount = 0;
+
+let watercolorAnimationFrame = null;
+let watercolorRunning = false;
+
+let watercolorStartTime = 0;
+let watercolorLastFrameTime = 0;
+
+
+/* =========================================
+   DRY PAINT LAYER
+   ========================================= */
+
+const watercolorDryCanvas =
+  document.createElement(
+    "canvas"
+  );
+
+const watercolorDryContext =
+  watercolorDryCanvas.getContext(
+    "2d"
+  );
+
+
+/* =========================================
+   ACTIVE WET FIELD
+   ========================================= */
+
+let watercolorRed = null;
+let watercolorGreen = null;
+let watercolorBlue = null;
+
+let watercolorPigment = null;
+let watercolorWater = null;
+
+let watercolorVelocityX = null;
+let watercolorVelocityY = null;
+
+let watercolorNextRed = null;
+let watercolorNextGreen = null;
+let watercolorNextBlue = null;
+
+let watercolorNextPigment = null;
+let watercolorNextWater = null;
+
+let watercolorDryAge = null;
+
+
+/* =========================================
+   SIMULATION RENDERING
+   ========================================= */
+
+const watercolorSimulationCanvas =
+  document.createElement(
+    "canvas"
+  );
+
+const watercolorSimulationContext =
+  watercolorSimulationCanvas.getContext(
+    "2d"
+  );
+
+let watercolorImageData = null;
+
+
+/* =========================================
+   BLOOMS
+   ========================================= */
+
+let watercolorSeeds = [];
+
+
+/* =========================================
+   PALETTE
+   ========================================= */
+
+const watercolorPalette = [
+
+  [74, 122, 255],
+
+  [151, 82, 235],
+
+  [235, 76, 157],
+
+  [54, 190, 204],
+
+  [247, 151, 70],
+
+  [68, 181, 226],
+
+  [111, 78, 211],
+
+  [238, 95, 111],
+
+  [247, 190, 66],
+
+  [82, 166, 132]
+
+];
+
+
+/* =========================================
+   HELPERS
+   ========================================= */
+
+function clampWatercolor(
+  value,
+  minimum,
+  maximum
+) {
+
+  return Math.max(
+    minimum,
+    Math.min(
+      maximum,
+      value
+    )
+  );
+
+}
+
+
+function watercolorIndex(
+  x,
+  y
+) {
+
+  return (
+    y *
+    watercolorSimWidth +
+    x
+  );
+
+}
+
+
+/*
+ * Convert pigment concentration to opacity.
+ */
+
+function getWatercolorAlpha(
+  pigment
+) {
+
+  const concentration =
+    1 -
+    Math.exp(
+      -pigment *
+      0.72
+    );
+
+
+  const softenedConcentration =
+    Math.pow(
+      concentration,
+      1.32
+    );
+
+
+  return clampWatercolor(
+    softenedConcentration *
+    215,
+    0,
+    215
+  );
+
+}
+
+
+/*
+ * Slight saturation boost.
+ */
+
+function boostWatercolorSaturation(
+  red,
+  green,
+  blue
+) {
+
+  const saturationBoost =
+    1.16;
+
+
+  const luminance =
+    red * 0.299 +
+    green * 0.587 +
+    blue * 0.114;
+
+
+  return [
+
+    clampWatercolor(
+      luminance +
+      (
+        red -
+        luminance
+      ) *
+      saturationBoost,
+      0,
+      255
+    ),
+
+    clampWatercolor(
+      luminance +
+      (
+        green -
+        luminance
+      ) *
+      saturationBoost,
+      0,
+      255
+    ),
+
+    clampWatercolor(
+      luminance +
+      (
+        blue -
+        luminance
+      ) *
+      saturationBoost,
+      0,
+      255
+    )
+
+  ];
+
+}
+
+
+/*
+ * Stable pseudo-random noise.
+ */
+
+function watercolorNoise(
+  value,
+  seed
+) {
+
+  const noise =
+    Math.sin(
+      value * 12.9898 +
+      seed * 78.233
+    ) *
+    43758.5453;
+
+
+  return (
+    noise -
+    Math.floor(noise)
+  );
+
+}
+
+
+/*
+ * =========================================
+ * PIGMENT GRANULATION
+ * =========================================
+ *
+ * Creates several overlapping scales of
+ * deterministic noise.
+ *
+ * The important part is that this changes
+ * pigment density/opacity slightly rather than
+ * drawing visible "noise" over the canvas.
+ *
+ * That should make the paint itself look
+ * unevenly absorbed into paper.
+ */
+
+function getWatercolorGranulation(
+  x,
+  y
+) {
+
+  const fine =
+    watercolorNoise(
+      x * 1.73 +
+      y * 2.11,
+      18.7
+    );
+
+
+  const medium =
+    watercolorNoise(
+      Math.floor(x / 2.4) +
+      Math.floor(y / 2.4) *
+      17.31,
+      41.2
+    );
+
+
+  const broad =
+    watercolorNoise(
+      Math.floor(x / 6.5) +
+      Math.floor(y / 6.5) *
+      9.73,
+      73.9
+    );
+
+
+  /*
+   * Weighted combination.
+   */
+
+  const combined =
+    fine * 0.30 +
+    medium * 0.45 +
+    broad * 0.25;
+
+
+  /*
+   * Center around 1.
+   *
+   * Roughly ±12% pigment-density variation.
+   */
+
+  return (
+    0.88 +
+    combined *
+    0.24
+  );
+
+}
+
+
+/* =========================================
+   CANVAS SETUP
+   ========================================= */
+
+function resizeWatercolorCanvas() {
+
+  if (
+    !watercolorCanvas ||
+    !watercolorContext
+  ) {
+    return;
+  }
+
+
+  const rect =
+    watercolorCanvas
+      .getBoundingClientRect();
+
+
+  if (
+    rect.width <= 0 ||
+    rect.height <= 0
+  ) {
+    return;
+  }
+
+
+  const pixelRatio =
+    Math.min(
+      window.devicePixelRatio || 1,
+      2
+    );
+
+
+  watercolorCanvas.width =
+    Math.round(
+      rect.width *
+      pixelRatio
+    );
+
+
+  watercolorCanvas.height =
+    Math.round(
+      rect.height *
+      pixelRatio
+    );
+
+
+  watercolorSimWidth =
+    WATERCOLOR_SIM_WIDTH;
+
+
+  watercolorSimHeight =
+    Math.max(
+      1,
+      Math.round(
+        watercolorSimWidth *
+        rect.height /
+        rect.width
+      )
+    );
+
+
+  watercolorCellCount =
+    watercolorSimWidth *
+    watercolorSimHeight;
+
+
+  watercolorSimulationCanvas.width =
+    watercolorSimWidth;
+
+  watercolorSimulationCanvas.height =
+    watercolorSimHeight;
+
+
+  watercolorDryCanvas.width =
+    watercolorSimWidth;
+
+  watercolorDryCanvas.height =
+    watercolorSimHeight;
+
+
+  watercolorImageData =
+    watercolorSimulationContext
+      .createImageData(
+        watercolorSimWidth,
+        watercolorSimHeight
+      );
+
+
+  createWatercolorBuffers();
+
+}
+
+
+/* =========================================
+   CREATE BUFFERS
+   ========================================= */
+
+function createWatercolorBuffers() {
+
+  watercolorRed =
+    new Float32Array(
+      watercolorCellCount
+    );
+
+  watercolorGreen =
+    new Float32Array(
+      watercolorCellCount
+    );
+
+  watercolorBlue =
+    new Float32Array(
+      watercolorCellCount
+    );
+
+
+  watercolorPigment =
+    new Float32Array(
+      watercolorCellCount
+    );
+
+  watercolorWater =
+    new Float32Array(
+      watercolorCellCount
+    );
+
+
+  watercolorVelocityX =
+    new Float32Array(
+      watercolorCellCount
+    );
+
+  watercolorVelocityY =
+    new Float32Array(
+      watercolorCellCount
+    );
+
+
+  watercolorNextRed =
+    new Float32Array(
+      watercolorCellCount
+    );
+
+  watercolorNextGreen =
+    new Float32Array(
+      watercolorCellCount
+    );
+
+  watercolorNextBlue =
+    new Float32Array(
+      watercolorCellCount
+    );
+
+
+  watercolorNextPigment =
+    new Float32Array(
+      watercolorCellCount
+    );
+
+  watercolorNextWater =
+    new Float32Array(
+      watercolorCellCount
+    );
+
+
+  watercolorDryAge =
+    new Uint16Array(
+      watercolorCellCount
+    );
+
+}
+
+
+/* =========================================
+   CLEAR ACTIVE PAINT
+   ========================================= */
+
+function clearActiveWatercolor() {
+
+  watercolorRed.fill(0);
+  watercolorGreen.fill(0);
+  watercolorBlue.fill(0);
+
+  watercolorPigment.fill(0);
+  watercolorWater.fill(0);
+
+  watercolorVelocityX.fill(0);
+  watercolorVelocityY.fill(0);
+
+  watercolorDryAge.fill(0);
+
+}
+
+
+/* =========================================
+   ADD INITIAL PAINT
+   ========================================= */
+
+function addWatercolorPaint(
+  centerX,
+  centerY,
+  radius,
+  red,
+  green,
+  blue,
+  amount = 1
+) {
+
+  const minimumX =
+    Math.max(
+      1,
+      Math.floor(
+        centerX - radius
+      )
+    );
+
+
+  const maximumX =
+    Math.min(
+      watercolorSimWidth - 2,
+      Math.ceil(
+        centerX + radius
+      )
+    );
+
+
+  const minimumY =
+    Math.max(
+      1,
+      Math.floor(
+        centerY - radius
+      )
+    );
+
+
+  const maximumY =
+    Math.min(
+      watercolorSimHeight - 2,
+      Math.ceil(
+        centerY + radius
+      )
+    );
+
+
+  for (
+    let y = minimumY;
+    y <= maximumY;
+    y++
+  ) {
+
+    for (
+      let x = minimumX;
+      x <= maximumX;
+      x++
+    ) {
+
+      const deltaX =
+        x - centerX;
+
+      const deltaY =
+        y - centerY;
+
+
+      const distance =
+        Math.sqrt(
+          deltaX * deltaX +
+          deltaY * deltaY
+        );
+
+
+      if (distance > radius) {
+        continue;
+      }
+
+
+      const normalized =
+        1 -
+        distance / radius;
+
+
+      const deposit =
+        Math.pow(
+          normalized,
+          1.72
+        ) *
+        amount;
+
+
+      if (
+        deposit <
+        0.000002
+      ) {
+        continue;
+      }
+
+
+      const index =
+        watercolorIndex(
+          x,
+          y
+        );
+
+
+      watercolorRed[index] +=
+        red *
+        deposit;
+
+      watercolorGreen[index] +=
+        green *
+        deposit;
+
+      watercolorBlue[index] +=
+        blue *
+        deposit;
+
+      watercolorPigment[index] +=
+        deposit;
+
+
+      const waterDeposit =
+        Math.pow(
+          normalized,
+          1.02
+        ) *
+        amount *
+        2.05;
+
+
+      watercolorWater[index] =
+        Math.min(
+          1.65,
+          watercolorWater[index] +
+          waterDeposit
+        );
+
+
+      watercolorDryAge[index] = 0;
+
+
+      if (distance > 0.001) {
+
+        const outwardStrength =
+          (
+            0.020 +
+            normalized *
+            0.100
+          ) *
+          amount;
+
+
+        watercolorVelocityX[index] +=
+          deltaX /
+          distance *
+          outwardStrength;
+
+
+        watercolorVelocityY[index] +=
+          deltaY /
+          distance *
+          outwardStrength;
+
+      }
+
+    }
+
+  }
+
+}
+
+
+
+/* =========================================
+   INITIAL WATERCOLOR
+   ========================================= */
+
+function seedWatercolorSimulation() {
+
+  clearActiveWatercolor();
+
+
+  watercolorDryContext.clearRect(
+    0,
+    0,
+    watercolorDryCanvas.width,
+    watercolorDryCanvas.height
+  );
+
+
+  const centerX =
+    watercolorSimWidth *
+    0.5;
+
+
+  const centerY =
+    watercolorSimHeight *
+    0.5;
+
+
+  /*
+   * Keep the larger bloom sizes from our
+   * previous test.
+   */
+
+  const scale =
+    watercolorSimWidth /
+    240 *
+    1.55;
+
+
+  /*
+   * IMPORTANT CHANGE:
+   *
+   * The bloom CENTERS are now considerably
+   * tighter around the middle.
+   *
+   * Their sizes remain large.
+   *
+   * This should make the starting composition
+   * read as one large splash underneath the
+   * Band Levels logo.
+   */
+
+  watercolorSeeds = [
+
+    {
+      x: centerX,
+      y: centerY,
+
+      radius:
+        28 * scale,
+
+      color:
+        [106, 112, 235],
+
+      delay: 150,
+
+      driftX: 0.015,
+      driftY: -0.015
+    },
+
+
+    {
+      x:
+        centerX -
+        13 * scale,
+
+      y:
+        centerY -
+        7 * scale,
+
+      radius:
+        35 * scale,
+
+      color:
+        [74, 122, 255],
+
+      delay: 0,
+
+      driftX: -0.08,
+      driftY: -0.03
+    },
+
+
+    {
+      x:
+        centerX +
+        12 * scale,
+
+      y:
+        centerY -
+        9 * scale,
+
+      radius:
+        36 * scale,
+
+      color:
+        [151, 82, 235],
+
+      delay: 350,
+
+      driftX: 0.07,
+      driftY: -0.04
+    },
+
+
+    {
+      x:
+        centerX +
+        15 * scale,
+
+      y:
+        centerY +
+        8 * scale,
+
+      radius:
+        34 * scale,
+
+      color:
+        [235, 76, 157],
+
+      delay: 700,
+
+      driftX: 0.09,
+      driftY: 0.05
+    },
+
+
+    {
+      x:
+        centerX -
+        14 * scale,
+
+      y:
+        centerY +
+        9 * scale,
+
+      radius:
+        35 * scale,
+
+      color:
+        [54, 190, 204],
+
+      delay: 1000,
+
+      driftX: -0.08,
+      driftY: 0.06
+    },
+
+
+    {
+      x:
+        centerX -
+        1 * scale,
+
+      y:
+        centerY +
+        13 * scale,
+
+      radius:
+        32 * scale,
+
+      color:
+        [247, 151, 70],
+
+      delay: 1300,
+
+      driftX: 0.01,
+      driftY: 0.09
+    },
+
+
+    {
+      x:
+        centerX +
+        1 * scale,
+
+      y:
+        centerY -
+        13 * scale,
+
+      radius:
+        32 * scale,
+
+      color:
+        [68, 181, 226],
+
+      delay: 1550,
+
+      driftX: -0.01,
+      driftY: -0.09
+    },
+
+
+    {
+      x:
+        centerX -
+        17 * scale,
+
+      y:
+        centerY +
+        1 * scale,
+
+      radius:
+        31 * scale,
+
+      color:
+        [111, 78, 211],
+
+      delay: 1800,
+
+      driftX: -0.10,
+      driftY: 0.01
+    },
+
+
+    {
+      x:
+        centerX +
+        17 * scale,
+
+      y:
+        centerY -
+        1 * scale,
+
+      radius:
+        31 * scale,
+
+      color:
+        [238, 95, 111],
+
+      delay: 2050,
+
+      driftX: 0.10,
+      driftY: -0.01
+    }
+
+  ];
+
+}
+
+
+/* =========================================
+   GROW INITIAL SEEDS
+   ========================================= */
+
+function growWatercolorSeeds(
+  elapsed
+) {
+
+  watercolorSeeds.forEach(
+    seed => {
+
+      const localTime =
+        elapsed -
+        seed.delay;
+
+
+      if (
+        localTime < 0 ||
+        localTime > 5600
+      ) {
+        return;
+      }
+
+
+      const progress =
+        Math.min(
+          1,
+          localTime / 4700
+        );
+
+
+      const easedProgress =
+        1 -
+        Math.pow(
+          1 - progress,
+          2.05
+        );
+
+
+      const currentRadius =
+        Math.max(
+          1.5,
+          seed.radius *
+          (
+            0.045 +
+            easedProgress *
+            0.955
+          )
+        );
+
+
+      const depositStrength =
+        0.0165 *
+        (
+          1 -
+          progress *
+          0.62
+        );
+
+
+      const driftAmount =
+        Math.sin(
+          progress *
+          Math.PI
+        ) *
+        5;
+
+
+      addWatercolorPaint(
+
+        seed.x +
+          seed.driftX *
+          driftAmount,
+
+        seed.y +
+          seed.driftY *
+          driftAmount,
+
+        currentRadius,
+
+        seed.color[0],
+        seed.color[1],
+        seed.color[2],
+
+        depositStrength
+
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================
+   ACTIVE WET SIMULATION
+   ========================================= */
+
+function updateWatercolorSimulation() {
+
+  watercolorNextRed.fill(0);
+  watercolorNextGreen.fill(0);
+  watercolorNextBlue.fill(0);
+
+  watercolorNextPigment.fill(0);
+  watercolorNextWater.fill(0);
+
+
+  for (
+    let y = 1;
+    y < watercolorSimHeight - 1;
+    y++
+  ) {
+
+    for (
+      let x = 1;
+      x < watercolorSimWidth - 1;
+      x++
+    ) {
+
+      const index =
+        watercolorIndex(
+          x,
+          y
+        );
+
+
+      const water =
+        watercolorWater[index];
+
+
+      if (water < 0.0001) {
+
+        watercolorVelocityX[index] *=
+          0.72;
+
+        watercolorVelocityY[index] *=
+          0.72;
+
+        continue;
+
+      }
+
+
+      const left =
+        watercolorIndex(
+          x - 1,
+          y
+        );
+
+      const right =
+        watercolorIndex(
+          x + 1,
+          y
+        );
+
+      const above =
+        watercolorIndex(
+          x,
+          y - 1
+        );
+
+      const below =
+        watercolorIndex(
+          x,
+          y + 1
+        );
+
+
+      const gradientX =
+        watercolorWater[left] -
+        watercolorWater[right];
+
+
+      const gradientY =
+        watercolorWater[above] -
+        watercolorWater[below];
+
+
+      watercolorVelocityX[index] +=
+        gradientX *
+        0.040;
+
+
+      watercolorVelocityY[index] +=
+        gradientY *
+        0.040;
+
+
+      watercolorVelocityX[index] +=
+        gradientY *
+        0.009;
+
+
+      watercolorVelocityY[index] -=
+        gradientX *
+        0.009;
+
+
+      watercolorVelocityX[index] *=
+        0.875;
+
+
+      watercolorVelocityY[index] *=
+        0.875;
+
+    }
+
+  }
+
+
+  for (
+    let y = 1;
+    y < watercolorSimHeight - 1;
+    y++
+  ) {
+
+    for (
+      let x = 1;
+      x < watercolorSimWidth - 1;
+      x++
+    ) {
+
+      const index =
+        watercolorIndex(
+          x,
+          y
+        );
+
+
+      const pigment =
+        Math.max(
+          0,
+          watercolorPigment[index]
+        );
+
+
+      const water =
+        Math.max(
+          0,
+          watercolorWater[index]
+        );
+
+
+      if (
+        pigment < 0.000001 &&
+        water < 0.000001
+      ) {
+        continue;
+      }
+
+
+      const wetness =
+        clampWatercolor(
+          water / 0.45,
+          0,
+          1
+        );
+
+
+      const transportDistance =
+        2.15 *
+        wetness;
+
+
+      const targetX =
+        clampWatercolor(
+          Math.round(
+            x +
+            watercolorVelocityX[index] *
+            transportDistance
+          ),
+          1,
+          watercolorSimWidth - 2
+        );
+
+
+      const targetY =
+        clampWatercolor(
+          Math.round(
+            y +
+            watercolorVelocityY[index] *
+            transportDistance
+          ),
+          1,
+          watercolorSimHeight - 2
+        );
+
+
+      const targetIndex =
+        watercolorIndex(
+          targetX,
+          targetY
+        );
+
+
+      const movingAmount =
+        0.045 *
+        wetness;
+
+
+      const stayingAmount =
+        1 -
+        movingAmount;
+
+
+      watercolorNextRed[index] +=
+        watercolorRed[index] *
+        stayingAmount;
+
+      watercolorNextGreen[index] +=
+        watercolorGreen[index] *
+        stayingAmount;
+
+      watercolorNextBlue[index] +=
+        watercolorBlue[index] *
+        stayingAmount;
+
+      watercolorNextPigment[index] +=
+        pigment *
+        stayingAmount;
+
+
+      watercolorNextRed[targetIndex] +=
+        watercolorRed[index] *
+        movingAmount;
+
+      watercolorNextGreen[targetIndex] +=
+        watercolorGreen[index] *
+        movingAmount;
+
+      watercolorNextBlue[targetIndex] +=
+        watercolorBlue[index] *
+        movingAmount;
+
+      watercolorNextPigment[targetIndex] +=
+        pigment *
+        movingAmount;
+
+
+      const left =
+        watercolorIndex(
+          x - 1,
+          y
+        );
+
+      const right =
+        watercolorIndex(
+          x + 1,
+          y
+        );
+
+      const above =
+        watercolorIndex(
+          x,
+          y - 1
+        );
+
+      const below =
+        watercolorIndex(
+          x,
+          y + 1
+        );
+
+
+      watercolorNextWater[index] +=
+        water *
+        0.825;
+
+
+      const waterSpread =
+        water *
+        0.026;
+
+
+      watercolorNextWater[left] +=
+        waterSpread;
+
+      watercolorNextWater[right] +=
+        waterSpread;
+
+      watercolorNextWater[above] +=
+        waterSpread;
+
+      watercolorNextWater[below] +=
+        waterSpread;
+
+
+      const diffusion =
+        0.006 *
+        wetness;
+
+
+      if (
+        diffusion > 0 &&
+        pigment > 0
+      ) {
+
+        const totalDiffusion =
+          diffusion *
+          4;
+
+
+        watercolorNextRed[index] -=
+          watercolorRed[index] *
+          totalDiffusion;
+
+        watercolorNextGreen[index] -=
+          watercolorGreen[index] *
+          totalDiffusion;
+
+        watercolorNextBlue[index] -=
+          watercolorBlue[index] *
+          totalDiffusion;
+
+        watercolorNextPigment[index] -=
+          pigment *
+          totalDiffusion;
+
+
+        const neighbors = [
+          left,
+          right,
+          above,
+          below
+        ];
+
+
+        neighbors.forEach(
+          neighbor => {
+
+            watercolorNextRed[neighbor] +=
+              watercolorRed[index] *
+              diffusion;
+
+            watercolorNextGreen[neighbor] +=
+              watercolorGreen[index] *
+              diffusion;
+
+            watercolorNextBlue[neighbor] +=
+              watercolorBlue[index] *
+              diffusion;
+
+            watercolorNextPigment[neighbor] +=
+              pigment *
+              diffusion;
+
+          }
+        );
+
+      }
+
+    }
+
+  }
+
+
+  [
+    watercolorRed,
+    watercolorNextRed
+  ] = [
+    watercolorNextRed,
+    watercolorRed
+  ];
+
+
+  [
+    watercolorGreen,
+    watercolorNextGreen
+  ] = [
+    watercolorNextGreen,
+    watercolorGreen
+  ];
+
+
+  [
+    watercolorBlue,
+    watercolorNextBlue
+  ] = [
+    watercolorNextBlue,
+    watercolorBlue
+  ];
+
+
+  [
+    watercolorPigment,
+    watercolorNextPigment
+  ] = [
+    watercolorNextPigment,
+    watercolorPigment
+  ];
+
+
+  [
+    watercolorWater,
+    watercolorNextWater
+  ] = [
+    watercolorNextWater,
+    watercolorWater
+  ];
+
+
+  for (
+    let index = 0;
+    index < watercolorCellCount;
+    index++
+  ) {
+
+    if (
+      watercolorWater[index] <
+      0.0004
+    ) {
+
+      watercolorWater[index] = 0;
+
+    }
+
+  }
+
+}
+
+
+/* =========================================
+   BAKE DRY PAINT
+   ========================================= */
+
+function bakeDryWatercolor() {
+
+  const dryImage =
+    watercolorSimulationContext
+      .createImageData(
+        watercolorSimWidth,
+        watercolorSimHeight
+      );
+
+
+  const pixels =
+    dryImage.data;
+
+
+  let hasDryPaint = false;
+
+
+  for (
+    let index = 0;
+    index < watercolorCellCount;
+    index++
+  ) {
+
+    const pigment =
+      watercolorPigment[index];
+
+
+    const water =
+      watercolorWater[index];
+
+
+    if (
+      pigment > 0.00005 &&
+      water < 0.012
+    ) {
+
+      watercolorDryAge[index] += 1;
+
+    } else {
+
+      watercolorDryAge[index] = 0;
+
+    }
+
+
+    if (
+      watercolorDryAge[index] < 10
+    ) {
+      continue;
+    }
+
+
+    const red =
+      watercolorRed[index] /
+      pigment;
+
+
+    const green =
+      watercolorGreen[index] /
+      pigment;
+
+
+    const blue =
+      watercolorBlue[index] /
+      pigment;
+
+
+    /*
+     * Locate this simulation cell.
+     */
+
+    const x =
+      index %
+      watercolorSimWidth;
+
+
+    const y =
+      Math.floor(
+        index /
+        watercolorSimWidth
+      );
+
+
+    /*
+     * Apply subtle granulation.
+     */
+
+    const granulation =
+      getWatercolorGranulation(
+        x,
+        y
+      );
+
+
+    const texturedPigment =
+      pigment *
+      granulation;
+
+
+    const alpha =
+      getWatercolorAlpha(
+        texturedPigment
+      );
+
+
+    const [
+      saturatedRed,
+      saturatedGreen,
+      saturatedBlue
+    ] =
+      boostWatercolorSaturation(
+        red,
+        green,
+        blue
+      );
+
+
+    const pixelIndex =
+      index *
+      4;
+
+
+    pixels[pixelIndex] =
+      Math.round(
+        saturatedRed
+      );
+
+
+    pixels[pixelIndex + 1] =
+      Math.round(
+        saturatedGreen
+      );
+
+
+    pixels[pixelIndex + 2] =
+      Math.round(
+        saturatedBlue
+      );
+
+
+    pixels[pixelIndex + 3] =
+      Math.round(
+        alpha
+      );
+
+
+    watercolorRed[index] = 0;
+    watercolorGreen[index] = 0;
+    watercolorBlue[index] = 0;
+
+    watercolorPigment[index] = 0;
+    watercolorWater[index] = 0;
+
+    watercolorVelocityX[index] = 0;
+    watercolorVelocityY[index] = 0;
+
+    watercolorDryAge[index] = 0;
+
+
+    hasDryPaint = true;
+
+  }
+
+
+  if (!hasDryPaint) {
+    return;
+  }
+
+
+  watercolorSimulationContext
+    .putImageData(
+      dryImage,
+      0,
+      0
+    );
+
+
+  watercolorDryContext.drawImage(
+    watercolorSimulationCanvas,
+    0,
+    0
+  );
+
+}
+
+
+/* =========================================
+   RENDER ACTIVE PAINT
+   ========================================= */
+
+function renderActiveWatercolor() {
+
+  const pixels =
+    watercolorImageData.data;
+
+
+  pixels.fill(0);
+
+
+  for (
+    let index = 0;
+    index < watercolorCellCount;
+    index++
+  ) {
+
+    const pigment =
+      watercolorPigment[index];
+
+
+    if (pigment < 0.00005) {
+      continue;
+    }
+
+
+    const pixelIndex =
+      index *
+      4;
+
+
+    const red =
+      watercolorRed[index] /
+      pigment;
+
+
+    const green =
+      watercolorGreen[index] /
+      pigment;
+
+
+    const blue =
+      watercolorBlue[index] /
+      pigment;
+
+
+    const x =
+      index %
+      watercolorSimWidth;
+
+
+    const y =
+      Math.floor(
+        index /
+        watercolorSimWidth
+      );
+
+
+    /*
+     * Apply the exact same granulation pattern
+     * while wet and after drying.
+     *
+     * This prevents the texture from suddenly
+     * changing when paint is baked.
+     */
+
+    const granulation =
+      getWatercolorGranulation(
+        x,
+        y
+      );
+
+
+    const texturedPigment =
+      pigment *
+      granulation;
+
+
+    const alpha =
+      getWatercolorAlpha(
+        texturedPigment
+      );
+
+
+    const [
+      saturatedRed,
+      saturatedGreen,
+      saturatedBlue
+    ] =
+      boostWatercolorSaturation(
+        red,
+        green,
+        blue
+      );
+
+
+    pixels[pixelIndex] =
+      Math.round(
+        saturatedRed
+      );
+
+
+    pixels[pixelIndex + 1] =
+      Math.round(
+        saturatedGreen
+      );
+
+
+    pixels[pixelIndex + 2] =
+      Math.round(
+        saturatedBlue
+      );
+
+
+    pixels[pixelIndex + 3] =
+      Math.round(
+        alpha
+      );
+
+  }
+
+
+  watercolorSimulationContext
+    .putImageData(
+      watercolorImageData,
+      0,
+      0
+    );
+
+}
+
+
+/* =========================================
+   FINAL RENDER
+   ========================================= */
+
+function renderWatercolorSimulation() {
+
+  if (
+    !watercolorCanvas ||
+    !watercolorContext
+  ) {
+    return;
+  }
+
+
+  renderActiveWatercolor();
+
+
+  watercolorContext.clearRect(
+    0,
+    0,
+    watercolorCanvas.width,
+    watercolorCanvas.height
+  );
+
+
+  watercolorContext.imageSmoothingEnabled =
+    true;
+
+
+  watercolorContext.imageSmoothingQuality =
+    "high";
+
+
+  watercolorContext.save();
+
+
+  /*
+   * Keep the soft final blend that fixed our
+   * visible perimeter problem.
+   */
+
+  watercolorContext.filter =
+    "blur(0.65px)";
+
+
+  watercolorContext.drawImage(
+    watercolorDryCanvas,
+
+    -2,
+    -2,
+
+    watercolorCanvas.width + 4,
+    watercolorCanvas.height + 4
+  );
+
+
+  watercolorContext.drawImage(
+    watercolorSimulationCanvas,
+
+    -2,
+    -2,
+
+    watercolorCanvas.width + 4,
+    watercolorCanvas.height + 4
+  );
+
+
+  watercolorContext.restore();
+
+}
+
+
+/* =========================================
+   ANIMATION
+   ========================================= */
+
+function animateWatercolorSimulation(
+  timestamp
+) {
+
+  if (!watercolorRunning) {
+    return;
+  }
+
+
+  if (!watercolorStartTime) {
+
+    watercolorStartTime =
+      timestamp;
+
+  }
+
+
+  if (
+    timestamp -
+    watercolorLastFrameTime >=
+    33
+  ) {
+
+    watercolorLastFrameTime =
+      timestamp;
+
+
+    const elapsed =
+      timestamp -
+      watercolorStartTime;
+
+
+    growWatercolorSeeds(
+      elapsed
+    );
+
+
+    updateWatercolorSimulation();
+
+
+    bakeDryWatercolor();
+
+
+    renderWatercolorSimulation();
+
+  }
+
+
+  watercolorAnimationFrame =
+    requestAnimationFrame(
+      animateWatercolorSimulation
+    );
+
+}
+
+
+/* =========================================
+   START / STOP
+   ========================================= */
+
+function startWatercolorLanding() {
+
+  if (
+    !watercolorCanvas ||
+    !watercolorContext
+  ) {
+    return;
+  }
+
+
+  if (watercolorRunning) {
+    return;
+  }
+
+
+  resizeWatercolorCanvas();
+
+  seedWatercolorSimulation();
+
+
+  watercolorRunning = true;
+
+  watercolorStartTime = 0;
+  watercolorLastFrameTime = 0;
+
+
+  watercolorContext.clearRect(
+    0,
+    0,
+    watercolorCanvas.width,
+    watercolorCanvas.height
+  );
+
+
+  watercolorAnimationFrame =
+    requestAnimationFrame(
+      animateWatercolorSimulation
+    );
+
+}
+
+
+function stopWatercolorLanding() {
+
+  watercolorRunning = false;
+
+
+  if (watercolorAnimationFrame) {
+
+    cancelAnimationFrame(
+      watercolorAnimationFrame
+    );
+
+
+    watercolorAnimationFrame =
+      null;
+
+  }
+
+}
+
+
+/* =========================================
+   RESIZE
+   ========================================= */
+
+window.addEventListener(
+  "resize",
+  () => {
+
+    if (!watercolorRunning) {
+      return;
+    }
+
+
+    resizeWatercolorCanvas();
+
+    seedWatercolorSimulation();
+
+
+    watercolorStartTime =
+      performance.now();
+
+    watercolorLastFrameTime = 0;
+
+  }
+);
+
+
+/* =========================================
+   TEMPORARY STARTUP
+   ========================================= */
+
+startWatercolorLanding();

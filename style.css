@@ -3621,3 +3621,795 @@ body {
   }
 
 }
+
+/* =========================================
+   ACHIEVEMENT VIEWER - MOBILE CONTROL BAR
+   ========================================= */
+
+.achievement-viewer-mobile-controls {
+  display: none;
+}
+
+
+@media (max-width: 600px) {
+
+  /*
+   * Hide the original desktop navigation.
+   */
+
+  #achievement-viewer-previous,
+  #achievement-viewer-next {
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+
+  /*
+   * Control row underneath the card.
+   */
+
+  .achievement-viewer-mobile-controls {
+    width: 92vw;
+
+    margin:
+      14px auto 0;
+
+    display: grid;
+
+    grid-template-columns:
+      1fr auto 1fr;
+
+    align-items: center;
+
+    box-sizing: border-box;
+  }
+
+
+  /*
+   * Simple arrows only.
+   */
+
+  .achievement-viewer-mobile-nav {
+    padding: 0;
+
+    border: none;
+    background: none;
+
+    color: white;
+
+    font-size: 30px;
+    font-weight: 400;
+    line-height: 1;
+
+    cursor: pointer;
+
+    box-shadow: none;
+  }
+
+
+  #achievement-viewer-mobile-previous {
+    justify-self: start;
+  }
+
+
+  #achievement-viewer-mobile-next {
+    justify-self: end;
+  }
+
+
+  /*
+   * Existing motion button now sits
+   * between the navigation arrows.
+   */
+
+  .achievement-viewer-motion-button {
+    margin: 0;
+
+    justify-self: center;
+  }
+
+}
+
+/* =========================================
+   STUDENT ACCOUNT MENU
+   ========================================= */
+
+.student-account-menu-button {
+  width: 44px;
+  height: 44px;
+
+  padding: 10px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+
+  border: none;
+  border-radius: 10px;
+
+  background: transparent;
+
+  cursor: pointer;
+}
+
+.student-account-menu-button span {
+  width: 24px;
+  height: 3px;
+
+  display: block;
+
+  border-radius: 999px;
+
+  background: white;
+}
+
+.student-account-menu-button:hover {
+  background:
+    rgba(255,255,255,0.08);
+}
+
+
+/* Darkened page behind drawer */
+
+.student-account-drawer-overlay {
+  position: fixed;
+  inset: 0;
+
+  z-index: 9998;
+
+  background:
+    rgba(0,0,0,0.55);
+
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+
+  opacity: 0;
+  visibility: hidden;
+
+  transition:
+    opacity 0.25s ease,
+    visibility 0.25s ease;
+}
+
+.student-account-drawer-overlay.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+
+/* Drawer */
+
+.student-account-drawer {
+  position: fixed;
+
+  top: 0;
+  right: 0;
+
+  width: min(360px, 88vw);
+  height: 100dvh;
+
+  z-index: 9999;
+
+  box-sizing: border-box;
+
+  padding:
+    28px 24px;
+
+  background:
+    #101722;
+
+  transform:
+    translateX(100%);
+
+  transition:
+    transform
+    0.3s
+    cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.student-account-drawer.open {
+  transform:
+    translateX(0);
+
+  box-shadow:
+    -18px 0 45px
+    rgba(0,0,0,0.45);
+}
+
+
+/* Drawer heading */
+
+.student-account-drawer-header {
+  position: relative;
+
+  padding-top: 36px;
+}
+
+.student-account-drawer-close {
+  position: absolute;
+
+  top: -8px;
+  right: -4px;
+
+  width: 40px;
+  height: 40px;
+
+  border: none;
+  background: transparent;
+
+  color: white;
+
+  font-size: 30px;
+  line-height: 1;
+
+  cursor: pointer;
+
+  opacity: 0.75;
+}
+
+.student-account-drawer-close:hover {
+  opacity: 1;
+}
+
+.student-account-drawer-label {
+  margin-bottom: 6px;
+
+  color:
+    rgba(255,255,255,0.58);
+
+  font-size: 13px;
+  font-weight: 600;
+
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.student-account-drawer-name {
+  color: white;
+
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.student-account-drawer-divider {
+  height: 1px;
+
+  margin:
+    24px 0 18px;
+
+  background:
+    rgba(255,255,255,0.12);
+}
+
+
+/* Sign Out */
+
+.student-account-drawer-sign-out {
+  width: 100%;
+
+  padding:
+    13px 15px;
+
+  border:
+    1px solid
+    rgba(255,255,255,0.14);
+
+  border-radius: 9px;
+
+  background:
+    rgba(255,255,255,0.06);
+
+  color: white;
+
+  font: inherit;
+  font-weight: 600;
+
+  text-align: left;
+
+  cursor: pointer;
+}
+
+.student-account-drawer-sign-out:hover {
+  background:
+    rgba(255,255,255,0.11);
+}
+
+/* ACCOUNT MENU - HEADER ICON FIX */
+
+.student-account-menu-button span {
+  background: #171717;
+}
+
+/* =========================================
+   STUDENT HOME - READY FADE IN
+   ========================================= */
+
+#student-home-section:not(.hidden) {
+  animation:
+    studentHomeReadyFade
+    0.18s ease-out;
+}
+
+@keyframes studentHomeReadyFade {
+
+  from {
+    opacity: 0;
+    transform:
+      translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform:
+      translateY(0);
+  }
+}
+
+/* =========================================
+   LOGGED-OUT WATERCOLOR LANDING PAGE
+   ========================================= */
+
+.logged-out-landing {
+  position: relative;
+
+  width: 100%;
+  height: calc(100dvh - 81px);
+  min-height: 520px;
+
+  overflow: hidden;
+
+  background: #ffffff;
+}
+
+
+/* -----------------------------------------
+   Watercolor canvas
+   ----------------------------------------- */
+
+.watercolor-canvas {
+  position: absolute;
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+
+  display: block;
+
+  z-index: 1;
+
+  touch-action: none;
+}
+
+
+/* -----------------------------------------
+   Logo layer
+   ----------------------------------------- */
+
+.watercolor-logo-layer {
+  position: absolute;
+  inset: 0;
+
+  z-index: 2;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  pointer-events: none;
+}
+
+
+.watercolor-logo {
+  width: min(360px, 52vw);
+  height: auto;
+
+  display: block;
+
+  /*
+   * Turn the existing logo completely white.
+   */
+  filter:
+    brightness(0)
+    invert(1);
+
+  /*
+   * Logo never receives mouse/touch input.
+   * Interaction will eventually pass through
+   * to the watercolor canvas underneath.
+   */
+  pointer-events: none;
+
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+
+/* -----------------------------------------
+   Mobile
+   ----------------------------------------- */
+
+@media (max-width: 700px) {
+
+  .logged-out-landing {
+    height: calc(100dvh - 63px);
+    min-height: 420px;
+  }
+
+
+  .watercolor-logo {
+    width: min(300px, 68vw);
+  }
+
+}
+
+/* =========================================
+   WATERCOLOR PAPER TEXTURE
+   ========================================= */
+
+/*
+ * The landing page itself stays clean white.
+ *
+ * Texture is created with several extremely
+ * faint overlapping patterns. The intention is
+ * cold-press watercolor paper — not visible
+ * digital noise.
+ */
+
+.logged-out-landing::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+
+  pointer-events: none;
+
+  background:
+
+    /* Fine horizontal paper fibers */
+    repeating-linear-gradient(
+      3deg,
+      rgba(70, 65, 55, 0.018) 0px,
+      rgba(70, 65, 55, 0.018) 0.45px,
+      transparent 0.8px,
+      transparent 3.2px
+    ),
+
+    /* Fine vertical/cross fibers */
+    repeating-linear-gradient(
+      93deg,
+      rgba(80, 75, 65, 0.012) 0px,
+      rgba(80, 75, 65, 0.012) 0.4px,
+      transparent 0.75px,
+      transparent 4.1px
+    ),
+
+    /* Larger irregular paper tooth */
+    radial-gradient(
+      ellipse at 18% 23%,
+      rgba(60, 55, 45, 0.018) 0%,
+      transparent 19%
+    ),
+
+    radial-gradient(
+      ellipse at 73% 31%,
+      rgba(60, 55, 45, 0.014) 0%,
+      transparent 22%
+    ),
+
+    radial-gradient(
+      ellipse at 42% 78%,
+      rgba(60, 55, 45, 0.015) 0%,
+      transparent 21%
+    ),
+
+    radial-gradient(
+      ellipse at 87% 72%,
+      rgba(60, 55, 45, 0.012) 0%,
+      transparent 18%
+    );
+
+  opacity: 0.55;
+
+  mix-blend-mode: multiply;
+}
+
+
+/*
+ * Very faint highlight fibers.
+ *
+ * These help keep the texture from looking
+ * like gray lines printed over the page.
+ */
+
+.logged-out-landing::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+
+  pointer-events: none;
+
+  background:
+
+    repeating-linear-gradient(
+      37deg,
+      rgba(255, 255, 255, 0.18) 0px,
+      rgba(255, 255, 255, 0.18) 0.5px,
+      transparent 0.8px,
+      transparent 5px
+    ),
+
+    repeating-linear-gradient(
+      127deg,
+      rgba(255, 255, 255, 0.12) 0px,
+      rgba(255, 255, 255, 0.12) 0.45px,
+      transparent 0.8px,
+      transparent 6px
+    );
+
+  opacity: 0.22;
+}
+
+
+/*
+ * Keep the watercolor itself above the paper
+ * surface texture.
+ */
+
+.watercolor-canvas {
+  z-index: 2;
+}
+
+
+/*
+ * Logo remains above everything and perfectly
+ * clean/white.
+ */
+
+.watercolor-logo-layer {
+  z-index: 3;
+}
+
+/* =========================================
+   WATERCOLOR LANDING - STUDENT LOGIN
+   ========================================= */
+
+#logged-out-landing
+#student-login-section {
+  position: absolute;
+
+  inset: 0;
+
+  z-index: 10;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  max-width: none;
+
+  margin: 0;
+  padding: 24px;
+
+  background:
+    rgba(255, 255, 255, 0.18);
+
+  backdrop-filter:
+    blur(2px);
+
+  -webkit-backdrop-filter:
+    blur(2px);
+}
+
+
+#logged-out-landing
+#student-login-section.hidden {
+  display: none !important;
+}
+
+
+/* LOGIN CARD */
+
+#logged-out-landing
+.student-login-panel {
+  width: min(
+    420px,
+    calc(100vw - 40px)
+  );
+
+  margin: 0;
+
+  padding: 30px 32px 32px;
+
+  background: #ffffff;
+
+  border:
+    1px solid #d7d7d7;
+
+  border-radius: 14px;
+
+  color: #222222;
+
+  box-shadow:
+    0 8px 28px
+    rgba(0, 0, 0, 0.08);
+}
+
+
+/* TITLE */
+
+#logged-out-landing
+.student-login-panel h2 {
+  margin:
+    0 0 22px;
+
+  color: #222222;
+
+  font-family:
+    "Atkinson Hyperlegible",
+    Arial,
+    sans-serif;
+
+  font-size: 1.65rem;
+  font-weight: 700;
+
+  text-align: center;
+}
+
+
+/* FORM */
+
+#logged-out-landing
+#student-login-form {
+  display: flex;
+  flex-direction: column;
+
+  gap: 8px;
+}
+
+
+/* LABELS */
+
+#logged-out-landing
+#student-login-form label {
+  margin-top: 10px;
+
+  color: #333333;
+
+  font-family:
+    "Atkinson Hyperlegible",
+    Arial,
+    sans-serif;
+
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+
+/* INPUTS */
+
+#logged-out-landing
+#student-login-form input {
+  width: 100%;
+
+  box-sizing: border-box;
+
+  padding:
+    11px 12px;
+
+  background: #ffffff;
+  color: #222222;
+
+  border:
+    1px solid #cfcfcf;
+
+  border-radius: 8px;
+
+  font-family:
+    "Atkinson Hyperlegible",
+    Arial,
+    sans-serif;
+
+  font-size: 1rem;
+
+  outline: none;
+
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+
+#logged-out-landing
+#student-login-form input:focus {
+  border-color: #8f8f8f;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(0, 0, 0, 0.05);
+}
+
+
+/* SIGN IN BUTTON */
+
+#logged-out-landing
+#student-login-button {
+  margin-top: 18px;
+
+  padding:
+    11px 16px;
+
+  background: #ffffff;
+  color: #222222;
+
+  border:
+    1px solid #bfbfbf;
+
+  border-radius: 8px;
+
+  font-family:
+    "Atkinson Hyperlegible",
+    Arial,
+    sans-serif;
+
+  font-size: 1rem;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+
+#logged-out-landing
+#student-login-button:hover {
+  background: #f6f6f6;
+
+  border-color: #999999;
+}
+
+
+#logged-out-landing
+#student-login-button:active {
+  background: #eeeeee;
+}
+
+
+/* LOGIN MESSAGE */
+
+#logged-out-landing
+#student-login-message {
+  margin-top: 14px;
+
+  color: #a13232;
+
+  font-family:
+    "Atkinson Hyperlegible",
+    Arial,
+    sans-serif;
+}
+
+
+/* MOBILE */
+
+@media (max-width: 600px) {
+
+  #logged-out-landing
+  #student-login-section {
+    padding: 18px;
+  }
+
+
+  #logged-out-landing
+  .student-login-panel {
+    width: 100%;
+
+    padding:
+      26px 22px 28px;
+  }
+
+}

@@ -6,6 +6,12 @@
 
   <title>Band Levels</title>
 
+  <link
+    rel="icon"
+    type="image/png"
+    href="images/site-logo.png"
+  >
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
@@ -51,11 +57,15 @@
         >
 
           <button
-            id="student-logout-button"
-            class="header-sign-out-button"
+            id="student-account-menu-button"
+            class="student-account-menu-button"
             type="button"
+            aria-label="Open account menu"
+            aria-expanded="false"
           >
-            Sign Out
+            <span></span>
+            <span></span>
+            <span></span>
           </button>
 
         </div>
@@ -66,60 +76,137 @@
 
   </header>
 
-  <main>
+  <div
+    id="student-account-drawer-overlay"
+    class="student-account-drawer-overlay"
+  ></div>
 
-  <section
-    id="student-login-section"
-    class="hidden"
+
+  <aside
+    id="student-account-drawer"
+    class="student-account-drawer"
+    aria-hidden="true"
   >
-  <div class="student-login-panel">
 
-    <h2>Student Login</h2>
-
-    <form id="student-login-form">
-
-      <label for="student-username">
-        Username
-      </label>
-
-      <input
-        type="text"
-        id="student-username"
-        autocomplete="username"
-        required
-      >
-
-
-      <label for="student-password">
-        Password
-      </label>
-
-      <input
-        type="password"
-        id="student-password"
-        autocomplete="current-password"
-        required
-      >
-
+    <div class="student-account-drawer-header">
 
       <button
-        type="submit"
-        id="student-login-button"
+        id="student-account-drawer-close"
+        class="student-account-drawer-close"
+        type="button"
+        aria-label="Close account menu"
       >
-        Sign In
+        ×
       </button>
 
-    </form>
+      <div class="student-account-drawer-label">
+        Signed in as
+      </div>
+
+      <div
+        id="student-account-drawer-name"
+        class="student-account-drawer-name"
+      ></div>
+
+    </div>
 
 
-    <div
-      id="student-login-message"
-      class="message"
-    ></div>
+    <div class="student-account-drawer-divider"></div>
 
-  </div>
 
-</section> 
+    <button
+      id="student-logout-button"
+      class="student-account-drawer-sign-out"
+      type="button"
+    >
+      Sign Out
+    </button>
+
+  </aside>
+
+  <main>
+
+  <!-- =========================================
+     LOGGED-OUT LANDING PAGE
+     ========================================= -->
+
+  <section
+    id="logged-out-landing"
+    class="logged-out-landing"
+  >
+
+    <canvas
+      id="watercolor-canvas"
+      class="watercolor-canvas"
+      aria-hidden="true"
+    ></canvas>
+
+
+    <div class="watercolor-logo-layer">
+
+      <img
+        src="images/site-logo.png"
+        alt="Band Levels"
+        class="watercolor-logo"
+      >
+
+    </div>
+
+    <section
+      id="student-login-section"
+      class="hidden"
+    >
+    <div class="student-login-panel">
+
+      <h2>Student Login</h2>
+
+      <form id="student-login-form">
+
+        <label for="student-username">
+          Username
+        </label>
+
+        <input
+          type="text"
+          id="student-username"
+          autocomplete="username"
+          required
+        >
+
+
+        <label for="student-password">
+          Password
+        </label>
+
+        <input
+          type="password"
+          id="student-password"
+          autocomplete="current-password"
+          required
+        >
+
+
+        <button
+          type="submit"
+          id="student-login-button"
+        >
+          Sign In
+        </button>
+
+      </form>
+
+
+      <div
+        id="student-login-message"
+        class="message"
+      ></div>
+
+    </div>
+
+  </section> 
+
+  </section>  
+
 
 <section
   id="student-home-section"
@@ -590,14 +677,6 @@
         class="achievement-viewer-date"
       ></div>
 
-      <button
-        id="achievement-viewer-motion-button"
-        class="achievement-viewer-motion-button"
-        type="button"
-      >
-        Enable Motion
-      </button>
-
     </div>
 
 
@@ -661,6 +740,38 @@
         </span>
 
         <span>Next Card</span>
+      </button>
+
+    </div>
+
+    <div class="achievement-viewer-mobile-controls">
+
+      <button
+        id="achievement-viewer-mobile-previous"
+        class="achievement-viewer-mobile-nav"
+        type="button"
+        aria-label="Previous card"
+      >
+        ←
+      </button>
+
+
+      <button
+        id="achievement-viewer-motion-button"
+        class="achievement-viewer-motion-button"
+        type="button"
+      >
+        Enable Motion
+      </button>
+
+
+      <button
+        id="achievement-viewer-mobile-next"
+        class="achievement-viewer-mobile-nav"
+        type="button"
+        aria-label="Next card"
+      >
+        →
       </button>
 
     </div>
