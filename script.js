@@ -4432,6 +4432,8 @@ function closeStudentAccountDrawer() {
 
 function showLoggedOutStudentView() {
 
+  startWatercolorLanding();
+  
   /*
    * Close the account drawer in case
    * logout happened while it was open.
@@ -4516,6 +4518,8 @@ async function showLoggedInStudentView(
   student
 ) {
 
+  stopWatercolorLanding();
+  
   document
     .getElementById(
       "logged-out-landing"
@@ -4541,6 +4545,74 @@ async function showLoggedInStudentView(
     accountDrawerName.textContent =
       fullName;
   }
+
+
+    const accountDrawerClass =
+      document.getElementById(
+        "student-account-drawer-class"
+      );
+
+    const accountDrawerSchool =
+      document.getElementById(
+        "student-account-drawer-school"
+      );
+
+    if (accountDrawerClass) {
+      accountDrawerClass.textContent = "";
+    }
+
+    if (accountDrawerSchool) {
+      accountDrawerSchool.textContent = "";
+    }
+
+    const studentClassId =
+      await getLoggedInStudentClassId();
+
+    if (studentClassId) {
+
+      const { data: studentClass, error } =
+        await supabaseClient
+          .from("classes")
+          .select("display_name, school_id")
+          .eq("class_id", studentClassId)
+          .maybeSingle();
+
+      if (error) {
+        console.error(
+          "Could not load account drawer class:",
+          error
+        );
+      } else if (accountDrawerClass) {
+        accountDrawerClass.textContent =
+          studentClass?.display_name || "";
+      }
+
+
+      if (studentClass?.school_id) {
+
+        const { data: school, error: schoolError } =
+          await supabaseClient
+            .from("schools")
+            .select("school_name")
+            .eq("school_id", studentClass.school_id)
+            .maybeSingle();
+
+        if (schoolError) {
+
+          console.error(
+            "Could not load account drawer school:",
+            schoolError
+          );
+
+        } else if (accountDrawerSchool) {
+
+          accountDrawerSchool.textContent =
+            school?.school_name || "";
+
+        }
+      }
+    }
+
 
   document
     .getElementById(
@@ -8043,6 +8115,17 @@ document
 
 
 document
+  .getElementById("student-menu-audio")
+  ?.addEventListener("click", () => {
+
+    closeStudentAccountDrawer();
+
+    window.location.href = "/sender/";
+
+  });
+
+  
+document
   .getElementById(
     "student-account-drawer-overlay"
   )
@@ -9031,10 +9114,11 @@ function seedWatercolorSimulation() {
    * previous test.
    */
 
+  const isSmallScreen = window.innerWidth <= 600;
+
   const scale =
-    watercolorSimWidth /
-    240 *
-    1.55;
+    watercolorSimWidth / 240 *
+    (isSmallScreen ? 2.52 : 1.55);
 
 
   /*
@@ -9777,6 +9861,8 @@ function updateWatercolorSimulation() {
 
 function bakeDryWatercolor() {
 
+  return; // TEMPORARY TEST: Disable drying
+  
   const dryImage =
     watercolorSimulationContext
       .createImageData(
@@ -10171,53 +10257,59 @@ function renderWatercolorSimulation() {
    ANIMATION
    ========================================= */
 
-function animateWatercolorSimulation(
-  timestamp
-) {
+
+function animateWatercolorSimulation(timestamp) {
 
   if (!watercolorRunning) {
     return;
   }
 
+  const fixedStep = 1000 / 30;
+  const maxStepsPerFrame = 5;
 
   if (!watercolorStartTime) {
-
-    watercolorStartTime =
-      timestamp;
-
+    watercolorStartTime = timestamp;
+    watercolorLastFrameTime = timestamp;
   }
 
-
+  // Prevent a large backlog after the tab has been
+  // inactive or the device has paused animation.
   if (
-    timestamp -
-    watercolorLastFrameTime >=
-    33
+    timestamp - watercolorLastFrameTime >
+    fixedStep * maxStepsPerFrame
+  ) {
+    watercolorLastFrameTime =
+      timestamp - fixedStep * maxStepsPerFrame;
+  }
+
+  let steps = 0;
+
+  while (
+    timestamp - watercolorLastFrameTime >= fixedStep &&
+    steps < maxStepsPerFrame
   ) {
 
-    watercolorLastFrameTime =
-      timestamp;
-
+    watercolorLastFrameTime += fixedStep;
 
     const elapsed =
-      timestamp -
-      watercolorStartTime;
+      watercolorLastFrameTime - watercolorStartTime;
 
-
-    growWatercolorSeeds(
-      elapsed
-    );
-
+    // Stop adding new pigment after 6 seconds.
+    if (elapsed <= 6000) {
+      growWatercolorSeeds(elapsed);
+    }
 
     updateWatercolorSimulation();
 
-
     bakeDryWatercolor();
 
-
-    renderWatercolorSimulation();
+    steps++;
 
   }
 
+  if (steps > 0) {
+    renderWatercolorSimulation();
+  }
 
   watercolorAnimationFrame =
     requestAnimationFrame(
@@ -10225,6 +10317,7 @@ function animateWatercolorSimulation(
     );
 
 }
+
 
 
 /* =========================================
@@ -10319,9 +10412,3 @@ window.addEventListener(
   }
 );
 
-
-/* =========================================
-   TEMPORARY STARTUP
-   ========================================= */
-
-startWatercolorLanding();

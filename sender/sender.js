@@ -86,7 +86,7 @@ async function checkStudentLogin() {
 let signedInStudentUser =
   null;
 
-  function showLoggedInSenderState(
+  async function showLoggedInSenderState(
     session
   ) {
 
@@ -96,6 +96,33 @@ let signedInStudentUser =
 
     signedInStudentUser =
       session;
+
+    const signedInNameDisplay =
+      document.getElementById(
+        "sender-signed-in-name"
+      );
+
+    const { data: studentAccount, error: nameError } =
+      await supabaseClient
+        .from("student_accounts")
+        .select("student_name")
+        .eq("auth_user_id", session.user.id)
+        .eq("active", true)
+        .maybeSingle();
+
+    if (nameError) {
+      console.error(
+        "Could not load signed-in student name:",
+        nameError
+      );
+    }
+
+    if (signedInNameDisplay && studentAccount?.student_name) {
+      signedInNameDisplay.querySelector("label").textContent =
+        `Signed in as ${studentAccount.student_name}`;
+
+      signedInNameDisplay.hidden = false;
+    }  
 
   const nameField =
     document

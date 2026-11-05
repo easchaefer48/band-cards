@@ -4413,3 +4413,197 @@ body {
   }
 
 }
+
+
+/* =========================================
+   STUDENT ACCOUNT DRAWER - LIGHT DESIGN
+   ========================================= */
+
+.student-account-drawer {
+  background: #ffffff;
+  color: #17202a;
+  border-left: 1px solid #e4e7eb;
+  padding: 28px 24px;
+}
+
+.student-account-drawer.open {
+  box-shadow: -12px 0 45px rgba(23, 32, 42, 0.16);
+}
+
+.student-account-drawer-close {
+  color: #43505c;
+  opacity: 1;
+  border-radius: 50%;
+}
+
+.student-account-drawer-close:hover {
+  color: #17202a;
+  background: #f0f2f5;
+}
+
+.student-account-drawer-label {
+  color: #718096;
+}
+
+.student-account-drawer-name {
+  color: #17202a;
+}
+
+.student-account-drawer-divider {
+  background: #e4e7eb;
+}
+
+/* Student tool navigation */
+
+.student-account-drawer-navigation {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 28px;
+}
+
+.student-account-drawer-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 15px 14px;
+
+  background: #f5f7f9;
+  color: #17202a;
+  border: 1px solid #e4e7eb;
+  border-radius: 12px;
+
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s ease,
+              border-color 0.2s ease;
+}
+
+.student-account-drawer-item:hover {
+  background: #edf1f5;
+  border-color: #cbd5df;
+}
+
+.student-menu-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  width: 42px;
+  height: 42px;
+
+  background: #e4eaf0;
+  color: #415a77;
+  border-radius: 10px;
+  font-size: 23px;
+}
+
+.student-menu-item-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.student-menu-item-text strong {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.student-menu-item-text small {
+  color: #687786;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.student-menu-chevron {
+  color: #8b98a6;
+  font-size: 25px;
+}
+
+/* Sign Out */
+
+.student-account-drawer-sign-out,
+#student-logout-button {
+  background: #ffffff;
+  color: #43505c;
+  border: 1px solid #dce2e8;
+  border-radius: 10px;
+  padding: 13px 15px;
+  font-weight: 600;
+}
+
+.student-account-drawer-sign-out:hover,
+#student-logout-button:hover {
+  background: #f5f7f9;
+  color: #17202a;
+}
+
+/* Keyboard accessibility */
+
+.student-account-drawer button:focus-visible {
+  outline: 3px solid #8cb6e5;
+  outline-offset: 3px;
+}
+
+
+
+/* Student class and school */
+
+.student-account-drawer-details {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.student-account-drawer-class {
+  color: #43505c;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.student-account-drawer-school {
+  color: #718096;
+  font-size: 13px;
+  font-weight: 400;
+}
+
+
+
+/* Simplified student menu buttons */
+
+.student-menu-item-text strong {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.student-account-drawer-item {
+  min-height: 68px;
+}
+
+.student-menu-audio-icon {
+  display: block;
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+}
+
+
+
+/* Student menu icons - no background */
+
+.student-menu-icon {
+  background: transparent;
+  border-radius: 0;
+}
+
+.student-menu-audio-icon {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
