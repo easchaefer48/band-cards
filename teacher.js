@@ -2930,6 +2930,86 @@ async function renderStudentOrganizerClassTables() {
               removeButton
             );
 
+            const resetPasswordButton =
+              document.createElement("button");
+
+            resetPasswordButton.type = "button";
+            resetPasswordButton.className =
+              "student-reset-password-button";
+
+            resetPasswordButton.textContent =
+              "Reset Password";
+
+            resetPasswordButton.addEventListener(
+              "click",
+              async () => {
+
+                const temporaryPassword = window.prompt(
+                  `Enter a new temporary password for ${student.name} (at least 8 characters):`
+                );
+
+                if (temporaryPassword === null) return;
+
+                if (
+                  temporaryPassword.length < 8 ||
+                  temporaryPassword.length > 128
+                ) {
+                  window.alert(
+                    "Password must be between 8 and 128 characters."
+                  );
+                  return;
+                }
+
+                const confirmed = window.confirm(
+                  `Reset the password for ${student.name}?`
+                );
+
+                if (!confirmed) return;
+
+                resetPasswordButton.disabled = true;
+                resetPasswordButton.textContent = "Resetting...";
+
+                try {
+                  const { data, error } =
+                    await supabaseClient.functions.invoke(
+                      "manage-student-account",
+                      {
+                        body: {
+                          action: "reset-password",
+                          studentUuid: student.id,
+                          temporaryPassword
+                        }
+                      }
+                    );
+
+                  if (error) throw error;
+
+                  if (!data?.success) {
+                    throw new Error(
+                      data?.error || "Password reset failed."
+                    );
+                  }
+
+                  window.alert(
+                    `Password successfully reset for ${student.name}. Give the student their new password securely.`
+                  );
+
+                } catch (error) {
+                  console.error("Password reset error:", error);
+
+                  window.alert(
+                    error?.message || "Could not reset password."
+                  );
+
+                } finally {
+                  resetPasswordButton.disabled = false;
+                  resetPasswordButton.textContent = "Reset Password";
+                }
+              }
+            );
+
+            actionsCell.appendChild(resetPasswordButton);
+
 
             row.appendChild(
               nameCell
