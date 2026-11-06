@@ -4046,6 +4046,254 @@ async function loadModulesForClass(
 }
 
 
+async function renderStudentAchievements(student) {
+
+  const gallery = document.getElementById(
+    "student-achievements-gallery"
+  );
+
+  const countElement = document.getElementById(
+    "student-achievements-count"
+  );
+
+  const pointsElement = document.getElementById(
+    "student-achievements-points"
+  );
+
+  if (!gallery || !student?.id) return;
+
+  gallery.innerHTML = "<p>Loading achievements...</p>";
+
+  const { data: earned, error: earnedError } =
+    await supabaseClient
+      .from("earned_achievements")
+      .select("achievement_id, awarded_at")
+      .eq("student_id", student.id)
+      .order("awarded_at", { ascending: false });
+
+  if (earnedError) {
+    console.error("Could not load achievements:", earnedError);
+    gallery.innerHTML = "<p>Could not load achievements.</p>";
+    return;
+  }
+
+  const achievementIds = (earned || []).map(
+    row => row.achievement_id
+  );
+
+  if (!achievementIds.length) {
+    gallery.innerHTML = "<p>No achievements earned yet!</p>";
+    if (countElement) countElement.textContent = "0 Cards";
+    if (pointsElement) {
+      pointsElement.textContent = "Achievement Points: 0 ⭐";
+    }
+    return;
+  }
+
+  const { data: definitions, error: definitionsError } =
+    await supabaseClient
+      .from("achievements")
+      .select("achievement_id, card_name, image_file, points")
+      .in("achievement_id", achievementIds);
+
+  if (definitionsError) {
+    console.error("Could not load card definitions:", definitionsError);
+    gallery.innerHTML = "<p>Could not load achievements.</p>";
+    return;
+  }
+
+  const definitionsById = new Map(
+    (definitions || []).map(
+      card => [card.achievement_id, card]
+    )
+  );
+
+  const cards = (earned || [])
+    .map(row => {
+      const definition = definitionsById.get(row.achievement_id);
+
+      return definition
+        ? { ...definition, awarded_at: row.awarded_at }
+        : null;
+    })
+    .filter(Boolean);
+
+  gallery.innerHTML = "";
+
+  if (countElement) {
+    countElement.textContent =
+      `${cards.length} ${cards.length === 1 ? "Card" : "Cards"}`;
+  }
+
+  const totalPoints = cards.reduce(
+    (sum, card) => sum + Number(card.points || 0),
+    0
+  );
+
+  if (pointsElement) {
+    pointsElement.textContent =
+      `Achievement Points: ${totalPoints} ⭐`;
+  }
+
+  
+  cards.forEach(card => {
+
+    // Container for card image and title
+    const cardItem = document.createElement("div");
+    cardItem.className = "student-achievements-card-item";
+
+    const image = document.createElement("img");
+
+    image.src =
+      `images/achievement_cards/${card.image_file}`;
+
+    image.alt = card.card_name;
+    image.title = card.card_name;
+    image.loading = "lazy";
+    image.tabIndex = 0;
+    image.setAttribute("role", "button");
+
+    const openCard = () => {
+      openAchievementCardViewer(
+        { id: student.id, name: student.name, cards },
+        card.achievement_id
+      );
+    };
+
+    image.addEventListener("click", openCard);
+
+    image.addEventListener("keydown", event => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        openCard();
+      }
+    });
+
+    // Achievement name underneath the image
+    const cardName = document.createElement("div");
+    cardName.className = "student-achievements-card-name";
+    cardName.textContent = card.card_name;
+
+    cardItem.appendChild(image);
+    cardItem.appendChild(cardName);
+
+    gallery.appendChild(cardItem);
+
+  });
+
+
+  gallery.scrollLeft = 0;
+
+  const previousButton = document.getElementById(
+    "student-achievements-previous"
+  );
+
+  const nextButton = document.getElementById(
+    "student-achievements-next"
+  );
+
+  
+  // Continuous scrolling while hovering over desktop arrows
+
+  let scrollAnimationId = null;
+  let scrollDirection = 0;
+  let lastFrameTime = null;
+
+  const scrollSpeed = 180; // Pixels per second
+
+  function animateGalleryScroll(timestamp) {
+    if (!scrollDirection) return;
+
+    if (lastFrameTime !== null) {
+      const elapsed = Math.min(
+        (timestamp - lastFrameTime) / 1000,
+        0.05
+      );
+
+      const maxScroll =
+        gallery.scrollWidth - gallery.clientWidth;
+
+      const nextPosition = Math.max(
+        0,
+        Math.min(
+          maxScroll,
+          gallery.scrollLeft + scrollDirection * scrollSpeed * elapsed
+        )
+      );
+
+      gallery.scrollLeft = nextPosition;
+
+      if (
+        (scrollDirection < 0 && nextPosition <= 0) ||
+        (scrollDirection > 0 && nextPosition >= maxScroll)
+      ) {
+        stopGalleryScroll();
+        return;
+      }
+    }
+
+    lastFrameTime = timestamp;
+    scrollAnimationId = requestAnimationFrame(
+      animateGalleryScroll
+    );
+  }
+
+  function startGalleryScroll(direction) {
+    stopGalleryScroll();
+
+    scrollDirection = direction;
+    lastFrameTime = null;
+
+    scrollAnimationId = requestAnimationFrame(
+      animateGalleryScroll
+    );
+  }
+
+  function stopGalleryScroll() {
+    scrollDirection = 0;
+    lastFrameTime = null;
+
+    if (scrollAnimationId !== null) {
+      cancelAnimationFrame(scrollAnimationId);
+      scrollAnimationId = null;
+    }
+  }
+
+  if (previousButton) {
+    previousButton.onclick = null;
+
+    previousButton.onmouseenter = () => {
+      startGalleryScroll(-1);
+    };
+
+    previousButton.onmouseleave = stopGalleryScroll;
+    previousButton.onblur = stopGalleryScroll;
+
+    previousButton.onfocus = () => {
+      startGalleryScroll(-1);
+    };
+  }
+
+  if (nextButton) {
+    nextButton.onclick = null;
+
+    nextButton.onmouseenter = () => {
+      startGalleryScroll(1);
+    };
+
+    nextButton.onmouseleave = stopGalleryScroll;
+    nextButton.onblur = stopGalleryScroll;
+
+    nextButton.onfocus = () => {
+      startGalleryScroll(1);
+    };
+  }
+
+
+}
+
+
+
 async function renderStudentHome(
   student
 ) {
@@ -4339,12 +4587,23 @@ moduleCards.forEach(
   );
 
 
+  
+  /*
+    Load the student's achievement gallery
+    when the module is enabled.
+  */
+
+  if (enabledModuleIds.has("achievements")) {
+    await renderStudentAchievements(student);
+  }
+
   /*
     Check whether this student has
     any new teacher feedback.
   */
 
   await updateRecentFeedbackAlert();
+
 
 
 }

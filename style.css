@@ -960,6 +960,7 @@ body.recorder-open {
 
   margin: 0 auto;
   padding: 14px 20px;
+  height: 80px;
 
   display: flex;
   align-items: center;
@@ -1052,6 +1053,7 @@ body.recorder-open {
 
   .site-header-inner {
     padding: 10px 12px;
+    height: 62px;
   }
 
 
@@ -4607,3 +4609,301 @@ body {
   height: 40px;
   object-fit: contain;
 }
+
+
+/* ============================================================
+   STUDENT HOME — MY ACHIEVEMENTS MODULE
+   ============================================================ */
+
+.student-achievements-module {
+  padding: 24px 28px;
+  background: #ffffff;
+  color: #343434;
+}
+
+.student-achievements-module.hidden {
+  display: none;
+}
+
+
+/* HEADER */
+
+.student-achievements-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.student-achievements-header h2 {
+  margin: 0 0 5px;
+  color: #343434;
+  font-size: 1.55rem;
+}
+
+.student-achievements-header p {
+  margin: 0;
+  color: #666666;
+  font-size: 0.95rem;
+}
+
+
+/* CARD COUNT AND ACHIEVEMENT POINTS */
+
+.student-achievements-stats {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  text-align: right;
+}
+
+.student-achievements-count {
+  flex-shrink: 0;
+  color: #555555;
+  font-size: 0.9rem;
+}
+
+.student-achievements-points {
+  color: #343434;
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+
+/* HORIZONTAL CARD GALLERY */
+
+.student-achievements-gallery-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.student-achievements-gallery {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-behavior: auto;
+  scroll-snap-type: x mandatory;
+  padding: 12px 2px 18px;
+  scrollbar-width: thin;
+  scrollbar-color: #bbbbbb transparent;
+}
+
+
+/* FADE CARDS AT THE RIGHT EDGE */
+
+.student-achievements-gallery {
+  -webkit-mask-image: linear-gradient(
+    to right,
+    black 0%,
+    black 85%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    black 0%,
+    black 85%,
+    transparent 100%
+  );
+}
+
+
+/* ACHIEVEMENT GALLERY — RIGHT EDGE FADE */
+
+.student-achievements-gallery {
+  -webkit-mask-image: linear-gradient(
+    to right,
+    #000 0%,
+    #000 82%,
+    transparent 100%
+  );
+
+  mask-image: linear-gradient(
+    to right,
+    #000 0%,
+    #000 82%,
+    transparent 100%
+  );
+}
+
+
+
+/* ACHIEVEMENT CARD IMAGES */
+
+.student-achievements-gallery img {
+  display: block;
+  width: 118px;
+  height: auto;
+  flex: 0 0 118px;
+  object-fit: contain;
+  cursor: pointer;
+  scroll-snap-align: start;
+  transition: transform 0.2s ease;
+}
+
+.student-achievements-gallery img:hover {
+  transform: translateY(-6px);
+}
+
+.student-achievements-gallery img:focus-visible {
+  outline: 2px solid #555555;
+  outline-offset: 3px;
+  border-radius: 5px;
+}
+
+
+
+/* GALLERY NAVIGATION ARROWS */
+
+.student-achievements-scroll-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 28px;
+  width: 28px;
+  height: 34px;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: #777777;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.student-achievements-scroll-button:hover {
+  background: transparent;
+  color: #222222;
+}
+
+.student-achievements-scroll-button:focus-visible {
+  outline: 2px solid #555555;
+  outline-offset: 3px;
+}
+
+
+
+/* MOBILE STYLES */
+
+@media (max-width: 700px) {
+
+  .student-achievements-module {
+    padding: 20px 14px;
+  }
+
+  .student-achievements-header {
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .student-achievements-header h2 {
+    font-size: 1.3rem;
+  }
+
+  .student-achievements-header p {
+    font-size: 0.85rem;
+  }
+
+  .student-achievements-stats {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+  }
+
+  .student-achievements-count {
+    font-size: 0.8rem;
+  }
+
+  .student-achievements-points {
+    font-size: 0.8rem;
+  }
+
+  .student-achievements-gallery-wrapper {
+    gap: 6px;
+  }
+
+  .student-achievements-gallery {
+    gap: 10px;
+  }
+
+  .student-achievements-gallery img {
+    width: 100px;
+    flex-basis: 100px;
+  }
+  
+  .student-achievements-scroll-button {
+    display: none;
+  }
+
+
+}
+
+
+/* EXTRA SMALL SCREENS */
+
+@media (max-width: 420px) {
+
+  .student-achievements-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .student-achievements-stats {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+}
+
+
+/* ACHIEVEMENT CARD NAMES */
+
+.student-achievements-card-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 0 0 118px;
+  width: 118px;
+  scroll-snap-align: start;
+}
+
+.student-achievements-card-item img {
+  width: 100%;
+  height: auto;
+  flex: none;
+  scroll-snap-align: none;
+}
+
+.student-achievements-card-name {
+  margin-top: 8px;
+  color: #666666;
+  font-size: 0.75rem;
+  font-weight: 300;
+  line-height: 1.3;
+  text-align: center;
+}
+
+@media (max-width: 700px) {
+  .student-achievements-card-item {
+    flex-basis: 100px;
+    width: 100px;
+  }
+
+  .student-achievements-card-name {
+    font-size: 0.7rem;
+    margin-top: 6px;
+  }
+}
+
