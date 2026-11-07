@@ -2816,7 +2816,7 @@ body {
     animation:
       achievementViewerRays
       18s linear infinite;
-  }  
+  }
 
   filter: blur(18px);
 
@@ -2864,7 +2864,7 @@ body {
   will-change:
     transform;
 
-  opacity: 0;  
+  opacity: 0;
 }
 
 .achievement-viewer-card.viewer-card-loaded {
@@ -4553,7 +4553,6 @@ body {
 }
 
 
-
 /* Student class and school */
 
 .student-account-drawer-details {
@@ -4576,7 +4575,6 @@ body {
 }
 
 
-
 /* Simplified student menu buttons */
 
 .student-menu-item-text strong {
@@ -4594,7 +4592,6 @@ body {
   height: 34px;
   object-fit: contain;
 }
-
 
 
 /* Student menu icons - no background */
@@ -4736,7 +4733,6 @@ body {
 }
 
 
-
 /* ACHIEVEMENT CARD IMAGES */
 
 .student-achievements-gallery img {
@@ -4759,7 +4755,6 @@ body {
   outline-offset: 3px;
   border-radius: 5px;
 }
-
 
 
 /* GALLERY NAVIGATION ARROWS */
@@ -4790,7 +4785,6 @@ body {
   outline: 2px solid #555555;
   outline-offset: 3px;
 }
-
 
 
 /* MOBILE STYLES */
@@ -4840,7 +4834,7 @@ body {
     width: 100px;
     flex-basis: 100px;
   }
-  
+
   .student-achievements-scroll-button {
     display: none;
   }
@@ -4907,3 +4901,25 @@ body {
   }
 }
 
+/* ==========================================================
+   BATTLE PASS — STACK COMPLETED LEVEL CARDS
+   ========================================================== */
+
+#bandLevelJourney .band-level-item.stackable-completed {
+  margin-right: -254px !important;
+  position: relative;
+  transition:
+    margin-right 0.4s ease,
+    transform 0.4s ease;
+}
+
+/* Keep later cards layered above earlier cards */
+#bandLevelJourney .band-level-item.stackable-completed {
+  z-index: 1;
+}
+
+/* Keep the current level fully visible */
+#bandLevelJourney .band-level-item.current {
+  position: relative;
+  z-index: 5;
+}

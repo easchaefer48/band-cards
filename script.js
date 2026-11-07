@@ -3132,16 +3132,10 @@ currentLevelProgress.innerHTML = `
   // Render each level
   // --------------------------------------------------------
 
-levelStates
-  .slice(
-    currentLevelIndex
-  )
-  .forEach(
-    (state, visibleIndex) => {
 
-      const index =
-        currentLevelIndex +
-        visibleIndex;
+levelStates
+  .forEach(
+    (state, index) => {
 
       const {
         level,
@@ -3172,7 +3166,8 @@ levelStates
       if (isCompleted) {
 
         levelElement.classList.add(
-          "completed"
+          "completed",
+          "stackable-completed"
         );
 
       }
@@ -3232,15 +3227,21 @@ levelStates
       const requirementsHtml =
         requirements
           .map(
-            requirement => {
+           (requirement, requirementIndex) => {
 
               const requirementComplete =
                 completedRequirementIds.has(
                   requirement.id
                 );
 
+              
+              const audioLetter = String.fromCharCode(
+                97 + requirementIndex
+              );
 
-
+              const audioPath =
+                `audio/band-levels/level_${level.number}${audioLetter}.mp3`;
+                
 
               const recordButton =
                 !isLocked &&
@@ -3265,13 +3266,31 @@ levelStates
 
              return `
 
-              <div class="band-level-requirement">
+              <div class="band-level-requirement ${requirementComplete ? 'song-completed' : ''}">
+
+                
+              <div class="band-level-song-header">
 
                 <span class="requirement-name">
-                  ${escapeHtml(
-                    requirement.name
-                  )}
+                  ${escapeHtml(requirement.name)}
                 </span>
+
+                <button
+                  type="button"
+                  class="band-level-audio-button"
+                  aria-label="Play ${escapeHtml(requirement.name)}"
+                  aria-pressed="false"
+                >
+                  ▶
+                </button>
+
+                <audio
+                  preload="none"
+                  src="${escapeHtml(audioPath)}"
+                ></audio>
+
+              </div>
+
 
                 <div class="requirement-action">
 
@@ -3377,7 +3396,9 @@ levelStates
                   : isLocked
                     ? `
                       <div class="locked-level-label">
-                        🔒 Locked
+                        <span class="lock-icon">🔒</span>
+                        <span>LOCKED</span>
+                        <span class="lock-icon">🔒</span>
                       </div>
                     `
                     : ""
@@ -3398,6 +3419,27 @@ levelStates
 
       `;
 
+      // Move status labels inside the colored card,
+      // directly above the level badge.
+      const badge = levelElement.querySelector(
+        ".future-level-badge"
+      );
+
+      const status = levelElement.querySelector(
+        ".current-goal-label, .locked-level-label"
+      );
+
+      if (badge) {
+        const statusSlot = document.createElement("div");
+        statusSlot.className = "band-level-status-slot";
+
+        if (status) {
+          statusSlot.appendChild(status);
+        }
+
+        badge.before(statusSlot);
+      }
+
 
       journey.appendChild(
         levelElement
@@ -3405,6 +3447,162 @@ levelStates
 
     }
   );
+
+
+  // --------------------------------------------------------
+  // Path to Level 20 — Level 11 locked preview
+  // --------------------------------------------------------
+
+  const journey20 = document.getElementById(
+    "bandLevelJourney20"
+  );
+
+  if (journey20) {
+
+    const level11 = allBandLevels.find(
+      level =>
+        Number(level.number) === 11 &&
+        level.track === "Main"
+    );
+
+    if (level11) {
+
+      const level11Image = level11.image
+        ? `images/${level11.image}`
+        : "";
+
+      journey20.innerHTML = `
+        <div class="level-11-preview-wrapper"
+            style="--level-accent: ${escapeHtml(level11.accentColor || "#4d8fd7")}">
+
+          <div class="level-11-preview-heading">
+            Band Level 11
+          </div>
+
+          <div class="band-level-item locked level-11-preview">
+
+            <div class="future-level-card-inner">
+
+            <div class="band-level-status-slot">
+              <div class="locked-level-label">
+                <span class="lock-icon">🔒</span>
+                <span>LOCKED</span>
+                <span class="lock-icon">🔒</span>
+              </div>
+            </div>
+
+            <div class="future-level-badge">
+              ${
+                level11Image
+                  ? `
+                    <img
+                      src="${escapeHtml(level11Image)}"
+                      alt="${escapeHtml(level11.name)}"
+                      class="future-level-badge-image"
+                    >
+                  `
+                  : `
+                    <div class="future-level-badge-fallback">
+                      11
+                    </div>
+                  `
+              }
+            </div>
+
+            <div class="level-11-locked-message">
+              <strong>PATH LOCKED</strong>
+              <span>
+                Complete Level 10 to unlock this path
+              </span>
+            </div>
+
+          </div>
+        </div>
+      `;
+
+    }
+
+  }
+
+
+  // Prepare the completed stack for progressive unstacking
+  requestAnimationFrame(() => {
+
+    const completedCards = Array.from(
+      journey.querySelectorAll(".band-level-item.stackable-completed")
+    );
+
+    if (completedCards.length === 0) return;
+
+    const cardWidth = completedCards[0].getBoundingClientRect().width;
+    const edgeWidth = window.innerWidth <= 700 ? 8 : 16;
+    const overlap = cardWidth - edgeWidth;
+
+    // Reserve enough width for every completed card to spread out
+    journey.style.paddingRight =
+      `${completedCards.length * overlap}px`;
+
+    // Create scrolling space before the completed stack
+    const startingScroll = completedCards.length * (overlap + edgeWidth);
+
+    journey.style.setProperty(
+      "padding-left",
+      `${startingScroll + 2}px`,
+      "important"
+    );
+
+    // Start with the cards visually stacked at the left edge
+    journey.scrollLeft = startingScroll;
+
+    // Progressively reveal completed cards as we scroll left
+    function updateCardStack() {
+
+      const revealedDistance = Math.max(
+        0,
+        startingScroll - journey.scrollLeft
+      );
+
+      completedCards.forEach((card, index) => {
+
+        const holdDistance =
+          (completedCards.length - index) * (overlap + edgeWidth);
+
+        const movement = Math.min(
+          revealedDistance,
+          holdDistance
+        );
+
+        card.style.transform = `translate3d(${-movement}px, 0, 0)`;
+
+        const titleRow = card.querySelector(".future-level-title-row");
+
+        if (titleRow) {
+          const fadeDistance = cardWidth - edgeWidth;
+
+          const cardReveal = Math.max(
+            0,
+            Math.min(
+              fadeDistance,
+              revealedDistance - (completedCards.length - 1 - index) * (overlap + 16)
+            )
+          );
+
+          titleRow.style.opacity = cardReveal / fadeDistance;
+        }
+
+      });
+
+    }
+
+    journey.addEventListener("scroll", updateCardStack, {
+      passive: true
+    });
+
+    updateCardStack();
+
+  
+  });
+
 
 }
 
@@ -10670,4 +10868,89 @@ window.addEventListener(
 
   }
 );
+
+
+// ============================================================
+// BAND LEVEL REFERENCE AUDIO
+// ============================================================
+
+document.addEventListener("click", async event => {
+
+  const button = event.target.closest(
+    ".band-level-audio-button"
+  );
+
+  if (!button) return;
+
+  const songHeader = button.closest(
+    ".band-level-song-header"
+  );
+
+  const audio = songHeader?.querySelector("audio");
+
+  if (!audio) return;
+
+  // Pause any other reference recording.
+  document.querySelectorAll(
+    ".band-level-song-header audio"
+  ).forEach(otherAudio => {
+
+    if (otherAudio !== audio) {
+      otherAudio.pause();
+
+      const otherButton =
+        otherAudio.parentElement.querySelector(
+          ".band-level-audio-button"
+        );
+
+      if (otherButton) {
+        otherButton.textContent = "▶";
+        otherButton.setAttribute("aria-pressed", "false");
+      }
+    }
+
+  });
+
+  if (!audio.paused) {
+
+    audio.pause();
+    button.textContent = "▶";
+    button.setAttribute("aria-pressed", "false");
+
+  } else {
+
+    try {
+
+      await audio.play();
+      button.textContent = "Ⅱ";
+      button.setAttribute("aria-pressed", "true");
+
+    } catch (error) {
+
+      console.error("Unable to play reference audio:", error);
+      button.textContent = "▶";
+      button.setAttribute("aria-pressed", "false");
+
+    }
+
+  }
+
+});
+
+document.addEventListener("ended", event => {
+
+  if (!event.target.matches(
+    ".band-level-song-header audio"
+  )) return;
+
+  const button = event.target.parentElement.querySelector(
+    ".band-level-audio-button"
+  );
+
+  if (button) {
+    button.textContent = "▶";
+    button.setAttribute("aria-pressed", "false");
+  }
+
+}, true);
 

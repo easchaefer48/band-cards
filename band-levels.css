@@ -1330,3 +1330,1105 @@
     0 0 12px rgba(210, 50, 50, .42),
     0 0 24px rgba(210, 50, 50, .20);
 }
+
+
+/* ==========================================================
+   BAND LEVELS — BATTLE PASS LAYOUT (PHASE 1)
+   ========================================================== */
+
+/* Path heading */
+
+.band-path-heading {
+  margin: 30px 0 18px;
+}
+
+.band-path-heading h2 {
+  margin: 0 0 5px;
+  color: #292929;
+  font-family: "Angkor", serif;
+  font-size: 1.7rem;
+  font-weight: 400;
+}
+
+.band-path-heading p {
+  margin: 0;
+  color: #777777;
+  font-size: 0.9rem;
+}
+
+/* Horizontal level track */
+
+#bandLevelJourney {
+  display: flex;
+  align-items: stretch;
+  gap: 16px;
+
+  width: 100%;
+  min-width: 0;
+
+  overflow-x: auto;
+  overflow-y: hidden;
+
+  padding: 12px 4px 24px;
+  margin-top: 0;
+
+  scroll-snap-type: x proximity;
+  overscroll-behavior-x: contain;
+
+  scrollbar-width: thin;
+  scrollbar-color: #aaa transparent;
+}
+
+/* Vertical playing cards */
+
+#bandLevelJourney .band-level-item {
+  flex: 0 0 270px;
+  width: 270px;
+  min-width: 270px;
+  min-height: 430px;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  border-radius: 16px;
+  overflow: hidden;
+
+  scroll-snap-align: start;
+}
+
+/* Card content */
+
+#bandLevelJourney .future-level-card-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+
+  gap: 12px;
+  padding: 20px 15px;
+}
+
+/* Badge at top */
+
+#bandLevelJourney .future-level-badge {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#bandLevelJourney .future-level-badge-image,
+#bandLevelJourney .future-level-badge-fallback {
+  width: 95px;
+  height: 95px;
+}
+
+/* Level title */
+
+#bandLevelJourney .future-level-title-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+#bandLevelJourney .future-level-title {
+  font-size: 1.4rem;
+}
+
+/* Song list */
+
+#bandLevelJourney .band-level-requirements {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+
+  margin-top: 12px;
+}
+
+/* Individual song */
+
+#bandLevelJourney .band-level-requirement {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+
+  gap: 9px;
+  margin: 0;
+  padding: 11px;
+
+  border-radius: 9px;
+}
+
+/* Song title */
+
+#bandLevelJourney .requirement-name {
+  font-size: 0.88rem;
+  line-height: 1.3;
+}
+
+/* Recording action */
+
+#bandLevelJourney .requirement-action {
+  width: 100%;
+  justify-content: center;
+}
+
+#bandLevelJourney .band-level-record-button {
+  width: 100%;
+  min-width: 0;
+  padding: 9px 8px;
+  font-size: 0.78rem;
+}
+
+/* Current level */
+
+#bandLevelJourney .band-level-item.current {
+  border: 2px solid rgba(255,255,255,0.35);
+}
+
+/* Mobile */
+
+@media (max-width: 700px) {
+
+  .band-path-heading {
+    margin: 24px 8px 16px;
+  }
+
+  .band-path-heading h2 {
+    font-size: 1.4rem;
+  }
+
+  #bandLevelJourney {
+    gap: 12px;
+    padding: 10px 8px 20px;
+  }
+
+  #bandLevelJourney .band-level-item {
+    flex-basis: 245px;
+    width: 245px;
+    min-width: 245px;
+    min-height: 400px;
+  }
+
+  #bandLevelJourney .future-level-card-inner {
+    padding: 16px 12px;
+  }
+
+}
+
+/* ==========================================================
+   BATTLE PASS — HIDE OLD CURRENT LEVEL HERO
+   ========================================================== */
+
+#bandLevelStudentProfile .current-level-summary {
+  display: none !important;
+}
+
+
+/* ==========================================================
+   BATTLE PASS — LOCKED AND COMPLETED CARD STYLES
+   ========================================================== */
+
+/* Locked cards retain their normal colors */
+
+#bandLevelJourney .band-level-item.locked {
+  opacity: 1;
+  background: #ffffff;
+  border: 1px solid #dfe4e9;
+}
+
+/* Restore full-color badges */
+
+#bandLevelJourney .band-level-item.locked
+.future-level-badge-image {
+  filter: none;
+  opacity: 1;
+}
+
+/* Restore normal text colors */
+
+#bandLevelJourney .band-level-item.locked
+.future-level-title,
+#bandLevelJourney .band-level-item.locked
+.requirement-name {
+  color: #171717;
+}
+
+/* Restore normal song rows */
+
+#bandLevelJourney .band-level-item.locked
+.band-level-requirement {
+  background: #ffffff;
+  border-color: #dedfe5;
+  opacity: 1;
+}
+
+/* Completed cards have a soft whitewashed appearance */
+
+#bandLevelJourney .band-level-item.completed {
+  position: relative;
+  opacity: 1;
+  background: #ffffff;
+  border: 1px solid #dfe4e9;
+}
+
+/* Fade the contents without fading the completion overlay */
+
+#bandLevelJourney .band-level-item.completed
+.future-level-card-inner {
+  opacity: 0.48;
+}
+
+/* Large completion indicator */
+
+#bandLevelJourney .band-level-item.completed::after {
+  content: "✓  COMPLETE!";
+
+  position: absolute;
+  top: 43%;
+  left: 50%;
+
+  transform: translate(-50%, -50%) rotate(-8deg);
+
+  width: max-content;
+  max-width: 90%;
+  padding: 12px 16px;
+
+  border: 3px solid #2e9c59;
+  border-radius: 12px;
+
+  background: rgba(255, 255, 255, 0.94);
+  color: #248347;
+
+  font-size: 1.45rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+
+  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.12);
+
+  pointer-events: none;
+  z-index: 5;
+}
+
+
+/* ==========================================================
+   BATTLE PASS — LEVEL-SPECIFIC CARD COLORS
+   ========================================================== */
+
+/* Every level uses its own configured accent color */
+
+#bandLevelJourney .band-level-item.current,
+#bandLevelJourney .band-level-item.locked,
+#bandLevelJourney .band-level-item.completed {
+  background: var(--level-accent, #4d8fd7) !important;
+  background-color: var(--level-accent, #4d8fd7) !important;
+}
+
+/* Keep card headings readable on colored backgrounds */
+
+#bandLevelJourney .band-level-item .future-level-title,
+#bandLevelJourney .band-level-item .locked-level-label {
+  color: #ffffff;
+}
+
+/* Keep requirement rows white */
+
+#bandLevelJourney .band-level-item .band-level-requirement {
+  background: #ffffff !important;
+  opacity: 1;
+}
+
+/* Completed cards get their whitewashed treatment */
+
+#bandLevelJourney .band-level-item.completed::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.35);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Keep the COMPLETE! indicator above the wash */
+
+#bandLevelJourney .band-level-item.completed::after {
+  z-index: 3;
+}
+
+
+/* ==========================================================
+   BATTLE PASS — PREMIUM CARD DESIGN
+   ========================================================== */
+
+/* White titles for ALL levels */
+
+#bandLevelJourney .band-level-item
+.future-level-title {
+  color: #ffffff !important;
+  font-weight: 900;
+  text-shadow: 0 2px 5px rgba(0,0,0,0.18);
+}
+
+/* Card appearance */
+
+#bandLevelJourney .band-level-item {
+  position: relative;
+  isolation: isolate;
+
+  border: 2px solid rgba(255,255,255,0.4) !important;
+  border-radius: 18px;
+
+  box-shadow:
+    0 6px 18px rgba(0,0,0,0.14),
+    inset 0 0 0 5px rgba(255,255,255,0.09);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+/* Subtle top highlight */
+
+#bandLevelJourney .band-level-item
+.future-level-card-inner {
+  position: relative;
+  z-index: 1;
+
+  background:
+    linear-gradient(
+      160deg,
+      rgba(255,255,255,0.18),
+      transparent 55%
+    ) !important;
+
+  min-height: 100%;
+  box-sizing: border-box;
+}
+
+/* Make the badge more prominent */
+
+#bandLevelJourney .future-level-badge-image {
+  width: 115px;
+  height: 115px;
+  object-fit: contain;
+
+  filter:
+    drop-shadow(0 5px 8px rgba(0,0,0,0.2));
+}
+
+/* Restore full-color badge images on locked levels */
+
+#bandLevelJourney .band-level-item.locked
+.future-level-badge-image {
+  filter:
+    drop-shadow(0 5px 8px rgba(0,0,0,0.2)) !important;
+
+  opacity: 1;
+}
+
+/* Slightly rounded song panels */
+
+#bandLevelJourney .band-level-requirement {
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+}
+
+/* Desktop hover effect */
+
+@media (hover: hover) {
+
+  #bandLevelJourney .band-level-item:hover {
+    transform: translateY(-5px);
+
+    box-shadow:
+      0 12px 24px rgba(0,0,0,0.2),
+      inset 0 0 0 5px rgba(255,255,255,0.12);
+  }
+
+}
+
+/* Keep the completed overlay visible */
+
+#bandLevelJourney .band-level-item.completed::after {
+  z-index: 5;
+}
+
+
+/* ==========================================================
+   BATTLE PASS — SONG TEXT AND RECORDING BUTTONS
+   ========================================================== */
+
+/* Softer song text */
+
+#bandLevelJourney .band-level-requirement
+.requirement-name {
+  color: #484852 !important;
+  font-weight: 600;
+}
+
+/* Compact, color-coordinated recording buttons */
+
+#bandLevelJourney .band-level-record-button {
+  min-width: 0;
+  width: auto;
+
+  padding: 7px 11px;
+
+  background: transparent !important;
+  color: var(--level-accent, #4d8fd7) !important;
+
+  border: 1.5px solid currentColor;
+  border-radius: 8px;
+
+  font-size: 0.76rem;
+  font-weight: 700;
+
+  box-shadow: none !important;
+}
+
+/* Hover */
+
+@media (hover: hover) {
+  #bandLevelJourney .band-level-record-button:hover {
+    background: rgba(0, 0, 0, 0.045) !important;
+    transform: none;
+  }
+}
+
+/* Compact requirement spacing */
+
+#bandLevelJourney .band-level-requirement {
+  padding: 10px;
+  gap: 7px;
+}
+
+
+/* ==========================================================
+   BATTLE PASS — COMPACT AUDIO PLAYER
+   ========================================================== */
+
+#bandLevelJourney .band-level-song-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+}
+
+#bandLevelJourney .band-level-song-header
+.requirement-name {
+  flex: 1;
+  min-width: 0;
+  color: #484852 !important;
+}
+
+#bandLevelJourney .band-level-audio-button {
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  border-radius: 50%;
+
+  background: var(--level-accent, #4d8fd7);
+  color: #ffffff;
+
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  padding: 0;
+}
+
+#bandLevelJourney .band-level-audio-button:hover {
+  filter: brightness(1.12);
+}
+
+#bandLevelJourney .band-level-song-header audio {
+  display: none;
+}
+
+
+/* ==========================================================
+   BATTLE PASS — CONSISTENT REQUIREMENT LAYOUT
+   ========================================================== */
+
+#bandLevelJourney .band-level-requirement {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 5px;
+
+  min-height: 88px;
+  box-sizing: border-box;
+}
+
+#bandLevelJourney .requirement-action {
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#bandLevelJourney .band-level-record-button {
+  width: 100%;
+  min-width: 0;
+  padding: 5px 8px;
+  font-size: 0.73rem;
+  line-height: 1.2;
+}
+
+
+/* ==========================================================
+   BATTLE PASS — COMPACT SONG REQUIREMENTS
+   ========================================================== */
+
+/* Reduce white padding around each song */
+
+#bandLevelJourney .band-level-requirement {
+  min-height: 0 !important;
+  padding: 6px 8px !important;
+  gap: 3px !important;
+  border-radius: 8px;
+}
+
+/* Keep song titles compact */
+
+#bandLevelJourney .band-level-song-header {
+  gap: 6px;
+}
+
+#bandLevelJourney .requirement-name {
+  font-size: 0.82rem;
+  line-height: 1.2;
+  color: #484852 !important;
+}
+
+/* Slightly smaller audio button */
+
+#bandLevelJourney .band-level-audio-button {
+  flex: 0 0 28px;
+  width: 28px;
+  height: 28px;
+  font-size: 11px;
+}
+
+/* Remove unnecessary reserved space */
+
+#bandLevelJourney .requirement-action {
+  min-height: 0 !important;
+  gap: 4px;
+}
+
+/* Slim recording button */
+
+#bandLevelJourney .band-level-record-button {
+  min-width: 0;
+  width: 100%;
+  padding: 3px 7px !important;
+  font-size: 0.7rem;
+  line-height: 1.15;
+  border-width: 1px;
+  border-radius: 6px;
+}
+
+/* Compact completed requirement */
+
+#bandLevelJourney .requirement-complete-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  width: 100%;
+  padding: 0 !important;
+  margin: 0 !important;
+  min-height: 0 !important;
+}
+
+/* Hide the redundant "Complete!" text */
+
+#bandLevelJourney .requirement-complete-text {
+  display: none !important;
+}
+
+/* Small green checkmark, about capital-letter size */
+
+#bandLevelJourney .requirement-complete-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto !important;
+  height: auto !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #259b54 !important;
+  font-size: 15px !important;
+  font-weight: 800;
+  line-height: 1;
+}
+
+
+/* ==========================================================
+   BATTLE PASS — COMPLETED SONGS BLEND INTO CARD
+   ========================================================== */
+
+/* Match the completed song to its level color */
+
+#bandLevelJourney .band-level-requirement.song-completed {
+  background: var(--level-accent, #4d8fd7) !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+/* White song title */
+
+#bandLevelJourney .song-completed .requirement-name {
+  color: #ffffff !important;
+  font-weight: 700;
+}
+
+/* White Complete! text */
+
+#bandLevelJourney .song-completed .requirement-complete-text {
+  display: inline !important;
+  color: #ffffff !important;
+  font-weight: 700;
+}
+
+/* White completion checkmark */
+
+#bandLevelJourney .song-completed .requirement-complete-check {
+  color: #ffffff !important;
+  font-size: 15px !important;
+}
+
+/* Inverted audio button */
+
+#bandLevelJourney .song-completed .band-level-audio-button {
+  background: #ffffff !important;
+  color: var(--level-accent, #4d8fd7) !important;
+  border: none !important;
+}
+
+/* Keep completed requirement compact */
+
+#bandLevelJourney .song-completed .requirement-complete-status {
+  gap: 5px;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+
+/* BATTLE PASS — WHITE BORDER ON COMPLETED SONGS */
+
+#bandLevelJourney .band-level-requirement.song-completed {
+  border: 1px solid rgba(255, 255, 255, 0.75) !important;
+}
+
+/* ==========================================================
+   BATTLE PASS — SPACE FOR COMPLETED CARDS TO FAN OUT
+   ========================================================== */
+
+#bandLevelJourney {
+  --completed-card-width: 270px;
+  --completed-edge-width: 16px;
+}
+
+/* Allow JavaScript to adjust card overlap as students scroll */
+#bandLevelJourney .band-level-item.stackable-completed {
+  margin-right: calc(
+    -1 * (
+      var(--completed-card-width) -
+      var(--completed-edge-width)
+    )
+  ) !important;
+}
+
+/* Keep movement directly tied to scrolling */
+#bandLevelJourney .band-level-item.stackable-completed {
+  transition: none !important;
+}
+
+/* Prevent scroll snapping from interrupting the unstacking */
+#bandLevelJourney {
+  scroll-snap-type: none !important;
+}
+
+#bandLevelJourney {
+  padding-left: 2px !important;
+}
+
+/* ==========================================================
+   BAND LEVELS — PROGRESSIVE CARD UNSTACKING
+   ========================================================== */
+
+/* Keep card movement smooth and directly controlled by dragging */
+#bandLevelJourney .band-level-item {
+  flex-shrink: 0;
+}
+
+/* Completed cards will move independently of the normal row */
+#bandLevelJourney .band-level-item.stackable-completed {
+  transition: none !important;
+  will-change: transform;
+}
+
+/* Current and upcoming cards move together */
+#bandLevelJourney .band-level-item.current,
+#bandLevelJourney .band-level-item.locked {
+  will-change: transform;
+}
+
+/* ==========================================================
+   BATTLE PASS — HEADINGS ABOVE CARDS
+   ========================================================== */
+
+#bandLevelJourney .band-level-item {
+  overflow: visible;
+}
+
+#bandLevelJourney .future-level-title-row {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 0;
+  width: 100%;
+  margin: 0;
+  z-index: 10;
+}
+
+/* Make room above the cards for their titles and status labels */
+#bandLevelJourney {
+  padding-top: 45px !important;
+}
+
+/* Match level titles to their card colors */
+#bandLevelJourney .band-level-item .future-level-title {
+  color: var(--level-accent, #4d8fd7) !important;
+  text-shadow: none !important;
+}
+
+/* Status labels inside the colored cards */
+#bandLevelJourney .band-level-status-slot {
+  height: 30px;
+  flex: 0 0 30px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+/* Locked and Current Goal use identical styling */
+#bandLevelJourney .band-level-status-slot
+.current-goal-label,
+#bandLevelJourney .band-level-status-slot
+.locked-level-label {
+  margin: 0;
+  padding: 0;
+  height: 30px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: none;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+
+  color: white !important;
+  font-size: 0.75rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  backdrop-filter: none;
+}
+
+/* Center LOCKED between two white lock icons */
+#bandLevelJourney .locked-level-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* Turn the lock emojis white */
+#bandLevelJourney .locked-level-label .lock-icon {
+  display: inline-block;
+  filter: grayscale(1) brightness(0) invert(1);
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+/* Clean white borders on all Band Level cards */
+#bandLevelJourney .band-level-item {
+  border: 2px solid #ffffff !important;
+}
+
+/* Keep the completed-card fade inside the rounded corners */
+#bandLevelJourney .band-level-item.completed::before {
+  border-radius: inherit;
+}
+
+/* Show more of each stacked card on mobile */
+@media (max-width: 700px) {
+  #bandLevelJourney {
+    --completed-card-width: 245px;
+    --completed-edge-width: 8px;
+  }
+}
+
+/* ==========================================================
+   BAND LEVELS — NEXT PATH PREVIEW
+   ========================================================== */
+
+.band-next-path {
+  margin-top: 32px;
+}
+
+.band-next-path-card {
+  width: 270px;
+  min-height: 270px;
+  box-sizing: border-box;
+  padding: 30px 20px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+
+  background: #5d626c;
+  border: 2px solid #ffffff;
+  border-radius: 18px;
+
+  box-shadow: 0 6px 18px rgba(0,0,0,0.14);
+  text-align: center;
+}
+
+.band-next-path-lock {
+  font-size: 3rem;
+}
+
+.band-next-path-title {
+  color: #ffffff;
+  font-size: 1.2rem;
+  font-weight: 900;
+}
+
+.band-next-path-message {
+  color: #ffffff;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 700px) {
+  .band-next-path-card {
+    width: 245px;
+  }
+}
+
+
+/* ==========================================================
+   PATH TO LEVEL 20 — LEVEL 11 PREVIEW
+   ========================================================== */
+
+#bandLevelJourney20 {
+  display: flex;
+  align-items: stretch;
+  padding: 12px 2px 24px;
+  overflow: visible;
+}
+
+/* Match the Level 1–10 card dimensions and appearance */
+#bandLevelJourney20 .band-level-item {
+  position: relative;
+  isolation: isolate;
+  box-sizing: border-box;
+
+  flex: 0 0 270px;
+  width: 270px;
+  min-width: 270px;
+  min-height: 430px;
+
+  margin: 0;
+  padding: 0;
+
+  background: var(--level-accent, #4d8fd7);
+  border: 2px solid #ffffff;
+  border-radius: 18px;
+
+  box-shadow:
+    0 6px 18px rgba(0,0,0,0.14),
+    inset 0 0 0 5px rgba(255,255,255,0.09);
+}
+
+/* Card interior */
+#bandLevelJourney20 .future-level-card-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+
+  padding: 20px 15px;
+  min-height: 430px;
+  box-sizing: border-box;
+
+  background: linear-gradient(
+    160deg,
+    rgba(255,255,255,0.18),
+    transparent 55%
+  );
+
+  border-radius: inherit;
+}
+
+/* Locked status */
+#bandLevelJourney20 .band-level-status-slot {
+  height: 30px;
+  flex: 0 0 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#bandLevelJourney20 .locked-level-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+#bandLevelJourney20 .lock-icon {
+  filter: grayscale(1) brightness(0) invert(1);
+}
+
+/* Level 11 badge */
+#bandLevelJourney20 .future-level-badge {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#bandLevelJourney20 .future-level-badge-image {
+  width: 115px;
+  height: 115px;
+  object-fit: contain;
+
+  filter: drop-shadow(0 5px 8px rgba(0,0,0,0.2));
+}
+
+/* Locked path message */
+#bandLevelJourney20 .level-11-locked-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+
+  margin-top: 25px;
+  padding: 16px 10px;
+  text-align: center;
+  color: #ffffff;
+}
+
+#bandLevelJourney20 .level-11-locked-message strong {
+  font-size: 1.1rem;
+  font-weight: 900;
+}
+
+#bandLevelJourney20 .level-11-locked-message span {
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+/* Mobile dimensions */
+@media (max-width: 700px) {
+  #bandLevelJourney20 .band-level-item {
+    flex-basis: 245px;
+    width: 245px;
+    min-width: 245px;
+    min-height: 400px;
+  }
+
+  #bandLevelJourney20 .future-level-card-inner {
+    min-height: 400px;
+    padding: 16px 12px;
+  }
+}
+
+/* Level 11 preview — heading sits outside the card */
+
+#bandLevelJourney20 .level-11-preview-wrapper {
+  flex: 0 0 270px;
+  width: 270px;
+  min-width: 270px;
+}
+
+#bandLevelJourney20 .level-11-preview-heading {
+  color: var(--level-accent, #4d8fd7);
+  font-size: 1.4rem;
+  font-weight: 900;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+#bandLevelJourney20 .level-11-preview-wrapper .band-level-item {
+  width: 100%;
+  min-width: 0;
+}
+
+@media (max-width: 700px) {
+  #bandLevelJourney20 .level-11-preview-wrapper {
+    flex-basis: 245px;
+    width: 245px;
+    min-width: 245px;
+  }
+}
+
+
+/* ==========================================================
+   BAND LEVELS — PREVENT HORIZONTAL PAGE SCROLLING
+   ========================================================== */
+
+/* Keep the main page from sliding left or right */
+#band-level-dashboard-section,
+.band-level-dashboard,
+.band-level-journey {
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+/* Prevent the Band Levels content from expanding the page */
+#band-level-dashboard-section {
+  overflow-x: clip;
+}
+
+/* Allow horizontal scrolling only within the card paths */
+#bandLevelJourney,
+#bandLevelJourney20 {
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
