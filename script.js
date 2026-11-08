@@ -10954,3 +10954,38 @@ document.addEventListener("ended", event => {
 
 }, true);
 
+// =========================================
+// BAND LEVELS — SCROLL ARROW CONTROLS
+// =========================================
+
+function setupBandLevelScrollArrows() {
+  const scroller = document.getElementById("bandLevelJourney");
+  const leftArrow = document.getElementById("bandLevelScrollLeft");
+  const rightArrow = document.getElementById("bandLevelScrollRight");
+
+  if (!scroller || !leftArrow || !rightArrow) return;
+
+  function scrollCards(direction) {
+    const firstCard = scroller.firstElementChild;
+
+    const cardWidth = firstCard
+      ? firstCard.getBoundingClientRect().width
+      : 250;
+
+    const gap = parseFloat(getComputedStyle(scroller).gap) || 16;
+
+    scroller.scrollBy({
+      left: direction * (cardWidth + gap),
+      behavior: "smooth"
+    });
+  }
+
+  leftArrow.addEventListener("click", () => scrollCards(-1));
+  rightArrow.addEventListener("click", () => scrollCards(1));
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", setupBandLevelScrollArrows);
+} else {
+  setupBandLevelScrollArrows();
+}
